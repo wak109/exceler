@@ -1,0 +1,12 @@
+pwd
+test
+compile
+clean
+exit
+compile
+run
+exit
+run test.xlsx
+ls
+test
+exit

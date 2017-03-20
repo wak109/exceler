@@ -1,6 +1,6 @@
 name := "exceler"
 version := "0.0.2"
-scalaVersion := "2.12.1"
+scalaVersion := "2.11.8"
 
 libraryDependencies += "org.apache.poi" % "poi" % "3.15"
 libraryDependencies += "org.apache.poi" % "poi-ooxml" % "3.15"
