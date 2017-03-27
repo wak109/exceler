@@ -6,16 +6,12 @@ import java.io._
 
 import org.apache.commons.cli.CommandLine
 import org.apache.commons.cli.DefaultParser
-import org.apache.commons.cli.Options
+import org.apache.commons.cli.HelpFormatter
+import org.apache.commons.cli.{Option => CliOption}
+import org.apache.commons.cli.{Options => CliOptions}
 import org.apache.commons.cli.ParseException
 
 object Exceler {
-
-    def parseCommandLine(args:Array[String]) : CommandLine = {
-        val parser = new DefaultParser()
-        val options = new Options()
-        parser.parse(options, args)
-    }
 
     def excel(filename:String) : Unit  = {
         val workbook = WorkbookFactory.create(new File(filename))
@@ -33,9 +29,51 @@ object Exceler {
         println(value)
     }
 
+    def checkOptions(cl:CommandLine) : Unit = {
+        if (cl.hasOption('h')) {
+            printUsage(cl)
+        } else if (cl.getArgs().length == 0) {
+            printUsage(cl)
+        } else {
+            excel(cl.getArgs()(0))
+        }
+    }
+
+    def stripClassName(clsname:String):String = {
+        val RE_ = """(.*)\$$""".r
+        clsname match {
+          case RE_(m) => m
+          case x => x
+        }
+    }
+
+    def printUsage(cl:CommandLine) : Unit = {
+        val formatter = new HelpFormatter()
+
+        formatter.printHelp(
+            stripClassName(this.getClass.getCanonicalName),
+            "Scala CLI template",
+            makeOptions(),
+            "Please go https://github.com/wak109/ for any issues",
+            true)
+    }
+
+    def parseCommandLine(args:Array[String]) : CommandLine = {
+        val parser = new DefaultParser()
+
+        return parser.parse(makeOptions(), args)
+    }
+
+    def makeOptions() : CliOptions = {
+        val options = new CliOptions()
+        options.addOption(CliOption.builder("h").desc("Show help").build())
+
+        return options
+    }
+
     def main(args:Array[String]) : Unit  = {
         allCatch withTry { parseCommandLine(args) } match {
-            case Success(cl) => excel(cl.getArgs()(0))
+            case Success(cl) => checkOptions(cl)
             case Failure(e) => println(e.getMessage())
         }
     }
