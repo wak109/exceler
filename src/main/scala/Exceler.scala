@@ -7,11 +7,14 @@ import java.io._
 import org.apache.commons.cli.CommandLine
 import org.apache.commons.cli.DefaultParser
 import org.apache.commons.cli.HelpFormatter
-import org.apache.commons.cli.{Option => CliOption}
-import org.apache.commons.cli.{Options => CliOptions}
+import org.apache.commons.cli.{Option => CmdOption}
+import org.apache.commons.cli.{Options => CmdOptions}
 import org.apache.commons.cli.ParseException
 
 object Exceler {
+
+    val description = """Scala CLI template"""
+    val access = """https://github.com/wak109/"""
 
     def excel(filename:String) : Unit  = {
         val workbook = WorkbookFactory.create(new File(filename))
@@ -31,30 +34,30 @@ object Exceler {
 
     def checkOptions(cl:CommandLine) : Unit = {
         if (cl.hasOption('h')) {
-            printUsage(cl)
+            printUsage()
         } else if (cl.getArgs().length == 0) {
-            printUsage(cl)
+            printUsage()
         } else {
             excel(cl.getArgs()(0))
         }
     }
 
     def stripClassName(clsname:String):String = {
-        val RE_ = """(.*)\$$""".r
+        val Pattern = """^(.*)\$$""".r
         clsname match {
-          case RE_(m) => m
+          case Pattern(m) => m
           case x => x
         }
     }
 
-    def printUsage(cl:CommandLine) : Unit = {
+    def printUsage() : Unit = {
         val formatter = new HelpFormatter()
 
         formatter.printHelp(
             stripClassName(this.getClass.getCanonicalName),
-            "Scala CLI template",
+            this.description,
             makeOptions(),
-            "Please go https://github.com/wak109/ for any issues",
+            this.access,
             true)
     }
 
@@ -64,9 +67,9 @@ object Exceler {
         return parser.parse(makeOptions(), args)
     }
 
-    def makeOptions() : CliOptions = {
-        val options = new CliOptions()
-        options.addOption(CliOption.builder("h").desc("Show help").build())
+    def makeOptions() : CmdOptions = {
+        val options = new CmdOptions()
+        options.addOption(CmdOption.builder("h").desc("Show help").build())
 
         return options
     }
@@ -74,7 +77,7 @@ object Exceler {
     def main(args:Array[String]) : Unit  = {
         allCatch withTry { parseCommandLine(args) } match {
             case Success(cl) => checkOptions(cl)
-            case Failure(e) => println(e.getMessage())
+            case Failure(e) => println(e.getMessage()); printUsage()
         }
     }
 }
