@@ -14,7 +14,7 @@ import org.apache.commons.cli.ParseException
 object Exceler {
 
     val description = """Scala CLI template"""
-    val access = """https://github.com/wak109/"""
+    val site = """https://github.com/wak109/scala_template"""
 
     def excel(filename:String) : Unit  = {
         val workbook = WorkbookFactory.create(new File(filename))
@@ -55,9 +55,9 @@ object Exceler {
 
         formatter.printHelp(
             stripClassName(this.getClass.getCanonicalName),
-            this.description,
+            "\n" + this.description + "\n\noptions:\n",
             makeOptions(),
-            this.access,
+            "\nWeb: " + this.site,
             true)
     }
 
