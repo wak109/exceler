@@ -1,3 +1,4 @@
+/* vim: set ts=4 et sw=4 sts=4 fileencoding=utf-8: */
 import scala.util.control.Exception._
 import scala.util.{Try, Success, Failure}
 
@@ -16,16 +17,6 @@ object Main {
 
     val description = """Scala CLI template"""
     val site = """https://github.com/wak109/scala_template"""
-
-    def checkOptions(cl:CommandLine) : Unit = {
-        if (cl.hasOption('h')) {
-            printUsage()
-        } else if (cl.getArgs().length == 0) {
-            printUsage()
-        } else {
-            excel(cl.getArgs()(0))
-        }
-    }
 
     def stripClassName(clsname:String):String = {
         val Pattern = """^(.*)\$$""".r
@@ -46,12 +37,6 @@ object Main {
             true)
     }
 
-    def parseCommandLine(args:Array[String]) : CommandLine = {
-        val parser = new DefaultParser()
-
-        return parser.parse(makeOptions(), args)
-    }
-
     def makeOptions() : CmdOptions = {
         val options = new CmdOptions()
         options.addOption(CmdOption.builder("h").desc("Show help").build())
@@ -59,9 +44,33 @@ object Main {
         return options
     }
 
+    def checkOptions(cl:CommandLine) : Try[CommandLine] = {
+        Try {
+            if (cl.hasOption('h')) {
+                throw new Exception("show help")
+            } else if (cl.getArgs().length == 0) {
+                throw new Exception("No file specified")
+            } else {
+                cl
+            }
+        }
+    }
+
+    def parseCommandLine(args:Array[String]) : Try[CommandLine] = {
+        Try {
+            val parser = new DefaultParser()
+            parser.parse(makeOptions(), args)
+        }
+    }
+
     def main(args:Array[String]) : Unit  = {
-        allCatch withTry { parseCommandLine(args) } match {
-            case Success(cl) => checkOptions(cl)
+        (
+            for {
+                cl <- parseCommandLine(args)
+                cl <- checkOptions(cl)
+            } yield cl
+        ) match {
+            case Success(cl) => excel(cl.getArgs()(0))
             case Failure(e) => println(e.getMessage()); printUsage()
         }
     }
