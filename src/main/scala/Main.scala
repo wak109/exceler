@@ -47,9 +47,9 @@ object Main {
     def checkOptions(cl:CommandLine) : Try[CommandLine] = {
         Try {
             if (cl.hasOption('h')) {
-                throw new Exception("show help")
-            } else if (cl.getArgs().length == 0) {
-                throw new Exception("No file specified")
+                throw new Exception("help option")
+            } else if (cl.getArgs().isEmpty) {
+                throw new Exception("No args")
             } else {
                 cl
             }
