@@ -27,9 +27,19 @@ class ExcelerSuite extends FunSuite with BeforeAndAfterEach {
     test("Create Excel Sheet") {
         val workbook = ExcelerWorkbook.create()
 
+        ExcelerWorkbook.getSheet(workbook, testSheet) match {
+            case Some(_) => assert(false)
+            case None => assert(true)
+        }
+
         ExcelerWorkbook.createSheet(workbook, testSheet) match {
             case Success(_) => assert(true)
             case Failure(e) => assert(false)
+        }
+
+        ExcelerWorkbook.getSheet(workbook, testSheet) match {
+            case Some(_) => assert(true)
+            case None => assert(false)
         }
 
         /* Can't create sheets of same name */

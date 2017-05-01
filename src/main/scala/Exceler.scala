@@ -41,16 +41,11 @@ object ExcelerWorkbook {
     }
 
     def getSheet(workbook:Workbook, name:String):Option[Sheet] = {
-        workbook.createSheet(name) match {
-            case s:Sheet => Some(s)
-            case _ => None
-        }
+        Option(workbook.getSheet(name))
     }
 
     def createSheet(workbook:Workbook, name:String):Try[Sheet] = {
-        Try {
-            workbook.createSheet(name)
-        }
+        Try(workbook.createSheet(name))
     }
 }
 
