@@ -44,15 +44,13 @@ object Main {
         return options
     }
 
-    def checkOptions(cl:CommandLine) : Try[CommandLine] = {
-        Try {
-            if (cl.hasOption('h')) {
-                throw new Exception("help option")
-            } else if (cl.getArgs().isEmpty) {
-                throw new Exception("No args")
-            } else {
-                cl
-            }
+    def checkOptions(cl:CommandLine) : Either[String,CommandLine] = {
+        if (cl.hasOption('h')) {
+            return Left("help option")
+        } else if (cl.getArgs().isEmpty) {
+            return Left("No args")
+        } else {
+            return Right(cl)
         }
     }
 
@@ -67,7 +65,7 @@ object Main {
         (
             for {
                 cl <- parseCommandLine(args)
-                cl <- checkOptions(cl)
+                cl <- checkOptions(cl).left.map(new Exception(_)).toTry
             } yield cl
         ) match {
             case Success(cl) => excel(cl.getArgs()(0))
