@@ -51,6 +51,21 @@ class ExcelerSuite extends FunSuite with BeforeAndAfterEach {
         }
     }
 
+    test("WorkbookImplicit sheet_") {
+        val workbook = ExcelerWorkbook.create()
+
+        Try(workbook.sheet_(testSheet)) match {
+            case Success(s) => assert(s.getSheetName() == testSheet)
+            case Failure(e) => assert(false)
+        }
+
+        Try(workbook.sheet_(testSheet)) match {
+            case Success(s) => assert(s.getSheetName() == testSheet)
+            case Failure(e) => assert(false)
+        }
+        assert(workbook.sheet_(testSheet) == workbook.getSheet(testSheet))
+    }
+
     test("Create Set Cell Value") {
         val workbook = ExcelerWorkbook.create()
         (

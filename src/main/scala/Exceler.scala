@@ -34,12 +34,18 @@ object ExcelImplicits {
             out.close()
         }
 
-        def getSheet_(name:String):Option[Sheet] = {
-            Option(workbook.getSheet(name))
-        }
+        def getSheet_(name:String):Option[Sheet] = Option(workbook.getSheet(name))
 
-        def createSheet_(name:String):Try[Sheet] = {
-            Try(workbook.createSheet(name))
+        def createSheet_(name:String):Try[Sheet] = Try(workbook.createSheet(name)) 
+
+        def sheet_(name:String):Sheet = {
+            this.getSheet_(name) match {
+                case Some(s) => s
+                case None => this.createSheet_(name) match {
+                    case Success(s) => s
+                    case Failure(e) => throw e
+                }
+            }
         }
     }
 
