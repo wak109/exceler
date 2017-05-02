@@ -11,7 +11,6 @@ import org.apache.commons.cli.{Option => CmdOption}
 import org.apache.commons.cli.{Options => CmdOptions}
 import org.apache.commons.cli.ParseException
 
-import Exceler._
 
 object Main {
 
@@ -47,8 +46,8 @@ object Main {
     def checkOptions(cl:CommandLine) : Either[String,CommandLine] = {
         if (cl.hasOption('h')) {
             return Left("help option")
-        } else if (cl.getArgs().isEmpty) {
-            return Left("No args")
+        } else if (cl.getArgs.isEmpty) {
+            return Left("No Command")
         } else {
             return Right(cl)
         }
@@ -68,7 +67,11 @@ object Main {
                 cl <- checkOptions(cl).left.map(new Exception(_)).toTry
             } yield cl
         ) match {
-            case Success(cl) => excel(cl.getArgs()(0))
+            case Success(cl) => {
+                cl.getArgs()(0) match {
+                    case _ => printUsage()
+                }
+            }
             case Failure(e) => println(e.getMessage()); printUsage()
         }
     }

@@ -72,21 +72,3 @@ object ExcelerWorkbook {
 
     def create(): Workbook = new XSSFWorkbook()
 }
-
-
-object Exceler {
-
-    import ExcelImplicits._
-
-    def excel(filename:String) : Unit  = {
-        // val workbook = WorkbookFactory.create(new File(filename))
-        val workbook = ExcelerWorkbook.open(filename)
-        val sheet = workbook.getSheet("test")
-        val row = sheet.getRow(0)
-        val cell = row.getCell(0)
-        val value = cell.getValue_.toString
-        println(value)
-        workbook.saveAs_("test2.xlsx")
-    }
-}
-
