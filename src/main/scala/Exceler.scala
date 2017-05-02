@@ -177,6 +177,58 @@ object ExcelImplicits {
                 case Failure(e) => Stream.empty
             })
         }
+
+        def isOuterBottom_():Boolean = {
+            val cellStyle = cell.getCellStyle
+            val lowerCellStyle:Option[CellStyle] = cell.getLowerCell_.map(_.getCellStyle)
+
+            (cellStyle.getBorderBottomEnum != BorderStyle.NONE) &&
+            (lowerCellStyle match {
+                case Some(style) =>
+                    (style.getBorderRightEnum == BorderStyle.NONE) &&
+                    (style.getBorderLeftEnum == BorderStyle.NONE)
+                case None => true
+            })
+        }
+
+        def isOuterTop_():Boolean = {
+            val cellStyle = cell.getCellStyle
+            val upperCellStyle = cell.getUpperCell_.map(_.getCellStyle)
+
+            (cell.getRowIndex == 1 || cellStyle.getBorderTopEnum != BorderStyle.NONE) &&
+            (upperCellStyle match {
+                case Some(style) =>
+                    (style.getBorderRightEnum == BorderStyle.NONE) &&
+                    (style.getBorderLeftEnum == BorderStyle.NONE)
+                case None => true
+            })
+        }
+
+        def isOuterRight_():Boolean = {
+            val cellStyle = cell.getCellStyle
+            val rightCellStyle = cell.getRightCell_.map(_.getCellStyle)
+
+            (cellStyle.getBorderRightEnum != BorderStyle.NONE) &&
+            (rightCellStyle match {
+                case Some(style) =>
+                    (style.getBorderTopEnum == BorderStyle.NONE) &&
+                    (style.getBorderBottomEnum == BorderStyle.NONE)
+                case None => true
+            })
+        }
+
+        def isOuterLeft_():Boolean = {
+            val cellStyle = cell.getCellStyle
+            val leftCellStyle = cell.getLeftCell_.map(_.getCellStyle)
+
+            (cell.getColumnIndex == 1 || cellStyle.getBorderLeftEnum != BorderStyle.NONE) &&
+            (leftCellStyle match {
+                case Some(style) =>
+                    (style.getBorderTopEnum == BorderStyle.NONE) &&
+                    (style.getBorderBottomEnum == BorderStyle.NONE)
+                case None => true
+            })
+        }
     }
 }
 

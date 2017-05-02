@@ -2,6 +2,8 @@
 import scala.util.{Try, Success, Failure}
 import org.scalatest._
 
+import org.apache.poi.ss.usermodel._
+
 import java.nio.file.{Paths, Files}
 
 import ExcelImplicits._
@@ -185,5 +187,34 @@ class ExcelerSuite extends FunSuite with BeforeAndAfterEach {
         assert(cell.getLowerStream_.take(10).toList.length == 10)
         assert(cell.getLeftStream_.take(10).toList.length == 5)
         assert(cell.getRightStream_.take(10).toList.length == 10)
+    }
+
+    test("CellImplict Border") {
+        val workbook = ExcelerWorkbook.create()
+
+        val sheet = workbook.sheet_(testSheet)
+        val cell = sheet.cell_(5, 5)
+
+        cell.setCellValue("Hello, world")
+
+        var style = workbook.createCellStyle
+        style.cloneStyleFrom(cell.lowerCell_.getCellStyle)
+        style.setBorderTop(BorderStyle.NONE)
+        style.setBorderLeft(BorderStyle.NONE)
+        style.setBorderRight(BorderStyle.THIN)
+        style.setBorderBottom(BorderStyle.THIN)
+
+        cell.setCellStyle(style)
+
+        assert(cell.isOuterBottom_)
+        assert(cell.isOuterRight_)
+
+        assert(cell.getCellStyle.getBorderBottomEnum == BorderStyle.THIN)
+        assert(cell.lowerCell_.getCellStyle.getBorderTopEnum == BorderStyle.NONE)
+        assert(cell.isOuterBottom_)
+
+        assert(cell.getCellStyle.getBorderRightEnum == BorderStyle.THIN)
+        assert(cell.rightCell_.getCellStyle.getBorderLeftEnum == BorderStyle.NONE)
+        assert(cell.isOuterRight_)
     }
 }
