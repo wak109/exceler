@@ -77,10 +77,10 @@ class ExcelerSuite extends FunSuite with BeforeAndAfterEach {
                 cell = row.getCell(0)
             } yield cell
         ) match {
-            case Some(cell) => {
+            case Success(cell) => {
                 assert(cell.getValue_ == testMessage)
             }
-            case None => assert(false)
+            case Failure(e) => assert(false)
         }
     }
 }

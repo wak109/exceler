@@ -23,47 +23,54 @@ object FileOp {
     }
 }
 
+object ExcelImplicits {
+
+    implicit class WorkbookImplicit(workbook:Workbook)  {
+
+        def saveAs_(filename:String): Unit =  {
+            FileOp.createDirectories(filename)
+            val out = new FileOutputStream(filename)
+            workbook.write(out)
+            out.close()
+        }
+
+        def getSheet_(name:String):Option[Sheet] = {
+            Option(workbook.getSheet(name))
+        }
+
+        def createSheet_(name:String):Try[Sheet] = {
+            Try(workbook.createSheet(name))
+        }
+    }
+
+    implicit class CellImplicit(cell:Cell) {
+
+        def getValue_():Any = {
+            cell.getCellType match {
+                case Cell.CELL_TYPE_BLANK => cell.getStringCellValue
+                case Cell.CELL_TYPE_BOOLEAN => cell.getBooleanCellValue
+                case Cell.CELL_TYPE_ERROR => cell.getErrorCellValue
+                case Cell.CELL_TYPE_FORMULA => cell.getCellFormula
+                case Cell.CELL_TYPE_NUMERIC => cell.getNumericCellValue
+                case Cell.CELL_TYPE_STRING => cell.getStringCellValue
+            }
+        }
+    }
+}
+
 object ExcelerWorkbook {
 
     def open(filename:String): Workbook =  {
         WorkbookFactory.create(new File(filename))
     }
 
-    def create(): Workbook =  {
-        new XSSFWorkbook()
-    }
-
-    def saveAs(workbook:Workbook, filename:String): Unit =  {
-        FileOp.createDirectories(filename)
-        val out = new FileOutputStream(filename)
-        workbook.write(out)
-        out.close()
-    }
-
-    def getSheet(workbook:Workbook, name:String):Option[Sheet] = {
-        Option(workbook.getSheet(name))
-    }
-
-    def createSheet(workbook:Workbook, name:String):Try[Sheet] = {
-        Try(workbook.createSheet(name))
-    }
+    def create(): Workbook = new XSSFWorkbook()
 }
 
-object ExcelerCell {
-    
-    def getValue(cell:Cell):Any = {
-        cell.getCellType match {
-            case Cell.CELL_TYPE_BLANK => cell.getStringCellValue
-            case Cell.CELL_TYPE_BOOLEAN => cell.getBooleanCellValue
-            case Cell.CELL_TYPE_ERROR => cell.getErrorCellValue
-            case Cell.CELL_TYPE_FORMULA => cell.getCellFormula
-            case Cell.CELL_TYPE_NUMERIC => cell.getNumericCellValue
-            case Cell.CELL_TYPE_STRING => cell.getStringCellValue
-        }
-    }
-}
 
 object Exceler {
+
+    import ExcelImplicits._
 
     def excel(filename:String) : Unit  = {
         // val workbook = WorkbookFactory.create(new File(filename))
@@ -71,9 +78,9 @@ object Exceler {
         val sheet = workbook.getSheet("test")
         val row = sheet.getRow(0)
         val cell = row.getCell(0)
-        val value:String = ExcelerCell.getValue(cell).toString
+        val value = cell.getValue_.toString
         println(value)
-        ExcelerWorkbook.saveAs(workbook, "test2.xlsx")
+        workbook.saveAs_("test2.xlsx")
     }
 }
 
