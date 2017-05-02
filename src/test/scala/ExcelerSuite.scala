@@ -66,6 +66,55 @@ class ExcelerSuite extends FunSuite with BeforeAndAfterEach {
         assert(workbook.sheet_(testSheet) == workbook.getSheet(testSheet))
     }
 
+    test("SheetImplicit") {
+        val workbook = ExcelerWorkbook.create()
+        val sheet = workbook.sheet_(testSheet)
+
+        sheet.getRow_(0) match {
+            case Some(r) => assert(false)
+            case None => assert(true)
+        }
+
+        val row = sheet.row_(0)
+
+        sheet.getRow_(0) match {
+            case Some(r) => assert(true)
+            case None => assert(false)
+        }
+    }
+
+    test("SheetImplicit getCell_") {
+        val sheet = ExcelerWorkbook.create().sheet_(testSheet)
+
+        sheet.getCell_(0, 0) match {
+            case Some(c) => assert(false)
+            case None => assert(true)
+        }
+
+        val cell = sheet.cell_(0, 0)
+
+        sheet.getCell_(0, 0) match {
+            case Some(c) => assert(true)
+            case None => assert(false)
+        }
+    }
+
+    test("RowImplicit") {
+        val row = ExcelerWorkbook.create().sheet_(testSheet).row_(100)
+        
+        row.getCell_(100) match {
+            case Some(c) => assert(false)
+            case None => assert(true)
+        }
+
+        val cell = row.cell_(100)
+
+        row.getCell_(100) match {
+            case Some(c) => assert(true)
+            case None => assert(false)
+        }
+    }
+
     test("Create Set Cell Value") {
         val workbook = ExcelerWorkbook.create()
         (
@@ -97,5 +146,44 @@ class ExcelerSuite extends FunSuite with BeforeAndAfterEach {
             }
             case None => assert(false)
         }
+    }
+
+    test("CellImplicit uppper lower left right") {
+        val cell = ExcelerWorkbook.create().sheet_(testSheet).cell_(100, 100)
+
+        assert(cell.getUpperCell_.isEmpty)
+        assert(cell.getLowerCell_.isEmpty)
+        assert(cell.getLeftCell_.isEmpty)
+        assert(cell.getRightCell_.isEmpty)
+
+        cell.upperCell_
+        cell.lowerCell_
+        cell.leftCell_
+        cell.rightCell_
+
+        assert(!cell.getUpperCell_.isEmpty)
+        assert(!cell.getLowerCell_.isEmpty)
+        assert(!cell.getLeftCell_.isEmpty)
+        assert(!cell.getRightCell_.isEmpty)
+
+    }
+
+    test("CellImplicit Stream uppper lower left right ") {
+        val cell = ExcelerWorkbook.create().sheet_(testSheet).cell_(4, 4)
+
+        assert(cell.getUpperStream_.take(10).toList.length == 1)
+        assert(cell.getLowerStream_.take(10).toList.length == 1)
+        assert(cell.getLeftStream_.take(10).toList.length == 1)
+        assert(cell.getRightStream_.take(10).toList.length == 1)
+
+        assert(cell.upperStream_.take(10).toList.length == 5)
+        assert(cell.lowerStream_.take(10).toList.length == 10)
+        assert(cell.leftStream_.take(10).toList.length == 5)
+        assert(cell.rightStream_.take(10).toList.length == 10)
+
+        assert(cell.getUpperStream_.take(10).toList.length == 5)
+        assert(cell.getLowerStream_.take(10).toList.length == 10)
+        assert(cell.getLeftStream_.take(10).toList.length == 5)
+        assert(cell.getRightStream_.take(10).toList.length == 10)
     }
 }
