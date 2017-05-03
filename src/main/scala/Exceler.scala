@@ -25,6 +25,30 @@ object FileOp {
 
 object ExcelImplicits {
 
+        //
+        // BorderTop
+        // BorderBottom
+        // BorderLeft
+        // BorderRight
+        // Foreground Color
+        // Background Color
+        // FillPatten
+        // Horizontal Alignment
+        // Vertical Alignment
+        // Wrap Text
+        //
+    type CellStyleTuple = (
+            BorderStyle, 
+            BorderStyle,
+            BorderStyle,
+            BorderStyle,
+            Color,
+            Color,
+            FillPatternType,
+            HorizontalAlignment,
+            VerticalAlignment,
+            Boolean)
+
     implicit class WorkbookImplicit(workbook:Workbook)  {
 
         def saveAs_(filename:String): Unit =  {
@@ -47,6 +71,14 @@ object ExcelImplicits {
                 }
             }
         }
+
+        def findCellStyle_(tuple:CellStyleTuple):Option[CellStyle] = (
+            for {
+                i <- (0 until workbook.getNumCellStyles).toStream
+                val cellStyle = workbook.getCellStyleAt(i)
+                if cellStyle.toTuple_ == tuple
+                } yield cellStyle
+        ).headOption
     }
 
     implicit class SheetImplicit(sheet:Sheet) {
@@ -178,6 +210,104 @@ object ExcelImplicits {
             })
         }
 
+        def setBorderTop_(borderStyle:BorderStyle):Unit = {
+            val cellStyle = cell.getCellStyle
+            val t = cellStyle.toTuple_
+            val newTuple = (borderStyle, t._2, t._3, t._4, t._5, t._6, t._7, t._8, t._9, t._10)
+            val workbook = cell.getSheet.getWorkbook
+
+            workbook.findCellStyle_(newTuple) match {
+                case Some(s) => cell.setCellStyle(s)
+                case None => {
+                    val newStyle = workbook.createCellStyle
+                    newStyle.setBorderTop(borderStyle)
+                    cell.setCellStyle(newStyle)
+                }
+            }
+        }
+
+        def setBorderBottom_(borderStyle:BorderStyle):Unit = {
+            val cellStyle = cell.getCellStyle
+            val t = cellStyle.toTuple_
+            val newTuple = (t._1, borderStyle, t._3, t._4, t._5, t._6, t._7, t._8, t._9, t._10)
+            val workbook = cell.getSheet.getWorkbook
+
+            workbook.findCellStyle_(newTuple) match {
+                case Some(s) => cell.setCellStyle(s)
+                case None => {
+                    val newStyle = workbook.createCellStyle
+                    newStyle.setBorderBottom(borderStyle)
+                    cell.setCellStyle(newStyle)
+                }
+            }
+        }
+
+        def setBorderLeft_(borderStyle:BorderStyle):Unit = {
+            val cellStyle = cell.getCellStyle
+            val t = cellStyle.toTuple_
+            val newTuple = (t._1, t._2, borderStyle, t._4, t._5, t._6, t._7, t._8, t._9, t._10)
+            val workbook = cell.getSheet.getWorkbook
+
+            workbook.findCellStyle_(newTuple) match {
+                case Some(s) => cell.setCellStyle(s)
+                case None => {
+                    val newStyle = workbook.createCellStyle
+                    newStyle.setBorderLeft(borderStyle)
+                    cell.setCellStyle(newStyle)
+                }
+            }
+        }
+
+        def setBorderRight_(borderStyle:BorderStyle):Unit = {
+            val cellStyle = cell.getCellStyle
+            val t = cellStyle.toTuple_
+            val newTuple = (t._1, t._2, t._3, borderStyle, t._5, t._6, t._7, t._8, t._9, t._10)
+            val workbook = cell.getSheet.getWorkbook
+
+            workbook.findCellStyle_(newTuple) match {
+                case Some(s) => cell.setCellStyle(s)
+                case None => {
+                    val newStyle = workbook.createCellStyle
+                    newStyle.setBorderRight(borderStyle)
+                    cell.setCellStyle(newStyle)
+                }
+            }
+        }
+
+        def hasBorderBottom_():Boolean = {
+            (cell.getCellStyle.getBorderBottomEnum != BorderStyle.NONE) ||
+                (cell.getLowerCell_.map(_.getCellStyle.getBorderTopEnum != BorderStyle.NONE) match {
+                    case Some(b) => b
+                    case None => false
+                })
+        }
+
+        def hasBorderTop_():Boolean = {
+            (cell.getRowIndex == 0) ||
+            (cell.getCellStyle.getBorderTopEnum != BorderStyle.NONE) ||
+                (cell.getUpperCell_.map(_.getCellStyle.getBorderBottomEnum != BorderStyle.NONE) match {
+                    case Some(b) => b
+                    case None => false
+                })
+        }
+
+        def hasBorderRight_():Boolean = {
+            (cell.getCellStyle.getBorderRightEnum != BorderStyle.NONE) ||
+                (cell.getRightCell_.map(_.getCellStyle.getBorderLeftEnum != BorderStyle.NONE) match {
+                    case Some(b) => b
+                    case None => false
+                })
+        }
+
+        def hasBorderLeft_():Boolean = {
+            (cell.getColumnIndex == 0) ||
+            (cell.getCellStyle.getBorderLeftEnum != BorderStyle.NONE) ||
+                (cell.getLeftCell_.map(_.getCellStyle.getBorderRightEnum != BorderStyle.NONE) match {
+                    case Some(b) => b
+                    case None => false
+                })
+        }
+
         def isOuterBottom_():Boolean = {
             val cellStyle = cell.getCellStyle
             val lowerCellStyle:Option[CellStyle] = cell.getLowerCell_.map(_.getCellStyle)
@@ -229,6 +359,31 @@ object ExcelImplicits {
                 case None => true
             })
         }
+    }
+
+    implicit class CellStyleImplicit(cellStyle:CellStyle) {
+
+        def toTuple_():(
+            BorderStyle, 
+            BorderStyle,
+            BorderStyle,
+            BorderStyle,
+            Color,
+            Color,
+            FillPatternType,
+            HorizontalAlignment,
+            VerticalAlignment,
+            Boolean) = (
+                cellStyle.getBorderTopEnum,
+                cellStyle.getBorderBottomEnum,
+                cellStyle.getBorderLeftEnum,
+                cellStyle.getBorderRightEnum,
+                cellStyle.getFillForegroundColorColor,
+                cellStyle.getFillBackgroundColorColor,
+                cellStyle.getFillPatternEnum,
+                cellStyle.getAlignmentEnum,
+                cellStyle.getVerticalAlignmentEnum,
+                cellStyle.getWrapText)
     }
 }
 

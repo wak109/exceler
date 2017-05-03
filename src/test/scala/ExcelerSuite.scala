@@ -10,11 +10,14 @@ import ExcelImplicits._
 
 class ExcelerSuite extends FunSuite with BeforeAndAfterEach {
   
-    val testFile = "testFile.xlsx"
+    var testFile = "testFile.xlsx"
+    var count = 0
     val testSheet = "testSheet"
     val testMessage = "Hello, world"
 
     override def beforeEach() {
+        count += 1
+        testFile = "testFile" + count + ".xlsx"
         Files.deleteIfExists(Paths.get(testFile))
     }
     
@@ -189,9 +192,84 @@ class ExcelerSuite extends FunSuite with BeforeAndAfterEach {
         assert(cell.getRightStream_.take(10).toList.length == 10)
     }
 
+    test("CellImplict hasBorderBottom") {
+        val workbook = ExcelerWorkbook.create()
+        val sheet = workbook.sheet_(testSheet)
+        val cell = sheet.cell_(5, 5)
+        var style = workbook.createCellStyle
+
+        assert(! cell.hasBorderBottom_)
+
+        cell.setBorderBottom_(BorderStyle.THIN)
+        assert(cell.hasBorderBottom_)
+
+        cell.setBorderBottom_(BorderStyle.NONE)
+        assert(! cell.hasBorderBottom_)
+
+        cell.lowerCell_.setBorderTop_(BorderStyle.THIN)
+        assert(cell.hasBorderBottom_)
+    }
+
+    test("CellImplict hasBorderTop") {
+        val workbook = ExcelerWorkbook.create()
+        val sheet = workbook.sheet_(testSheet)
+        val cell = sheet.cell_(5, 5)
+        var style = workbook.createCellStyle
+
+        assert(! cell.hasBorderTop_)
+
+        cell.setBorderTop_(BorderStyle.THIN)
+        assert(cell.hasBorderTop_)
+
+        cell.setBorderTop_(BorderStyle.NONE)
+        assert(! cell.hasBorderTop_)
+
+        cell.upperCell_.setBorderBottom_(BorderStyle.THIN)
+        assert(cell.hasBorderTop_)
+
+        assert(sheet.cell_(0,5).hasBorderTop_)
+    }
+
+    test("CellImplict hasBorderLeft") {
+        val workbook = ExcelerWorkbook.create()
+        val sheet = workbook.sheet_(testSheet)
+        val cell = sheet.cell_(5, 5)
+        var style = workbook.createCellStyle
+
+        assert(! cell.hasBorderLeft_)
+
+        cell.setBorderLeft_(BorderStyle.THIN)
+        assert(cell.hasBorderLeft_)
+
+        cell.setBorderLeft_(BorderStyle.NONE)
+        assert(! cell.hasBorderLeft_)
+
+        cell.leftCell_.setBorderRight_(BorderStyle.THIN)
+        assert(cell.hasBorderLeft_)
+
+        assert(sheet.cell_(5,0).hasBorderLeft_)
+    }
+
+    test("CellImplict hasBorderRight") {
+        val workbook = ExcelerWorkbook.create()
+        val sheet = workbook.sheet_(testSheet)
+        val cell = sheet.cell_(5, 5)
+        var style = workbook.createCellStyle
+
+        assert(! cell.hasBorderRight_)
+
+        cell.setBorderRight_(BorderStyle.THIN)
+        assert(cell.hasBorderRight_)
+
+        cell.setBorderRight_(BorderStyle.NONE)
+        assert(! cell.hasBorderRight_)
+
+        cell.rightCell_.setBorderLeft_(BorderStyle.THIN)
+        assert(cell.hasBorderRight_)
+    }
+
     test("CellImplict Border") {
         val workbook = ExcelerWorkbook.create()
-
         val sheet = workbook.sheet_(testSheet)
         val cell = sheet.cell_(5, 5)
 
@@ -216,5 +294,27 @@ class ExcelerSuite extends FunSuite with BeforeAndAfterEach {
         assert(cell.getCellStyle.getBorderRightEnum == BorderStyle.THIN)
         assert(cell.rightCell_.getCellStyle.getBorderLeftEnum == BorderStyle.NONE)
         assert(cell.isOuterRight_)
+    }
+
+    test("Workbook.findCellStyle_") {
+        val workbook = ExcelerWorkbook.create()
+        val cellStyle = workbook.sheet_(testSheet).cell_(5, 5).getCellStyle
+        val tuple = cellStyle.toTuple_
+
+        assert(workbook.findCellStyle_(tuple).nonEmpty)
+
+        assert(workbook.findCellStyle_(
+            (tuple._1, tuple._2, tuple._3, BorderStyle.THIN, tuple._5,
+            tuple._6, tuple._7, tuple._8, tuple._9, tuple._10)
+            ).isEmpty)
+
+        var newStyle = workbook.createCellStyle
+        newStyle.cloneStyleFrom(cellStyle)
+        newStyle.setBorderRight(BorderStyle.THIN)
+
+        assert(workbook.findCellStyle_(
+            (tuple._1, tuple._2, tuple._3, BorderStyle.THIN, tuple._5,
+            tuple._6, tuple._7, tuple._8, tuple._9, tuple._10)
+            ).nonEmpty)
     }
 }
