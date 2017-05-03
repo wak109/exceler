@@ -7,6 +7,7 @@ import org.apache.poi.ss.usermodel._
 import java.nio.file.{Paths, Files}
 
 import ExcelImplicits._
+import ExcelTable._
 
 class ExcelerSuite extends FunSuite with BeforeAndAfterEach {
   
@@ -320,4 +321,65 @@ class ExcelerSuite extends FunSuite with BeforeAndAfterEach {
         assert(cell.isOuterBorderRight_)
     }
 
+    test("Cell.findTopRightFromBottomRight") {
+        val sheet = ExcelerWorkbook.create().sheet_(testSheet)
+        val topRight = sheet.cell_(5, 10)
+        val bottomRight = sheet.cell_(10, 10)
+
+        for {i <- (5 to 10)
+                cell = sheet.cell_(i, 10)
+        } cell.setBorderRight_(BorderStyle.THIN)
+
+        topRight.setBorderTop_(BorderStyle.THIN)
+        bottomRight.setBorderBottom_(BorderStyle.THIN)
+
+        findTopRightFromBottomRight(bottomRight) match {
+            case Some(c) => assert(c == topRight)
+            case None => assert(false)
+        }
+    }
+
+    test("Cell.findBottomLeftFromBottomRight") {
+        val sheet = ExcelerWorkbook.create().sheet_(testSheet)
+        val bottomLeft = sheet.cell_(10, 5)
+        val bottomRight = sheet.cell_(10, 10)
+
+        for {i <- (5 to 10)
+                cell = sheet.cell_(10, i)
+        } cell.setBorderBottom_(BorderStyle.THIN)
+
+        bottomLeft.setBorderLeft_(BorderStyle.THIN)
+        bottomRight.setBorderRight_(BorderStyle.THIN)
+
+        findBottomLeftFromBottomRight(bottomRight) match {
+            case Some(c) => assert(c == bottomLeft)
+            case None => assert(false)
+        }
+    }
+
+    test("Cell.findTopLeftFromBottomRight") {
+        val workbook = ExcelerWorkbook.create()
+        val sheet = workbook.sheet_(testSheet)
+        val topRight = sheet.cell_(5, 10)
+        val bottomLeft = sheet.cell_(10, 5)
+        val bottomRight = sheet.cell_(10, 10)
+
+        for {i <- (5 to 10)
+                cell = sheet.cell_(10, i)
+        } cell.setBorderBottom_(BorderStyle.THIN)
+
+        for {i <- (5 to 10)
+                cell = sheet.cell_(i, 10)
+        } cell.setBorderRight_(BorderStyle.THIN)
+
+        bottomLeft.setBorderLeft_(BorderStyle.THIN)
+        topRight.setBorderTop_(BorderStyle.THIN)
+
+        findTopLeftFromBottomRight(bottomRight) match {
+            case Some(c) => assert(c.getRowIndex == 5 && c.getColumnIndex == 5)
+            case None => assert(false)
+        }
+
+        workbook.saveAs_("hehe.xlsx")
+    }
 }

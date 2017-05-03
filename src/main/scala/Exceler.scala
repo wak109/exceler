@@ -222,7 +222,8 @@ object ExcelImplicits {
         def setBorderTop_(borderStyle:BorderStyle):Unit = {
             val cellStyle = cell.getCellStyle
             val t = cellStyle.toTuple_
-            val newTuple = (borderStyle, t._2, t._3, t._4, t._5, t._6, t._7, t._8, t._9, t._10)
+            val newTuple = (borderStyle, t._2, t._3, t._4, t._5,
+                t._6, t._7, t._8, t._9, t._10)
             val workbook = cell.getSheet.getWorkbook
 
             workbook.findCellStyle_(newTuple) match {
@@ -239,7 +240,8 @@ object ExcelImplicits {
         def setBorderBottom_(borderStyle:BorderStyle):Unit = {
             val cellStyle = cell.getCellStyle
             val t = cellStyle.toTuple_
-            val newTuple = (t._1, borderStyle, t._3, t._4, t._5, t._6, t._7, t._8, t._9, t._10)
+            val newTuple = (t._1, borderStyle, t._3, t._4, t._5,
+                t._6, t._7, t._8, t._9, t._10)
             val workbook = cell.getSheet.getWorkbook
 
             workbook.findCellStyle_(newTuple) match {
@@ -256,7 +258,8 @@ object ExcelImplicits {
         def setBorderLeft_(borderStyle:BorderStyle):Unit = {
             val cellStyle = cell.getCellStyle
             val t = cellStyle.toTuple_
-            val newTuple = (t._1, t._2, borderStyle, t._4, t._5, t._6, t._7, t._8, t._9, t._10)
+            val newTuple = (t._1, t._2, borderStyle, t._4, t._5,
+                t._6, t._7, t._8, t._9, t._10)
             val workbook = cell.getSheet.getWorkbook
 
             workbook.findCellStyle_(newTuple) match {
@@ -273,7 +276,8 @@ object ExcelImplicits {
         def setBorderRight_(borderStyle:BorderStyle):Unit = {
             val cellStyle = cell.getCellStyle
             val t = cellStyle.toTuple_
-            val newTuple = (t._1, t._2, t._3, borderStyle, t._5, t._6, t._7, t._8, t._9, t._10)
+            val newTuple = (t._1, t._2, t._3, borderStyle,
+                t._5, t._6, t._7, t._8, t._9, t._10)
             val workbook = cell.getSheet.getWorkbook
 
             workbook.findCellStyle_(newTuple) match {
@@ -292,7 +296,9 @@ object ExcelImplicits {
         //
         def hasBorderBottom_():Boolean = {
             (cell.getCellStyle.getBorderBottomEnum != BorderStyle.NONE) ||
-                (cell.getLowerCell_.map(_.getCellStyle.getBorderTopEnum != BorderStyle.NONE) match {
+                (cell.getLowerCell_.map(
+                    _.getCellStyle.getBorderTopEnum != BorderStyle.NONE)
+                match {
                     case Some(b) => b
                     case None => false
                 })
@@ -301,7 +307,9 @@ object ExcelImplicits {
         def hasBorderTop_():Boolean = {
             (cell.getRowIndex == 0) ||
             (cell.getCellStyle.getBorderTopEnum != BorderStyle.NONE) ||
-                (cell.getUpperCell_.map(_.getCellStyle.getBorderBottomEnum != BorderStyle.NONE) match {
+                (cell.getUpperCell_.map(
+                    _.getCellStyle.getBorderBottomEnum != BorderStyle.NONE)
+                match {
                     case Some(b) => b
                     case None => false
                 })
@@ -309,7 +317,9 @@ object ExcelImplicits {
 
         def hasBorderRight_():Boolean = {
             (cell.getCellStyle.getBorderRightEnum != BorderStyle.NONE) ||
-                (cell.getRightCell_.map(_.getCellStyle.getBorderLeftEnum != BorderStyle.NONE) match {
+                (cell.getRightCell_.map(
+                    _.getCellStyle.getBorderLeftEnum != BorderStyle.NONE)
+                match {
                     case Some(b) => b
                     case None => false
                 })
@@ -318,7 +328,9 @@ object ExcelImplicits {
         def hasBorderLeft_():Boolean = {
             (cell.getColumnIndex == 0) ||
             (cell.getCellStyle.getBorderLeftEnum != BorderStyle.NONE) ||
-                (cell.getLeftCell_.map(_.getCellStyle.getBorderRightEnum != BorderStyle.NONE) match {
+                (cell.getLeftCell_.map(
+                    _.getCellStyle.getBorderRightEnum != BorderStyle.NONE)
+                match {
                     case Some(b) => b
                     case None => false
                 })
@@ -410,4 +422,36 @@ object ExcelerWorkbook {
     }
 
     def create(): Workbook = new XSSFWorkbook()
+}
+
+object ExcelTable {
+
+    import ExcelImplicits._
+
+    ////////////////////////////////////////////////////////////////
+    // Function
+    //
+    def findTopRightFromBottomRight(cell:Cell):Option[Cell] = (
+        for {
+            c <- cell.getUpperStream_
+            if c.hasBorderTop_ && c.hasBorderRight_
+        } yield c
+    ).headOption
+
+    def findBottomLeftFromBottomRight(cell:Cell):Option[Cell] = (
+        for {
+            c <- cell.getLeftStream_
+            if c.hasBorderBottom_ && c.hasBorderLeft_
+        } yield c
+    ).headOption
+
+    def findTopLeftFromBottomRight(cell:Cell):Option[Cell] = {
+        (findTopRightFromBottomRight(cell), 
+                findBottomLeftFromBottomRight(cell)) match {
+            case (Some(topRight), Some(bottomLeft)) =>
+                Some(cell.getSheet.cell_(
+                    topRight.getRowIndex, bottomLeft.getColumnIndex))
+            case _ => None
+        }
+    }
 }
