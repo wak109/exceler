@@ -207,10 +207,10 @@ class ExcelerSuite extends FunSuite with BeforeAndAfterEach {
     test("Cell.getUpperStream_ etc") {
         val cell = ExcelerWorkbook.create().sheet_(testSheet).cell_(4, 4)
 
-        assert(cell.getUpperStream_.take(10).toList.length == 1)
-        assert(cell.getLowerStream_.take(10).toList.length == 1)
-        assert(cell.getLeftStream_.take(10).toList.length == 1)
-        assert(cell.getRightStream_.take(10).toList.length == 1)
+        assert(cell.getUpperStream_.take(10).toList.length == 5)
+        assert(cell.getLowerStream_.take(10).toList.length == 10)
+        assert(cell.getLeftStream_.take(10).toList.length == 5)
+        assert(cell.getRightStream_.take(10).toList.length == 10)
 
         assert(cell.upperStream_.take(10).toList.length == 5)
         assert(cell.lowerStream_.take(10).toList.length == 10)
@@ -363,7 +363,7 @@ class ExcelerSuite extends FunSuite with BeforeAndAfterEach {
         val topRight = sheet.cell_(5, 10)
         val bottomLeft = sheet.cell_(10, 5)
         val bottomRight = sheet.cell_(10, 10)
-
+/*
         for {i <- (5 to 10)
                 cell = sheet.cell_(10, i)
         } cell.setBorderBottom_(BorderStyle.THIN)
@@ -371,9 +371,11 @@ class ExcelerSuite extends FunSuite with BeforeAndAfterEach {
         for {i <- (5 to 10)
                 cell = sheet.cell_(i, 10)
         } cell.setBorderRight_(BorderStyle.THIN)
-
+*/
         bottomLeft.setBorderLeft_(BorderStyle.THIN)
+        bottomLeft.setBorderBottom_(BorderStyle.THIN)
         topRight.setBorderTop_(BorderStyle.THIN)
+        topRight.setBorderRight_(BorderStyle.THIN)
 
         findTopLeftFromBottomRight(bottomRight) match {
             case Some(c) => assert(c.getRowIndex == 5 && c.getColumnIndex == 5)

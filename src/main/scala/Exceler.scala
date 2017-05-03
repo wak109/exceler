@@ -23,6 +23,15 @@ object FileOp {
     }
 }
 
+object ExcelerWorkbook {
+
+    def open(filename:String): Workbook =  {
+        WorkbookFactory.create(new File(filename))
+    }
+
+    def create(): Workbook = new XSSFWorkbook()
+}
+
 object ExcelImplicits {
 
         //
@@ -157,32 +166,38 @@ object ExcelImplicits {
         ////////////////////////////////////////////////////////////////
         // Cell Stream (Reader)
         //
-        def getUpperStream_():Stream[Cell] = {
-            Stream.cons(cell, cell.getUpperCell_ match {
-                case Some(next) => next.getUpperStream_
-                case None => Stream.empty
-            })
+        def getUpperStream_():Stream[Option[Cell]] = {
+            def inner(sheet:Sheet, rownum:Int, colnum:Int):Stream[Option[Cell]] =
+                Stream.cons(sheet.getCell_(rownum, colnum),
+                    if (rownum > 0)
+                        inner(sheet, rownum - 1, colnum)
+                    else
+                        Stream.empty
+                    )
+            inner(cell.getSheet, cell.getRowIndex, cell.getColumnIndex)
         }
 
-        def getLowerStream_():Stream[Cell] = {
-            Stream.cons(cell, cell.getLowerCell_ match {
-                case Some(next) => next.getLowerStream_
-                case None => Stream.empty
-            })
+        def getLowerStream_():Stream[Option[Cell]] = {
+            def inner(sheet:Sheet, rownum:Int, colnum:Int):Stream[Option[Cell]] =
+                Stream.cons(sheet.getCell_(rownum, colnum), inner(sheet, rownum + 1, colnum))
+            inner(cell.getSheet, cell.getRowIndex, cell.getColumnIndex)
         }
 
-        def getLeftStream_():Stream[Cell] = {
-            Stream.cons(cell, cell.getLeftCell_ match {
-                case Some(next) => next.getLeftStream_
-                case None => Stream.empty
-            })
+        def getLeftStream_():Stream[Option[Cell]] = {
+            def inner(sheet:Sheet, rownum:Int, colnum:Int):Stream[Option[Cell]] =
+                Stream.cons(sheet.getCell_(rownum, colnum),
+                    if (colnum > 0)
+                        inner(sheet, rownum, colnum - 1)
+                    else
+                        Stream.empty
+                    )
+            inner(cell.getSheet, cell.getRowIndex, cell.getColumnIndex)
         }
 
-        def getRightStream_():Stream[Cell] = {
-            Stream.cons(cell, cell.getRightCell_ match {
-                case Some(next) => next.getRightStream_
-                case None => Stream.empty
-            })
+        def getRightStream_():Stream[Option[Cell]] = {
+            def inner(sheet:Sheet, rownum:Int, colnum:Int):Stream[Option[Cell]] =
+                Stream.cons(sheet.getCell_(rownum, colnum), inner(sheet, rownum, colnum + 1))
+            inner(cell.getSheet, cell.getRowIndex, cell.getColumnIndex)
         }
 
         ////////////////////////////////////////////////////////////////
@@ -415,15 +430,6 @@ object ExcelImplicits {
     }
 }
 
-object ExcelerWorkbook {
-
-    def open(filename:String): Workbook =  {
-        WorkbookFactory.create(new File(filename))
-    }
-
-    def create(): Workbook = new XSSFWorkbook()
-}
-
 object ExcelTable {
 
     import ExcelImplicits._
@@ -434,15 +440,15 @@ object ExcelTable {
     def findTopRightFromBottomRight(cell:Cell):Option[Cell] = (
         for {
             c <- cell.getUpperStream_
-            if c.hasBorderTop_ && c.hasBorderRight_
-        } yield c
+            if c != None && c.get.hasBorderTop_ && c.get.hasBorderRight_
+        } yield c.get
     ).headOption
 
     def findBottomLeftFromBottomRight(cell:Cell):Option[Cell] = (
         for {
             c <- cell.getLeftStream_
-            if c.hasBorderBottom_ && c.hasBorderLeft_
-        } yield c
+            if c != None && c.get.hasBorderBottom_ && c.get.hasBorderLeft_
+        } yield c.get
     ).headOption
 
     def findTopLeftFromBottomRight(cell:Cell):Option[Cell] = {
