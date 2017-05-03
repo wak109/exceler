@@ -440,14 +440,16 @@ object ExcelTable {
     def findTopRightFromBottomRight(cell:Cell):Option[Cell] = (
         for {
             c <- cell.getUpperStream_
-            if c != None && c.get.hasBorderTop_ && c.get.hasBorderRight_
+            if (c.map(_.hasBorderTop_) == Some(true)) &&
+                (c.map(_.hasBorderRight_) == Some(true))
         } yield c.get
     ).headOption
 
     def findBottomLeftFromBottomRight(cell:Cell):Option[Cell] = (
         for {
             c <- cell.getLeftStream_
-            if c != None && c.get.hasBorderBottom_ && c.get.hasBorderLeft_
+            if (c.map(_.hasBorderBottom_) == Some(true)) &&
+                (c.map(_.hasBorderLeft_) == Some(true))
         } yield c.get
     ).headOption
 

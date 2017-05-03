@@ -363,15 +363,7 @@ class ExcelerSuite extends FunSuite with BeforeAndAfterEach {
         val topRight = sheet.cell_(5, 10)
         val bottomLeft = sheet.cell_(10, 5)
         val bottomRight = sheet.cell_(10, 10)
-/*
-        for {i <- (5 to 10)
-                cell = sheet.cell_(10, i)
-        } cell.setBorderBottom_(BorderStyle.THIN)
 
-        for {i <- (5 to 10)
-                cell = sheet.cell_(i, 10)
-        } cell.setBorderRight_(BorderStyle.THIN)
-*/
         bottomLeft.setBorderLeft_(BorderStyle.THIN)
         bottomLeft.setBorderBottom_(BorderStyle.THIN)
         topRight.setBorderTop_(BorderStyle.THIN)
@@ -381,7 +373,5 @@ class ExcelerSuite extends FunSuite with BeforeAndAfterEach {
             case Some(c) => assert(c.getRowIndex == 5 && c.getColumnIndex == 5)
             case None => assert(false)
         }
-
-        workbook.saveAs_("hehe.xlsx")
     }
 }
