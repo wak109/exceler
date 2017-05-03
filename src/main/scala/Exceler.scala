@@ -154,6 +154,9 @@ object ExcelImplicits {
             cell.getSheet.cell_(cell.getRowIndex, cell.getColumnIndex + 1)
         
 
+        ////////////////////////////////////////////////////////////////
+        // Cell Stream (Reader)
+        //
         def getUpperStream_():Stream[Cell] = {
             Stream.cons(cell, cell.getUpperCell_ match {
                 case Some(next) => next.getUpperStream_
@@ -182,6 +185,9 @@ object ExcelImplicits {
             })
         }
 
+        ////////////////////////////////////////////////////////////////
+        // Cell Stream (Writer)
+        //
         def upperStream_():Stream[Cell] = {
             Stream.cons(cell, Try(cell.upperCell_) match {
                 case Success(next) => next.upperStream_
@@ -210,6 +216,9 @@ object ExcelImplicits {
             })
         }
 
+        ////////////////////////////////////////////////////////////////
+        // CellStyle
+        //
         def setBorderTop_(borderStyle:BorderStyle):Unit = {
             val cellStyle = cell.getCellStyle
             val t = cellStyle.toTuple_
@@ -220,6 +229,7 @@ object ExcelImplicits {
                 case Some(s) => cell.setCellStyle(s)
                 case None => {
                     val newStyle = workbook.createCellStyle
+                    newStyle.cloneStyleFrom(cellStyle)
                     newStyle.setBorderTop(borderStyle)
                     cell.setCellStyle(newStyle)
                 }
@@ -236,6 +246,7 @@ object ExcelImplicits {
                 case Some(s) => cell.setCellStyle(s)
                 case None => {
                     val newStyle = workbook.createCellStyle
+                    newStyle.cloneStyleFrom(cellStyle)
                     newStyle.setBorderBottom(borderStyle)
                     cell.setCellStyle(newStyle)
                 }
@@ -252,6 +263,7 @@ object ExcelImplicits {
                 case Some(s) => cell.setCellStyle(s)
                 case None => {
                     val newStyle = workbook.createCellStyle
+                    newStyle.cloneStyleFrom(cellStyle)
                     newStyle.setBorderLeft(borderStyle)
                     cell.setCellStyle(newStyle)
                 }
@@ -268,12 +280,16 @@ object ExcelImplicits {
                 case Some(s) => cell.setCellStyle(s)
                 case None => {
                     val newStyle = workbook.createCellStyle
+                    newStyle.cloneStyleFrom(cellStyle)
                     newStyle.setBorderRight(borderStyle)
                     cell.setCellStyle(newStyle)
                 }
             }
         }
 
+        ////////////////////////////////////////////////////////////////
+        // hasBorder
+        //
         def hasBorderBottom_():Boolean = {
             (cell.getCellStyle.getBorderBottomEnum != BorderStyle.NONE) ||
                 (cell.getLowerCell_.map(_.getCellStyle.getBorderTopEnum != BorderStyle.NONE) match {
@@ -308,54 +324,54 @@ object ExcelImplicits {
                 })
         }
 
-        def isOuterBottom_():Boolean = {
-            val cellStyle = cell.getCellStyle
-            val lowerCellStyle:Option[CellStyle] = cell.getLowerCell_.map(_.getCellStyle)
+        ////////////////////////////////////////////////////////////////
+        // isOuterBorder
+        //
+        //
+        def isOuterBorderTop_():Boolean = {
+            val upperCell = cell.getUpperCell_
 
-            (cellStyle.getBorderBottomEnum != BorderStyle.NONE) &&
-            (lowerCellStyle match {
-                case Some(style) =>
-                    (style.getBorderRightEnum == BorderStyle.NONE) &&
-                    (style.getBorderLeftEnum == BorderStyle.NONE)
+            (cell.hasBorderTop_) &&
+            (upperCell match {
+                case Some(cell) =>
+                    (! cell.hasBorderLeft_) &&
+                    (! cell.hasBorderRight_)
                 case None => true
             })
         }
 
-        def isOuterTop_():Boolean = {
-            val cellStyle = cell.getCellStyle
-            val upperCellStyle = cell.getUpperCell_.map(_.getCellStyle)
+        def isOuterBorderBottom_():Boolean = {
+            val lowerCell = cell.getLowerCell_
 
-            (cell.getRowIndex == 1 || cellStyle.getBorderTopEnum != BorderStyle.NONE) &&
-            (upperCellStyle match {
-                case Some(style) =>
-                    (style.getBorderRightEnum == BorderStyle.NONE) &&
-                    (style.getBorderLeftEnum == BorderStyle.NONE)
+            (cell.hasBorderBottom_) &&
+            (lowerCell match {
+                case Some(cell) =>
+                    (! cell.hasBorderLeft_) &&
+                    (! cell.hasBorderRight_)
                 case None => true
             })
         }
 
-        def isOuterRight_():Boolean = {
-            val cellStyle = cell.getCellStyle
-            val rightCellStyle = cell.getRightCell_.map(_.getCellStyle)
+        def isOuterBorderLeft_():Boolean = {
+            val leftCell = cell.getLeftCell_
 
-            (cellStyle.getBorderRightEnum != BorderStyle.NONE) &&
-            (rightCellStyle match {
-                case Some(style) =>
-                    (style.getBorderTopEnum == BorderStyle.NONE) &&
-                    (style.getBorderBottomEnum == BorderStyle.NONE)
+            (cell.hasBorderLeft_) &&
+            (leftCell match {
+                case Some(cell) =>
+                    (! cell.hasBorderTop_) &&
+                    (! cell.hasBorderBottom_)
                 case None => true
             })
         }
 
-        def isOuterLeft_():Boolean = {
-            val cellStyle = cell.getCellStyle
-            val leftCellStyle = cell.getLeftCell_.map(_.getCellStyle)
+        def isOuterBorderRight_():Boolean = {
+            val rightCell = cell.getRightCell_
 
-            (cell.getColumnIndex == 1 || cellStyle.getBorderLeftEnum != BorderStyle.NONE) &&
-            (leftCellStyle match {
-                case Some(style) =>
-                    (style.getBorderTopEnum == BorderStyle.NONE) &&
-                    (style.getBorderBottomEnum == BorderStyle.NONE)
+            (cell.hasBorderRight_) &&
+            (rightCell match {
+                case Some(cell) =>
+                    (! cell.hasBorderTop_) &&
+                    (! cell.hasBorderBottom_)
                 case None => true
             })
         }
