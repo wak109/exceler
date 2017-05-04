@@ -3,13 +3,14 @@ import scala.util.{Try, Success, Failure}
 import org.scalatest._
 
 import org.apache.poi.ss.usermodel._
+import org.apache.poi.xssf.usermodel.XSSFWorkbook
 
 import java.nio.file.{Paths, Files}
 
-import ExcelImplicits._
+import ExcelLib._
 import ExcelTable._
 
-class ExcelerSuite extends FunSuite with BeforeAndAfterEach {
+class ExcelLibSuite extends FunSuite with BeforeAndAfterEach {
   
     val testSheet = "test"
     val testMessage = "Hello, world!!"
@@ -26,7 +27,7 @@ class ExcelerSuite extends FunSuite with BeforeAndAfterEach {
     test("Workbook.saveAs_") {
         val testFile = "Test_Workbook_saveAs.xlsx"
 
-        val workbook = ExcelerWorkbook.create()
+        val workbook = new XSSFWorkbook()
         workbook.saveAs_(testFile)
         assert(Files.exists(Paths.get(testFile)))
 
@@ -34,7 +35,7 @@ class ExcelerSuite extends FunSuite with BeforeAndAfterEach {
     }
 
     test("Workbook.getSheet_") {
-        val workbook = ExcelerWorkbook.create()
+        val workbook = new XSSFWorkbook()
 
         workbook.getSheet_(testSheet) match {
             case Some(_) => assert(false)
@@ -59,7 +60,7 @@ class ExcelerSuite extends FunSuite with BeforeAndAfterEach {
     }
 
     test("Workbook.sheet_") {
-        val workbook = ExcelerWorkbook.create()
+        val workbook = new XSSFWorkbook()
 
         Try(workbook.sheet_(testSheet)) match {
             case Success(s) => assert(s.getSheetName() == testSheet)
@@ -74,7 +75,7 @@ class ExcelerSuite extends FunSuite with BeforeAndAfterEach {
     }
 
     test("Workbook.findCellStyle_") {
-        val workbook = ExcelerWorkbook.create()
+        val workbook = new XSSFWorkbook()
         val cellStyle = workbook.sheet_(testSheet).cell_(5, 5).getCellStyle
         val tuple = cellStyle.toTuple_
 
@@ -100,7 +101,7 @@ class ExcelerSuite extends FunSuite with BeforeAndAfterEach {
     // Sheet Tests
     //
     test("Sheet.getRow_,Sheet.row_") {
-        val workbook = ExcelerWorkbook.create()
+        val workbook = new XSSFWorkbook()
         val sheet = workbook.sheet_(testSheet)
 
         sheet.getRow_(0) match {
@@ -117,7 +118,7 @@ class ExcelerSuite extends FunSuite with BeforeAndAfterEach {
     }
 
     test("Sheet.getCell_") {
-        val sheet = ExcelerWorkbook.create().sheet_(testSheet)
+        val sheet = (new XSSFWorkbook()).sheet_(testSheet)
 
         sheet.getCell_(0, 0) match {
             case Some(c) => assert(false)
@@ -136,7 +137,7 @@ class ExcelerSuite extends FunSuite with BeforeAndAfterEach {
     // Row Tests
     //
     test("Row.getCell_") {
-        val row = ExcelerWorkbook.create().sheet_(testSheet).row_(100)
+        val row = (new XSSFWorkbook()).sheet_(testSheet).row_(100)
         
         row.getCell_(100) match {
             case Some(c) => assert(false)
@@ -156,7 +157,7 @@ class ExcelerSuite extends FunSuite with BeforeAndAfterEach {
     //
     test("Cell.getValue_") {
 
-        val workbook = ExcelerWorkbook.create()
+        val workbook = new XSSFWorkbook()
         (
             for { 
                 sheet <- workbook.createSheet_(testSheet)
@@ -185,7 +186,7 @@ class ExcelerSuite extends FunSuite with BeforeAndAfterEach {
     }
 
     test("Cell.getUppper,Cell.upper_ etc") {
-        val cell = ExcelerWorkbook.create().sheet_(testSheet).cell_(100, 100)
+        val cell = (new XSSFWorkbook()).sheet_(testSheet).cell_(100, 100)
 
         assert(cell.getUpperCell_.isEmpty)
         assert(cell.getLowerCell_.isEmpty)
@@ -205,7 +206,7 @@ class ExcelerSuite extends FunSuite with BeforeAndAfterEach {
     }
 
     test("Cell.getUpperStream_ etc") {
-        val cell = ExcelerWorkbook.create().sheet_(testSheet).cell_(4, 4)
+        val cell = (new XSSFWorkbook()).sheet_(testSheet).cell_(4, 4)
 
         assert(cell.getUpperStream_.take(10).toList.length == 5)
         assert(cell.getLowerStream_.take(10).toList.length == 10)
@@ -221,157 +222,5 @@ class ExcelerSuite extends FunSuite with BeforeAndAfterEach {
         assert(cell.getLowerStream_.take(10).toList.length == 10)
         assert(cell.getLeftStream_.take(10).toList.length == 5)
         assert(cell.getRightStream_.take(10).toList.length == 10)
-    }
-
-    test("Cell.hasBorderBottom_") {
-        val workbook = ExcelerWorkbook.create()
-        val sheet = workbook.sheet_(testSheet)
-        val cell = sheet.cell_(5, 5)
-        var style = workbook.createCellStyle
-
-        assert(! cell.hasBorderBottom_)
-
-        cell.setBorderBottom_(BorderStyle.THIN)
-        assert(cell.hasBorderBottom_)
-
-        cell.setBorderBottom_(BorderStyle.NONE)
-        assert(! cell.hasBorderBottom_)
-
-        cell.lowerCell_.setBorderTop_(BorderStyle.THIN)
-        assert(cell.hasBorderBottom_)
-    }
-
-    test("Cell.hasBorderTop_") {
-        val workbook = ExcelerWorkbook.create()
-        val sheet = workbook.sheet_(testSheet)
-        val cell = sheet.cell_(5, 5)
-        var style = workbook.createCellStyle
-
-        assert(! cell.hasBorderTop_)
-
-        cell.setBorderTop_(BorderStyle.THIN)
-        assert(cell.hasBorderTop_)
-
-        cell.setBorderTop_(BorderStyle.NONE)
-        assert(! cell.hasBorderTop_)
-
-        cell.upperCell_.setBorderBottom_(BorderStyle.THIN)
-        assert(cell.hasBorderTop_)
-
-        assert(sheet.cell_(0,5).hasBorderTop_)
-    }
-
-    test("Cell.hasBorderLeft_") {
-        val workbook = ExcelerWorkbook.create()
-        val sheet = workbook.sheet_(testSheet)
-        val cell = sheet.cell_(5, 5)
-        var style = workbook.createCellStyle
-
-        assert(! cell.hasBorderLeft_)
-
-        cell.setBorderLeft_(BorderStyle.THIN)
-        assert(cell.hasBorderLeft_)
-
-        cell.setBorderLeft_(BorderStyle.NONE)
-        assert(! cell.hasBorderLeft_)
-
-        cell.leftCell_.setBorderRight_(BorderStyle.THIN)
-        assert(cell.hasBorderLeft_)
-
-        assert(sheet.cell_(5,0).hasBorderLeft_)
-    }
-
-    test("Cell.hasBorderRight_") {
-        val workbook = ExcelerWorkbook.create()
-        val sheet = workbook.sheet_(testSheet)
-        val cell = sheet.cell_(5, 5)
-        var style = workbook.createCellStyle
-
-        assert(! cell.hasBorderRight_)
-
-        cell.setBorderRight_(BorderStyle.THIN)
-        assert(cell.hasBorderRight_)
-
-        cell.setBorderRight_(BorderStyle.NONE)
-        assert(! cell.hasBorderRight_)
-
-        cell.rightCell_.setBorderLeft_(BorderStyle.THIN)
-        assert(cell.hasBorderRight_)
-    }
-
-    test("Cell.isOuterBorderBottom_ etc") {
-        val workbook = ExcelerWorkbook.create()
-        val sheet = workbook.sheet_(testSheet)
-        val cell = sheet.cell_(5, 5)
-
-        cell.setBorderTop_(BorderStyle.NONE)
-        cell.setBorderBottom_(BorderStyle.THIN)
-        cell.setBorderLeft_(BorderStyle.NONE)
-        cell.setBorderRight_(BorderStyle.THIN)
-
-        assert(cell.isOuterBorderBottom_)
-        assert(cell.isOuterBorderRight_)
-
-        assert(cell.getCellStyle.getBorderBottomEnum == BorderStyle.THIN)
-        assert(cell.lowerCell_.getCellStyle.getBorderTopEnum == BorderStyle.NONE)
-        assert(cell.isOuterBorderBottom_)
-
-        assert(cell.getCellStyle.getBorderRightEnum == BorderStyle.THIN)
-        assert(cell.rightCell_.getCellStyle.getBorderLeftEnum == BorderStyle.NONE)
-        assert(cell.isOuterBorderRight_)
-    }
-
-    test("Cell.findTopRightFromBottomRight") {
-        val sheet = ExcelerWorkbook.create().sheet_(testSheet)
-        val topRight = sheet.cell_(5, 10)
-        val bottomRight = sheet.cell_(10, 10)
-
-        for {i <- (5 to 10)
-                cell = sheet.cell_(i, 10)
-        } cell.setBorderRight_(BorderStyle.THIN)
-
-        topRight.setBorderTop_(BorderStyle.THIN)
-        bottomRight.setBorderBottom_(BorderStyle.THIN)
-
-        findTopRightFromBottomRight(bottomRight) match {
-            case Some(c) => assert(c == topRight)
-            case None => assert(false)
-        }
-    }
-
-    test("Cell.findBottomLeftFromBottomRight") {
-        val sheet = ExcelerWorkbook.create().sheet_(testSheet)
-        val bottomLeft = sheet.cell_(10, 5)
-        val bottomRight = sheet.cell_(10, 10)
-
-        for {i <- (5 to 10)
-                cell = sheet.cell_(10, i)
-        } cell.setBorderBottom_(BorderStyle.THIN)
-
-        bottomLeft.setBorderLeft_(BorderStyle.THIN)
-        bottomRight.setBorderRight_(BorderStyle.THIN)
-
-        findBottomLeftFromBottomRight(bottomRight) match {
-            case Some(c) => assert(c == bottomLeft)
-            case None => assert(false)
-        }
-    }
-
-    test("Cell.findTopLeftFromBottomRight") {
-        val workbook = ExcelerWorkbook.create()
-        val sheet = workbook.sheet_(testSheet)
-        val topRight = sheet.cell_(5, 10)
-        val bottomLeft = sheet.cell_(10, 5)
-        val bottomRight = sheet.cell_(10, 10)
-
-        bottomLeft.setBorderLeft_(BorderStyle.THIN)
-        bottomLeft.setBorderBottom_(BorderStyle.THIN)
-        topRight.setBorderTop_(BorderStyle.THIN)
-        topRight.setBorderRight_(BorderStyle.THIN)
-
-        findTopLeftFromBottomRight(bottomRight) match {
-            case Some(c) => assert(c.getRowIndex == 5 && c.getColumnIndex == 5)
-            case None => assert(false)
-        }
     }
 }
