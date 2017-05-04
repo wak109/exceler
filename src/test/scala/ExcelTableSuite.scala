@@ -159,6 +159,7 @@ class ExcelTableSuite extends FunSuite with BeforeAndAfterEach {
     test("Cell.findTopLeftFromBottomRight") {
         val workbook = new XSSFWorkbook
         val sheet = workbook.sheet_(testSheet)
+        val topLeft = sheet.cell_(5, 5)
         val topRight = sheet.cell_(5, 10)
         val bottomLeft = sheet.cell_(10, 5)
         val bottomRight = sheet.cell_(10, 10)
@@ -172,5 +173,64 @@ class ExcelTableSuite extends FunSuite with BeforeAndAfterEach {
             case Some(c) => assert(c.getRowIndex == 5 && c.getColumnIndex == 5)
             case None => assert(false)
         }
+    }
+
+    test("check apache poi") {
+        val workbook = new XSSFWorkbook
+        val sheet = workbook.sheet_(testSheet)
+        val topRight = sheet.cell_(5, 10)
+        val bottomLeft = sheet.cell_(10, 5)
+        val bottomRight = sheet.cell_(10, 10)
+
+        assert(sheet.getFirstRowNum == 5)
+        assert(sheet.getLastRowNum == 10)
+
+        assert(sheet.getRow(5).getFirstCellNum == 10)
+        assert(sheet.getRow(5).getLastCellNum == 11)
+
+        assert(sheet.getRow(10).getFirstCellNum == 5)
+        assert(sheet.getRow(10).getLastCellNum == 11)
+    }
+
+    test("getCellList") {
+        val workbook = new XSSFWorkbook
+        val sheet = workbook.sheet_(testSheet)
+        val topRight = sheet.cell_(5, 10)
+        val bottomLeft = sheet.cell_(10, 5)
+        val bottomRight = sheet.cell_(10, 10)
+
+        assert(getCellList(sheet).length == 3)
+    }
+
+    test("getExcelTableList") {
+        val workbook = new XSSFWorkbook
+        val sheet = workbook.sheet_(testSheet)
+        var topLeft = sheet.cell_(5, 5)
+        var topRight = sheet.cell_(5, 10)
+        var bottomLeft = sheet.cell_(10, 5)
+        var bottomRight = sheet.cell_(10, 10)
+
+        bottomRight.setBorderRight_(BorderStyle.THIN)
+        bottomRight.setBorderBottom_(BorderStyle.THIN)
+        bottomLeft.setBorderLeft_(BorderStyle.THIN)
+        bottomLeft.setBorderBottom_(BorderStyle.THIN)
+        topRight.setBorderTop_(BorderStyle.THIN)
+        topRight.setBorderRight_(BorderStyle.THIN)
+
+        topLeft = sheet.cell_(50, 50)
+        topRight = sheet.cell_(50, 100)
+        bottomLeft = sheet.cell_(100, 50)
+        bottomRight = sheet.cell_(100, 100)
+
+        bottomRight.setBorderRight_(BorderStyle.THIN)
+        bottomRight.setBorderBottom_(BorderStyle.THIN)
+        bottomLeft.setBorderLeft_(BorderStyle.THIN)
+        bottomLeft.setBorderBottom_(BorderStyle.THIN)
+        topRight.setBorderTop_(BorderStyle.THIN)
+        topRight.setBorderRight_(BorderStyle.THIN)
+
+        val tableList = getExcelTableList(sheet)
+        
+        assert(tableList.length == 2)
     }
 }

@@ -11,6 +11,7 @@ import org.apache.commons.cli.{Option => CmdOption}
 import org.apache.commons.cli.{Options => CmdOptions}
 import org.apache.commons.cli.ParseException
 
+import Exceler._
 
 object Main {
 
@@ -69,6 +70,7 @@ object Main {
         ) match {
             case Success(cl) => {
                 cl.getArgs()(0) match {
+                    case "xml" => convertExcelTableToXML(cl.getArgs()(1))
                     case _ => printUsage()
                 }
             }

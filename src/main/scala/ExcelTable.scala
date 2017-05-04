@@ -8,9 +8,33 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import java.io._
 import java.nio.file._
 
+import ExcelLib._
+
+
+class ExcelTable(
+    val sheet:Sheet,
+    val topRow:Int,
+    val leftCol:Int,
+    val bottomRow:Int,
+    val rightCol:Int
+    ) {
+
+    def this(topLeft:Cell, bottomRight:Cell) = this(
+        topLeft.getSheet,
+        topLeft.getRowIndex,
+        topLeft.getColumnIndex,
+        bottomRight.getRowIndex,
+        bottomRight.getColumnIndex
+        )
+    
+    override def toString():String =
+        "ExcelTable:" + sheet.getSheetName + ":(" + 
+            sheet.cell_(topRow, leftCol).getAddress + "," +
+            sheet.cell_(bottomRow, rightCol).getAddress + ")"
+}
+
 object ExcelTable {
 
-    import ExcelLib._
 
     implicit class ExcelTableCell(cell:Cell) {
 
@@ -135,9 +159,29 @@ object ExcelTable {
         (findTopRightFromBottomRight(cell), 
                 findBottomLeftFromBottomRight(cell)) match {
             case (Some(topRight), Some(bottomLeft)) =>
-                Some(cell.getSheet.cell_(
-                    topRight.getRowIndex, bottomLeft.getColumnIndex))
+                cell.getSheet.getCell_(
+                    topRight.getRowIndex, bottomLeft.getColumnIndex)
             case _ => None
         }
+    }
+
+    def getCellList(sheet:Sheet):List[Cell] = {
+        for {
+             row <- (sheet.getFirstRowNum to
+                 sheet.getLastRowNum).toList.map(sheet.getRow(_))
+             if row != null
+             cell <- (row.getFirstCellNum until
+                 row.getLastCellNum).toList.map(row.getCell(_))
+             if cell != null
+        } yield cell
+    }
+
+    def getExcelTableList(sheet:Sheet):List[ExcelTable] = {
+        for {
+            cell <- getCellList(sheet)
+            if cell.isOuterBorderBottom_ && cell.isOuterBorderRight_
+            topLeft = findTopLeftFromBottomRight(cell)
+            if topLeft.nonEmpty
+        } yield new ExcelTable(topLeft.get, cell)
     }
 }
