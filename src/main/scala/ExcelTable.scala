@@ -39,22 +39,27 @@ class ExcelTableCell(
             sheet.cell_(bottomRow, rightCol).getAddress + ")"
 }
 
-class ExcelTable (
+class ExcelTable[T] (
     sheet:Sheet,
     topRow:Int,
     leftCol:Int,
     bottomRow:Int,
-    rightCol:Int
+    rightCol:Int,
+    factory:(Sheet,Int,Int,Int,Int) => T
     ) extends ExcelRectangle(sheet, topRow, leftCol, bottomRow, rightCol) {
 
 
-    def this(topLeft:Cell, bottomRight:Cell) = this(
-        topLeft.getSheet,
-        topLeft.getRowIndex,
-        topLeft.getColumnIndex,
-        bottomRight.getRowIndex,
-        bottomRight.getColumnIndex
-        )
+    def this(
+        topLeft:Cell,
+        bottomRight:Cell,
+        factory:(Sheet,Int,Int,Int,Int) => T) = this(
+            topLeft.getSheet,
+            topLeft.getRowIndex,
+            topLeft.getColumnIndex,
+            bottomRight.getRowIndex,
+            bottomRight.getColumnIndex,
+            factory
+            )
 
     import ExcelTable.CellImplicitForExcelTable
 
@@ -78,7 +83,7 @@ class ExcelTable (
             } yield for {
                 (colnumStart, colnumEnd)
                     <- (colnumList, colnumList.drop(1)).zipped
-                } yield new ExcelTableCell(sheet,
+                } yield factory(sheet,
                     rownumStart + 1, colnumStart + 1, rownumEnd, colnumEnd)
 
          println(tCellArray)
@@ -228,11 +233,12 @@ object ExcelTable {
         } yield cell
     }
 
-    def getExcelTableList(sheet:Sheet):List[ExcelTable] = {
+    def getExcelTableList(sheet:Sheet):List[ExcelTable[ExcelTableCell]] = {
         for {
             cell <- getCellList(sheet)
             if cell.isOuterBorderBottom_ && cell.isOuterBorderRight_
             topLeft <- findTopLeftFromBottomRight(cell)
-        } yield new ExcelTable(topLeft, cell)
+        } yield new ExcelTable[ExcelTableCell](topLeft, cell,
+            (sheet, top, left, bottom, right) => new ExcelTableCell(sheet, top, left, bottom, right))
     }
 }
