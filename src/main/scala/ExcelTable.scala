@@ -39,7 +39,7 @@ class ExcelTableCell(
             sheet.cell_(bottomRow, rightCol).getAddress + ")"
 }
 
-class ExcelTable(
+class ExcelTable (
     sheet:Sheet,
     topRow:Int,
     leftCol:Int,
@@ -71,21 +71,17 @@ class ExcelTable(
              if cell.hasBorderRight_
         } yield colnum)
 
-        val tCellArray = Array.ofDim[ExcelTableCell](
-            rownumList.length - 1, colnumList.length -1)
-
-        for {
-            (trowidx, rownumStart, rownumEnd)
-                <- (Stream.from(0), rownumList, rownumList.drop(1)).zipped
-            (tcolidx, colnumStart, colnumEnd)
-                <- (Stream.from(0), colnumList, colnumList.drop(1)).zipped
-        } {
-            tCellArray(trowidx)(tcolidx) =
-                new ExcelTableCell(sheet,
+        val tCellArray =
+            for {
+                (rownumStart, rownumEnd)
+                    <- (rownumList, rownumList.drop(1)).zipped
+            } yield for {
+                (colnumStart, colnumEnd)
+                    <- (colnumList, colnumList.drop(1)).zipped
+                } yield new ExcelTableCell(sheet,
                     rownumStart + 1, colnumStart + 1, rownumEnd, colnumEnd)
 
-            println(tCellArray(trowidx)(tcolidx))
-        }
+         println(tCellArray)
     }
 }
 
