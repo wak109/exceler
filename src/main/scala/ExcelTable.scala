@@ -33,6 +33,10 @@ class ExcelTableCell(
     rightCol:Int
     ) extends ExcelRectangle(sheet, topRow, leftCol, bottomRow, rightCol) {
 
+    override def toString():String =
+        "ExcelTableCell:" + sheet.getSheetName + ":(" + 
+            sheet.cell_(topRow, leftCol).getAddress + "," +
+            sheet.cell_(bottomRow, rightCol).getAddress + ")"
 }
 
 class ExcelTable(
@@ -52,23 +56,43 @@ class ExcelTable(
         bottomRight.getColumnIndex
         )
 
-    import ExcelTable._
+    import ExcelTable.CellImplicitForExcelTable
 
-    def getLeftColumnCellList:List[Int] = {
-        for {
+    val tableCell = {
+        val rownumList = (topRow-1) :: (for {
              rownum <- (topRow to bottomRow).toList
              cell <- sheet.getCell_(rownum, leftCol)
              if cell.hasBorderBottom_
-        } yield cell.getRowIndex
-    }
+        } yield rownum)
 
-    println(getLeftColumnCellList)
+        val colnumList = (leftCol-1) :: (for {
+             colnum <- (leftCol to rightCol).toList
+             cell <- sheet.getCell_(topRow, colnum)
+             if cell.hasBorderRight_
+        } yield colnum)
+
+        val tCellArray = Array.ofDim[ExcelTableCell](
+            rownumList.length - 1, colnumList.length -1)
+
+        for {
+            (trowidx, rownumStart, rownumEnd)
+                <- (Stream.from(0), rownumList, rownumList.drop(1)).zipped
+            (tcolidx, colnumStart, colnumEnd)
+                <- (Stream.from(0), colnumList, colnumList.drop(1)).zipped
+        } {
+            tCellArray(trowidx)(tcolidx) =
+                new ExcelTableCell(sheet,
+                    rownumStart + 1, colnumStart + 1, rownumEnd, colnumEnd)
+
+            println(tCellArray(trowidx)(tcolidx))
+        }
+    }
 }
 
 object ExcelTable {
 
 
-    implicit class ExcelTableCell(cell:Cell) {
+    implicit class CellImplicitForExcelTable (cell:Cell) {
 
         ////////////////////////////////////////////////////////////////
         // hasBorder

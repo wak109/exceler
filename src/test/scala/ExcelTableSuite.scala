@@ -156,6 +156,24 @@ class ExcelTableSuite extends FunSuite with BeforeAndAfterEach {
         }
     }
 
+    test("Cell.findBottomLeftFromBottomRight: Negative Case") {
+        val sheet = (new XSSFWorkbook).sheet_(testSheet)
+        val bottomLeft = sheet.cell_(10, 5)
+        val bottomRight = sheet.cell_(10, 10)
+
+        for {i <- (6 to 10)
+                cell = sheet.cell_(10, i)
+        } cell.setBorderBottom_(BorderStyle.THIN)
+
+        bottomLeft.setBorderLeft_(BorderStyle.THIN)
+        bottomRight.setBorderRight_(BorderStyle.THIN)
+
+        findBottomLeftFromBottomRight(bottomRight) match {
+            case Some(c) => assert(false)
+            case None => assert(true)
+        }
+    }
+
     test("Cell.findTopLeftFromBottomRight") {
         val workbook = new XSSFWorkbook
         val sheet = workbook.sheet_(testSheet)
