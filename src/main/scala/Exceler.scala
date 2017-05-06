@@ -15,13 +15,16 @@ import ExcelTable._
 
 object Exceler {
 
-    def convertExcelTableToXML(filename:String):Unit = {
-        val workbook = WorkbookFactory.create(new File(filename))
-        for {
-            sheet <- workbook.sheetIterator
-            table <- getExcelTableList(sheet)
-        } {
-            println(table)
+    def convertExcelTableToXML(filename:String):Try[Unit] = {
+        Try {
+            val file = new File(filename)
+            val workbook = WorkbookFactory.create(file, null ,true)
+            for {
+                sheet <- workbook.sheetIterator
+                table <- getExcelTableList(sheet)
+            } {
+                println(table)
+            }
         }
     }
 }

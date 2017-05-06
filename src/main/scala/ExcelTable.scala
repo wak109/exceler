@@ -11,13 +11,38 @@ import java.nio.file._
 import ExcelLib._
 
 
-class ExcelTable(
+class ExcelRectangle(
     val sheet:Sheet,
     val topRow:Int,
     val leftCol:Int,
     val bottomRow:Int,
     val rightCol:Int
     ) {
+
+    override def toString():String =
+        "ExcelTable:" + sheet.getSheetName + ":(" + 
+            sheet.cell_(topRow, leftCol).getAddress + "," +
+            sheet.cell_(bottomRow, rightCol).getAddress + ")"
+}
+
+class ExcelTableCell(
+    sheet:Sheet,
+    topRow:Int,
+    leftCol:Int,
+    bottomRow:Int,
+    rightCol:Int
+    ) extends ExcelRectangle(sheet, topRow, leftCol, bottomRow, rightCol) {
+
+}
+
+class ExcelTable(
+    sheet:Sheet,
+    topRow:Int,
+    leftCol:Int,
+    bottomRow:Int,
+    rightCol:Int
+    ) extends ExcelRectangle(sheet, topRow, leftCol, bottomRow, rightCol) {
+
 
     def this(topLeft:Cell, bottomRight:Cell) = this(
         topLeft.getSheet,
@@ -26,11 +51,18 @@ class ExcelTable(
         bottomRight.getRowIndex,
         bottomRight.getColumnIndex
         )
-    
-    override def toString():String =
-        "ExcelTable:" + sheet.getSheetName + ":(" + 
-            sheet.cell_(topRow, leftCol).getAddress + "," +
-            sheet.cell_(bottomRow, rightCol).getAddress + ")"
+
+    import ExcelTable._
+
+    def getLeftColumnCellList:List[Int] = {
+        for {
+             rownum <- (topRow to bottomRow).toList
+             cell <- sheet.getCell_(rownum, leftCol)
+             if cell.hasBorderBottom_
+        } yield cell.getRowIndex
+    }
+
+    println(getLeftColumnCellList)
 }
 
 object ExcelTable {
@@ -142,16 +174,16 @@ object ExcelTable {
     def findTopRightFromBottomRight(cell:Cell):Option[Cell] = (
         for {
             c <- cell.getUpperStream_
-            if (c.map(_.hasBorderTop_) == Some(true)) &&
-                (c.map(_.hasBorderRight_) == Some(true))
+            if (c.map(_.isOuterBorderTop_) == Some(true)) &&
+                (c.map(_.isOuterBorderRight_) == Some(true))
         } yield c.get
     ).headOption
 
     def findBottomLeftFromBottomRight(cell:Cell):Option[Cell] = (
         for {
             c <- cell.getLeftStream_
-            if (c.map(_.hasBorderBottom_) == Some(true)) &&
-                (c.map(_.hasBorderLeft_) == Some(true))
+            if (c.map(_.isOuterBorderBottom_) == Some(true)) &&
+                (c.map(_.isOuterBorderLeft_) == Some(true))
         } yield c.get
     ).headOption
 
