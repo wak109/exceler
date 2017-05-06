@@ -173,18 +173,18 @@ object ExcelTable {
     //
     def findTopRightFromBottomRight(cell:Cell):Option[Cell] = (
         for {
-            c <- cell.getUpperStream_
-            if (c.map(_.isOuterBorderTop_) == Some(true)) &&
-                (c.map(_.isOuterBorderRight_) == Some(true))
-        } yield c.get
+            cOpt <- cell.getUpperStream_
+            c <- cOpt
+            if c.isOuterBorderTop_ && c.isOuterBorderRight_
+        } yield c
     ).headOption
 
     def findBottomLeftFromBottomRight(cell:Cell):Option[Cell] = (
         for {
-            c <- cell.getLeftStream_
-            if (c.map(_.isOuterBorderBottom_) == Some(true)) &&
-                (c.map(_.isOuterBorderLeft_) == Some(true))
-        } yield c.get
+            cOpt <- cell.getLeftStream_
+            c <- cOpt
+            if c.isOuterBorderBottom_ && c.isOuterBorderLeft_
+        } yield c
     ).headOption
 
     def findTopLeftFromBottomRight(cell:Cell):Option[Cell] = {
@@ -199,12 +199,12 @@ object ExcelTable {
 
     def getCellList(sheet:Sheet):List[Cell] = {
         for {
-             row <- (sheet.getFirstRowNum to
-                 sheet.getLastRowNum).toList.map(sheet.getRow(_))
-             if row != null
-             cell <- (row.getFirstCellNum until
-                 row.getLastCellNum).toList.map(row.getCell(_))
-             if cell != null
+            row <- for {
+                rownum <- (sheet.getFirstRowNum to sheet.getLastRowNum).toList
+                row <- sheet.getRow_(rownum)
+            } yield row
+            colnum <- (row.getFirstCellNum until row.getLastCellNum).toList
+            cell <- row.getCell_(colnum)
         } yield cell
     }
 
@@ -212,8 +212,7 @@ object ExcelTable {
         for {
             cell <- getCellList(sheet)
             if cell.isOuterBorderBottom_ && cell.isOuterBorderRight_
-            topLeft = findTopLeftFromBottomRight(cell)
-            if topLeft.nonEmpty
-        } yield new ExcelTable(topLeft.get, cell)
+            topLeft <- findTopLeftFromBottomRight(cell)
+        } yield new ExcelTable(topLeft, cell)
     }
 }
