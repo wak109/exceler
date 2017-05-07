@@ -72,7 +72,7 @@ object Main {
                 cl.getArgs()(0) match {
                     case "xml" => convertExcelTableToXML(cl.getArgs()(1)) match {
                         case Success(_) => None
-                        case Failure(e) => print(e.getMessage()); printUsage()
+                        case Failure(e) => println(e.getMessage); printUsage()
                     }
                     case _ => printUsage()
                 }

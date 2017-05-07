@@ -18,12 +18,12 @@ object Exceler {
 
         Try {
             val file = new File(filename)
-            val workbook = WorkbookFactory.create(file, null ,true)
+            val workbook = WorkbookFactory.create(file, null ,true) 
             for {
                 sheet <- workbook.sheetIterator.asScala
                 rect <- sheet.getRectangleList
-                row <- rect.getInnerRectangleList
-                tcell <- row
+                trow <- rect.getInnerRectangleList
+                tcell <- trow
             } {
                 println(tcell)
             }
