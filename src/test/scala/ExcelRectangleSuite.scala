@@ -9,9 +9,10 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import java.nio.file.{Paths, Files}
 
 import ExcelLib._
-import ExcelTable._
+import ExcelRectangle._
+import ExcelRectangle.Helper._
 
-class ExcelTableSuite extends FunSuite with BeforeAndAfterEach {
+class ExcelRectangleSuite extends FunSuite with BeforeAndAfterEach {
   
     val testSheet = "test"
     val testMessage = "Hello, world!!"
@@ -22,83 +23,83 @@ class ExcelTableSuite extends FunSuite with BeforeAndAfterEach {
     override def afterEach() {
     }
 
-    test("Cell.hasBorderBottom_") {
+    test("Cell.hasBorderBottom") {
         val workbook = new XSSFWorkbook
         val sheet = workbook.sheet_(testSheet)
         val cell = sheet.cell_(5, 5)
         var style = workbook.createCellStyle
 
-        assert(! cell.hasBorderBottom_)
+        assert(! cell.hasBorderBottom)
 
         cell.setBorderBottom_(BorderStyle.THIN)
-        assert(cell.hasBorderBottom_)
+        assert(cell.hasBorderBottom)
 
         cell.setBorderBottom_(BorderStyle.NONE)
-        assert(! cell.hasBorderBottom_)
+        assert(! cell.hasBorderBottom)
 
         cell.lowerCell_.setBorderTop_(BorderStyle.THIN)
-        assert(cell.hasBorderBottom_)
+        assert(cell.hasBorderBottom)
     }
 
-    test("Cell.hasBorderTop_") {
+    test("Cell.hasBorderTop") {
         val workbook = new XSSFWorkbook
         val sheet = workbook.sheet_(testSheet)
         val cell = sheet.cell_(5, 5)
         var style = workbook.createCellStyle
 
-        assert(! cell.hasBorderTop_)
+        assert(! cell.hasBorderTop)
 
         cell.setBorderTop_(BorderStyle.THIN)
-        assert(cell.hasBorderTop_)
+        assert(cell.hasBorderTop)
 
         cell.setBorderTop_(BorderStyle.NONE)
-        assert(! cell.hasBorderTop_)
+        assert(! cell.hasBorderTop)
 
         cell.upperCell_.setBorderBottom_(BorderStyle.THIN)
-        assert(cell.hasBorderTop_)
+        assert(cell.hasBorderTop)
 
-        assert(sheet.cell_(0,5).hasBorderTop_)
+        assert(sheet.cell_(0,5).hasBorderTop)
     }
 
-    test("Cell.hasBorderLeft_") {
+    test("Cell.hasBorderLeft") {
         val workbook = new XSSFWorkbook
         val sheet = workbook.sheet_(testSheet)
         val cell = sheet.cell_(5, 5)
         var style = workbook.createCellStyle
 
-        assert(! cell.hasBorderLeft_)
+        assert(! cell.hasBorderLeft)
 
         cell.setBorderLeft_(BorderStyle.THIN)
-        assert(cell.hasBorderLeft_)
+        assert(cell.hasBorderLeft)
 
         cell.setBorderLeft_(BorderStyle.NONE)
-        assert(! cell.hasBorderLeft_)
+        assert(! cell.hasBorderLeft)
 
         cell.leftCell_.setBorderRight_(BorderStyle.THIN)
-        assert(cell.hasBorderLeft_)
+        assert(cell.hasBorderLeft)
 
-        assert(sheet.cell_(5,0).hasBorderLeft_)
+        assert(sheet.cell_(5,0).hasBorderLeft)
     }
 
-    test("Cell.hasBorderRight_") {
+    test("Cell.hasBorderRight") {
         val workbook = new XSSFWorkbook
         val sheet = workbook.sheet_(testSheet)
         val cell = sheet.cell_(5, 5)
         var style = workbook.createCellStyle
 
-        assert(! cell.hasBorderRight_)
+        assert(! cell.hasBorderRight)
 
         cell.setBorderRight_(BorderStyle.THIN)
-        assert(cell.hasBorderRight_)
+        assert(cell.hasBorderRight)
 
         cell.setBorderRight_(BorderStyle.NONE)
-        assert(! cell.hasBorderRight_)
+        assert(! cell.hasBorderRight)
 
         cell.rightCell_.setBorderLeft_(BorderStyle.THIN)
-        assert(cell.hasBorderRight_)
+        assert(cell.hasBorderRight)
     }
 
-    test("Cell.isOuterBorderBottom_ etc") {
+    test("Cell.isOuterBorderBottom etc") {
         val workbook = new XSSFWorkbook
         val sheet = workbook.sheet_(testSheet)
         val cell = sheet.cell_(5, 5)
@@ -108,16 +109,16 @@ class ExcelTableSuite extends FunSuite with BeforeAndAfterEach {
         cell.setBorderLeft_(BorderStyle.NONE)
         cell.setBorderRight_(BorderStyle.THIN)
 
-        assert(cell.isOuterBorderBottom_)
-        assert(cell.isOuterBorderRight_)
+        assert(cell.isOuterBorderBottom)
+        assert(cell.isOuterBorderRight)
 
         assert(cell.getCellStyle.getBorderBottomEnum == BorderStyle.THIN)
         assert(cell.lowerCell_.getCellStyle.getBorderTopEnum == BorderStyle.NONE)
-        assert(cell.isOuterBorderBottom_)
+        assert(cell.isOuterBorderBottom)
 
         assert(cell.getCellStyle.getBorderRightEnum == BorderStyle.THIN)
         assert(cell.rightCell_.getCellStyle.getBorderLeftEnum == BorderStyle.NONE)
-        assert(cell.isOuterBorderRight_)
+        assert(cell.isOuterBorderRight)
     }
 
     test("Cell.findTopRightFromBottomRight") {
@@ -220,7 +221,7 @@ class ExcelTableSuite extends FunSuite with BeforeAndAfterEach {
         assert(getCellList(sheet).length == 3)
     }
 
-    test("getExcelTableList") {
+    test("getRectangleList") {
         val workbook = new XSSFWorkbook
         val sheet = workbook.sheet_(testSheet)
         var topLeft = sheet.cell_(5, 5)
@@ -247,8 +248,8 @@ class ExcelTableSuite extends FunSuite with BeforeAndAfterEach {
         topRight.setBorderTop_(BorderStyle.THIN)
         topRight.setBorderRight_(BorderStyle.THIN)
 
-        val tableList = getExcelTableList(sheet)
+        val rectList = sheet.getRectangleList
         
-        assert(tableList.length == 2)
+        assert(rectList.length == 2)
     }
 }

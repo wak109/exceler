@@ -8,7 +8,6 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import java.nio.file.{Paths, Files}
 
 import ExcelLib._
-import ExcelTable._
 
 class ExcelLibSuite extends FunSuite with BeforeAndAfterEach {
   

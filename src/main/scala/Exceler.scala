@@ -10,20 +10,22 @@ import java.io._
 import java.nio.file._
 
 import ExcelLib._
-import ExcelTable._
-
+import ExcelRectangle._
 
 object Exceler {
 
     def convertExcelTableToXML(filename:String):Try[Unit] = {
+
         Try {
             val file = new File(filename)
             val workbook = WorkbookFactory.create(file, null ,true)
             for {
                 sheet <- workbook.sheetIterator
-                table <- getExcelTableList(sheet)
+                rect <- sheet.getRectangleList
+                row <- rect.getInnerRectangleList
+                tcell <- row
             } {
-                println(table)
+                println(tcell)
             }
         }
     }
