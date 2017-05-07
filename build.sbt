@@ -2,6 +2,9 @@ name := "exceler"
 version := "0.0.3"
 scalaVersion := "2.12.2"
 
+scalacOptions := Seq("-unchecked", "-deprecation", "-feature")
+
+
 libraryDependencies += "org.apache.poi" % "poi" % "3.16"
 libraryDependencies += "org.apache.poi" % "poi-ooxml" % "3.16"
 libraryDependencies += "org.apache.poi" % "poi-ooxml-schemas" % "3.16"

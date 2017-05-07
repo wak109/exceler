@@ -1,4 +1,5 @@
 /* vim: set ts=4 et sw=4 sts=4 fileencoding=utf-8: */
+import scala.language.implicitConversions
 import scala.util.control.Exception._
 import scala.util.{Try, Success, Failure}
 
@@ -87,19 +88,20 @@ object ExcelLib {
 
         def getCell_(colnum:Int):Option[Cell] = Option(row.getCell(colnum))
 
-        def cell_(colnum:Int):Cell = row.getCell(colnum, Row.CREATE_NULL_AS_BLANK)
+        def cell_(colnum:Int):Cell = row.getCell(colnum, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK)
     }
 
     implicit class CellImplicit(cell:Cell) {
 
         def getValue_():Any = {
-            cell.getCellType match {
-                case Cell.CELL_TYPE_BLANK => cell.getStringCellValue
-                case Cell.CELL_TYPE_BOOLEAN => cell.getBooleanCellValue
-                case Cell.CELL_TYPE_ERROR => cell.getErrorCellValue
-                case Cell.CELL_TYPE_FORMULA => cell.getCellFormula
-                case Cell.CELL_TYPE_NUMERIC => cell.getNumericCellValue
-                case Cell.CELL_TYPE_STRING => cell.getStringCellValue
+            cell.getCellTypeEnum match {
+                case CellType.BLANK => cell.getStringCellValue
+                case CellType.BOOLEAN => cell.getBooleanCellValue
+                case CellType.ERROR => cell.getErrorCellValue
+                case CellType.FORMULA => cell.getCellFormula
+                case CellType.NUMERIC => cell.getNumericCellValue
+                case CellType.STRING => cell.getStringCellValue
+                case _ => cell.getStringCellValue
             }
         }
 
