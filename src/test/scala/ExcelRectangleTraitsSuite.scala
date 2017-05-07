@@ -13,9 +13,6 @@ import ExcelRectangle._
 
 class ExcelRectangleTraitsSuite extends FunSuite with BeforeAndAfterEach {
   
-    class RectDraw(rect:ExcelRectangle) extends
-        ExcelRectangle(rect) with ExcelRectangleDraw 
-
     override def beforeEach() {
     }
     
@@ -25,8 +22,8 @@ class ExcelRectangleTraitsSuite extends FunSuite with BeforeAndAfterEach {
     test("ExcelRectangleDraw mixin") {
         val workbook = new XSSFWorkbook
         val sheet = workbook.sheet_("test")
-        val rect1 = new RectDraw(new ExcelRectangle(sheet, 10, 10, 20, 20))
-        val rect2 = new RectDraw(new ExcelRectangle(sheet, 30, 30, 40, 40))
+        val rect1 = new ExcelRectangle(sheet, 10, 10, 20, 20) with ExcelRectangleDraw
+        val rect2 = new ExcelRectangle(sheet, 30, 30, 40, 40) with ExcelRectangleDraw
 
         rect1.drawOuterBorder(BorderStyle.THIN)
         rect2.drawOuterBorder(BorderStyle.THIN)
@@ -38,7 +35,7 @@ class ExcelRectangleTraitsSuite extends FunSuite with BeforeAndAfterEach {
     test("getInnerRectangleList") {
         val workbook = new XSSFWorkbook
         val sheet = workbook.sheet_("test")
-        val rect = new RectDraw(new ExcelRectangle(sheet, 10, 10, 20, 20))
+        val rect = new ExcelRectangle(sheet, 10, 10, 20, 20) with ExcelRectangleDraw
 
         rect.drawOuterBorder(BorderStyle.THIN)
         rect.drawHorizontalLine(2, BorderStyle.THIN)

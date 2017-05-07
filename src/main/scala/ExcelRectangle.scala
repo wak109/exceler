@@ -21,12 +21,11 @@ class ExcelRectangle (
     ) {
 
     def this(rect:ExcelRectangle) = this(
-        rect.sheet,
-        rect.topRow,
-        rect.leftCol,
-        rect.bottomRow,
-        rect.rightCol
-    )
+            rect.sheet,
+            rect.topRow,
+            rect.leftCol,
+            rect.bottomRow,
+            rect.rightCol)
 
     def getInnerRectangleList():List[List[ExcelRectangle]] = {
 
@@ -59,7 +58,15 @@ class ExcelRectangle (
             sheet.cell_(bottomRow, rightCol).getAddress + ")"
 }
 
+
 object ExcelRectangle {
+
+        implicit def excelRectangleImplicit(rect:ExcelRectangle) = (
+            rect.sheet,
+            rect.topRow,
+            rect.leftCol,
+            rect.bottomRow,
+            rect.rightCol)
 
         implicit class CellBorderImplicit (cell:Cell) {
     
