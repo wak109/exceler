@@ -73,14 +73,16 @@ class ExcelLibSuite extends FunSuite with BeforeAndAfterEach {
         assert(workbook.sheet_(testSheet) == workbook.getSheet(testSheet))
     }
 
-    test("Workbook.findCellStyle_") {
+    test("Workbook.findCellStyle") {
         val workbook = new XSSFWorkbook()
+
         val cellStyle = workbook.sheet_(testSheet).cell_(5, 5).getCellStyle
-        val tuple = cellStyle.toTuple_
+        assert(workbook.findCellStyle(cellStyle).nonEmpty)
 
-        assert(workbook.findCellStyle_(tuple).nonEmpty)
+        val tuple = cellStyle.toTuple
+        assert(workbook.findCellStyle(tuple).nonEmpty)
 
-        assert(workbook.findCellStyle_(
+        assert(workbook.findCellStyle(
             (tuple._1, tuple._2, tuple._3, BorderStyle.THIN, tuple._5,
             tuple._6, tuple._7, tuple._8, tuple._9, tuple._10)
             ).isEmpty)
@@ -89,7 +91,9 @@ class ExcelLibSuite extends FunSuite with BeforeAndAfterEach {
         newStyle.cloneStyleFrom(cellStyle)
         newStyle.setBorderRight(BorderStyle.THIN)
 
-        assert(workbook.findCellStyle_(
+        assert(workbook.findCellStyle(newStyle).nonEmpty)
+
+        assert(workbook.findCellStyle(
             (tuple._1, tuple._2, tuple._3, BorderStyle.THIN, tuple._5,
             tuple._6, tuple._7, tuple._8, tuple._9, tuple._10)
             ).nonEmpty)
@@ -187,39 +191,39 @@ class ExcelLibSuite extends FunSuite with BeforeAndAfterEach {
     test("Cell.getUppper,Cell.upper_ etc") {
         val cell = (new XSSFWorkbook()).sheet_(testSheet).cell_(100, 100)
 
-        assert(cell.getUpperCell_.isEmpty)
-        assert(cell.getLowerCell_.isEmpty)
-        assert(cell.getLeftCell_.isEmpty)
-        assert(cell.getRightCell_.isEmpty)
+        assert(cell.getUpperCell.isEmpty)
+        assert(cell.getLowerCell.isEmpty)
+        assert(cell.getLeftCell.isEmpty)
+        assert(cell.getRightCell.isEmpty)
 
-        cell.upperCell_
-        cell.lowerCell_
-        cell.leftCell_
-        cell.rightCell_
+        cell.upperCell
+        cell.lowerCell
+        cell.leftCell
+        cell.rightCell
 
-        assert(!cell.getUpperCell_.isEmpty)
-        assert(!cell.getLowerCell_.isEmpty)
-        assert(!cell.getLeftCell_.isEmpty)
-        assert(!cell.getRightCell_.isEmpty)
+        assert(!cell.getUpperCell.isEmpty)
+        assert(!cell.getLowerCell.isEmpty)
+        assert(!cell.getLeftCell.isEmpty)
+        assert(!cell.getRightCell.isEmpty)
 
     }
 
-    test("Cell.getUpperStream_ etc") {
+    test("Cell.getUpperStream etc") {
         val cell = (new XSSFWorkbook()).sheet_(testSheet).cell_(4, 4)
 
-        assert(cell.getUpperStream_.take(10).toList.length == 5)
-        assert(cell.getLowerStream_.take(10).toList.length == 10)
-        assert(cell.getLeftStream_.take(10).toList.length == 5)
-        assert(cell.getRightStream_.take(10).toList.length == 10)
+        assert(cell.getUpperStream.take(10).toList.length == 5)
+        assert(cell.getLowerStream.take(10).toList.length == 10)
+        assert(cell.getLeftStream.take(10).toList.length == 5)
+        assert(cell.getRightStream.take(10).toList.length == 10)
 
-        assert(cell.upperStream_.take(10).toList.length == 5)
-        assert(cell.lowerStream_.take(10).toList.length == 10)
-        assert(cell.leftStream_.take(10).toList.length == 5)
-        assert(cell.rightStream_.take(10).toList.length == 10)
+        assert(cell.upperStream.take(10).toList.length == 5)
+        assert(cell.lowerStream.take(10).toList.length == 10)
+        assert(cell.leftStream.take(10).toList.length == 5)
+        assert(cell.rightStream.take(10).toList.length == 10)
 
-        assert(cell.getUpperStream_.take(10).toList.length == 5)
-        assert(cell.getLowerStream_.take(10).toList.length == 10)
-        assert(cell.getLeftStream_.take(10).toList.length == 5)
-        assert(cell.getRightStream_.take(10).toList.length == 10)
+        assert(cell.getUpperStream.take(10).toList.length == 5)
+        assert(cell.getLowerStream.take(10).toList.length == 10)
+        assert(cell.getLeftStream.take(10).toList.length == 5)
+        assert(cell.getRightStream.take(10).toList.length == 10)
     }
 }

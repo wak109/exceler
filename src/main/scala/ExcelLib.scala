@@ -57,12 +57,12 @@ object ExcelLib {
             }
         }
 
-        def findCellStyle_(tuple:CellStyleTuple):Option[CellStyle] = (
+        def findCellStyle(tuple:CellStyleTuple):Option[CellStyle] = (
             for {
                 i <- (0 until workbook.getNumCellStyles).toStream
-                val cellStyle = workbook.getCellStyleAt(i)
-                if cellStyle.toTuple_ == tuple
-                } yield cellStyle
+                cellStyle = workbook.getCellStyleAt(i)
+                if cellStyle.toTuple == tuple
+            } yield cellStyle
         ).headOption
     }
 
@@ -103,7 +103,7 @@ object ExcelLib {
             }
         }
 
-        def getUpperCell_():Option[Cell] = {
+        def getUpperCell():Option[Cell] = {
             val rownum = cell.getRowIndex
             if (rownum > 0)
                 cell.getSheet.getCell_(rownum - 1, cell.getColumnIndex)
@@ -111,10 +111,10 @@ object ExcelLib {
                 None
         }
 
-        def getLowerCell_():Option[Cell] =
+        def getLowerCell():Option[Cell] =
             cell.getSheet.getCell_(cell.getRowIndex + 1, cell.getColumnIndex)
 
-        def getLeftCell_():Option[Cell] = {
+        def getLeftCell():Option[Cell] = {
             val colnum = cell.getColumnIndex
             if (colnum > 0)
                 cell.getSheet.getCell_(cell.getRowIndex, colnum - 1)
@@ -122,27 +122,27 @@ object ExcelLib {
                 None
         }
 
-        def getRightCell_():Option[Cell] =
+        def getRightCell():Option[Cell] =
             cell.getSheet.getCell_(cell.getRowIndex, cell.getColumnIndex + 1)
 
 
-        def upperCell_():Cell =
+        def upperCell():Cell =
             cell.getSheet.cell_(cell.getRowIndex - 1, cell.getColumnIndex)
 
-        def lowerCell_():Cell =
+        def lowerCell():Cell =
             cell.getSheet.cell_(cell.getRowIndex + 1, cell.getColumnIndex)
 
-        def leftCell_():Cell =
+        def leftCell():Cell =
             cell.getSheet.cell_(cell.getRowIndex, cell.getColumnIndex - 1)
 
-        def rightCell_():Cell =
+        def rightCell():Cell =
             cell.getSheet.cell_(cell.getRowIndex, cell.getColumnIndex + 1)
         
 
         ////////////////////////////////////////////////////////////////
         // Cell Stream (Reader)
         //
-        def getUpperStream_():Stream[Option[Cell]] = {
+        def getUpperStream():Stream[Option[Cell]] = {
             def inner(sheet:Sheet, rownum:Int, colnum:Int):Stream[Option[Cell]] =
                 Stream.cons(sheet.getCell_(rownum, colnum),
                     if (rownum > 0)
@@ -153,13 +153,13 @@ object ExcelLib {
             inner(cell.getSheet, cell.getRowIndex, cell.getColumnIndex)
         }
 
-        def getLowerStream_():Stream[Option[Cell]] = {
+        def getLowerStream():Stream[Option[Cell]] = {
             def inner(sheet:Sheet, rownum:Int, colnum:Int):Stream[Option[Cell]] =
                 Stream.cons(sheet.getCell_(rownum, colnum), inner(sheet, rownum + 1, colnum))
             inner(cell.getSheet, cell.getRowIndex, cell.getColumnIndex)
         }
 
-        def getLeftStream_():Stream[Option[Cell]] = {
+        def getLeftStream():Stream[Option[Cell]] = {
             def inner(sheet:Sheet, rownum:Int, colnum:Int):Stream[Option[Cell]] =
                 Stream.cons(sheet.getCell_(rownum, colnum),
                     if (colnum > 0)
@@ -170,7 +170,7 @@ object ExcelLib {
             inner(cell.getSheet, cell.getRowIndex, cell.getColumnIndex)
         }
 
-        def getRightStream_():Stream[Option[Cell]] = {
+        def getRightStream():Stream[Option[Cell]] = {
             def inner(sheet:Sheet, rownum:Int, colnum:Int):Stream[Option[Cell]] =
                 Stream.cons(sheet.getCell_(rownum, colnum), inner(sheet, rownum, colnum + 1))
             inner(cell.getSheet, cell.getRowIndex, cell.getColumnIndex)
@@ -179,30 +179,30 @@ object ExcelLib {
         ////////////////////////////////////////////////////////////////
         // Cell Stream (Writer)
         //
-        def upperStream_():Stream[Cell] = {
-            Stream.cons(cell, Try(cell.upperCell_) match {
-                case Success(next) => next.upperStream_
+        def upperStream():Stream[Cell] = {
+            Stream.cons(cell, Try(cell.upperCell) match {
+                case Success(next) => next.upperStream
                 case Failure(e) => Stream.empty
             })
         }
 
-        def lowerStream_():Stream[Cell] = {
-            Stream.cons(cell, Try(cell.lowerCell_) match {
-                case Success(next) => next.lowerStream_
+        def lowerStream():Stream[Cell] = {
+            Stream.cons(cell, Try(cell.lowerCell) match {
+                case Success(next) => next.lowerStream
                 case Failure(e) => Stream.empty
             })
         }
 
-        def leftStream_():Stream[Cell] = {
-            Stream.cons(cell, Try(cell.leftCell_) match {
-                case Success(next) => next.leftStream_
+        def leftStream():Stream[Cell] = {
+            Stream.cons(cell, Try(cell.leftCell) match {
+                case Success(next) => next.leftStream
                 case Failure(e) => Stream.empty
             })
         }
 
-        def rightStream_():Stream[Cell] = {
-            Stream.cons(cell, Try(cell.rightCell_) match {
-                case Success(next) => next.rightStream_
+        def rightStream():Stream[Cell] = {
+            Stream.cons(cell, Try(cell.rightCell) match {
+                case Success(next) => next.rightStream
                 case Failure(e) => Stream.empty
             })
         }
@@ -210,14 +210,14 @@ object ExcelLib {
         ////////////////////////////////////////////////////////////////
         // CellStyle
         //
-        def setBorderTop_(borderStyle:BorderStyle):Unit = {
+        def setBorderTop(borderStyle:BorderStyle):Unit = {
             val cellStyle = cell.getCellStyle
-            val t = cellStyle.toTuple_
+            val t = cellStyle.toTuple
             val newTuple = (borderStyle, t._2, t._3, t._4, t._5,
                 t._6, t._7, t._8, t._9, t._10)
             val workbook = cell.getSheet.getWorkbook
 
-            workbook.findCellStyle_(newTuple) match {
+            workbook.findCellStyle(newTuple) match {
                 case Some(s) => cell.setCellStyle(s)
                 case None => {
                     val newStyle = workbook.createCellStyle
@@ -228,14 +228,14 @@ object ExcelLib {
             }
         }
 
-        def setBorderBottom_(borderStyle:BorderStyle):Unit = {
+        def setBorderBottom(borderStyle:BorderStyle):Unit = {
             val cellStyle = cell.getCellStyle
-            val t = cellStyle.toTuple_
+            val t = cellStyle.toTuple
             val newTuple = (t._1, borderStyle, t._3, t._4, t._5,
                 t._6, t._7, t._8, t._9, t._10)
             val workbook = cell.getSheet.getWorkbook
 
-            workbook.findCellStyle_(newTuple) match {
+            workbook.findCellStyle(newTuple) match {
                 case Some(s) => cell.setCellStyle(s)
                 case None => {
                     val newStyle = workbook.createCellStyle
@@ -246,14 +246,14 @@ object ExcelLib {
             }
         }
 
-        def setBorderLeft_(borderStyle:BorderStyle):Unit = {
+        def setBorderLeft(borderStyle:BorderStyle):Unit = {
             val cellStyle = cell.getCellStyle
-            val t = cellStyle.toTuple_
+            val t = cellStyle.toTuple
             val newTuple = (t._1, t._2, borderStyle, t._4, t._5,
                 t._6, t._7, t._8, t._9, t._10)
             val workbook = cell.getSheet.getWorkbook
 
-            workbook.findCellStyle_(newTuple) match {
+            workbook.findCellStyle(newTuple) match {
                 case Some(s) => cell.setCellStyle(s)
                 case None => {
                     val newStyle = workbook.createCellStyle
@@ -264,14 +264,14 @@ object ExcelLib {
             }
         }
 
-        def setBorderRight_(borderStyle:BorderStyle):Unit = {
+        def setBorderRight(borderStyle:BorderStyle):Unit = {
             val cellStyle = cell.getCellStyle
-            val t = cellStyle.toTuple_
+            val t = cellStyle.toTuple
             val newTuple = (t._1, t._2, t._3, borderStyle,
                 t._5, t._6, t._7, t._8, t._9, t._10)
             val workbook = cell.getSheet.getWorkbook
 
-            workbook.findCellStyle_(newTuple) match {
+            workbook.findCellStyle(newTuple) match {
                 case Some(s) => cell.setCellStyle(s)
                 case None => {
                     val newStyle = workbook.createCellStyle
@@ -285,7 +285,7 @@ object ExcelLib {
 
     implicit class CellStyleImplicit(cellStyle:CellStyle) {
 
-        def toTuple_():(
+        def toTuple():(
             BorderStyle, 
             BorderStyle,
             BorderStyle,
@@ -307,4 +307,7 @@ object ExcelLib {
                 cellStyle.getVerticalAlignmentEnum,
                 cellStyle.getWrapText)
     }
+
+    implicit def CellStyleImplicit_(cellStyle:CellStyle) =
+        cellStyle.toTuple
 }

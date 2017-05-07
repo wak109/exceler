@@ -31,13 +31,13 @@ class ExcelRectangleSuite extends FunSuite with BeforeAndAfterEach {
 
         assert(! cell.hasBorderBottom)
 
-        cell.setBorderBottom_(BorderStyle.THIN)
+        cell.setBorderBottom(BorderStyle.THIN)
         assert(cell.hasBorderBottom)
 
-        cell.setBorderBottom_(BorderStyle.NONE)
+        cell.setBorderBottom(BorderStyle.NONE)
         assert(! cell.hasBorderBottom)
 
-        cell.lowerCell_.setBorderTop_(BorderStyle.THIN)
+        cell.lowerCell.setBorderTop(BorderStyle.THIN)
         assert(cell.hasBorderBottom)
     }
 
@@ -49,13 +49,13 @@ class ExcelRectangleSuite extends FunSuite with BeforeAndAfterEach {
 
         assert(! cell.hasBorderTop)
 
-        cell.setBorderTop_(BorderStyle.THIN)
+        cell.setBorderTop(BorderStyle.THIN)
         assert(cell.hasBorderTop)
 
-        cell.setBorderTop_(BorderStyle.NONE)
+        cell.setBorderTop(BorderStyle.NONE)
         assert(! cell.hasBorderTop)
 
-        cell.upperCell_.setBorderBottom_(BorderStyle.THIN)
+        cell.upperCell.setBorderBottom(BorderStyle.THIN)
         assert(cell.hasBorderTop)
 
         assert(sheet.cell_(0,5).hasBorderTop)
@@ -69,13 +69,13 @@ class ExcelRectangleSuite extends FunSuite with BeforeAndAfterEach {
 
         assert(! cell.hasBorderLeft)
 
-        cell.setBorderLeft_(BorderStyle.THIN)
+        cell.setBorderLeft(BorderStyle.THIN)
         assert(cell.hasBorderLeft)
 
-        cell.setBorderLeft_(BorderStyle.NONE)
+        cell.setBorderLeft(BorderStyle.NONE)
         assert(! cell.hasBorderLeft)
 
-        cell.leftCell_.setBorderRight_(BorderStyle.THIN)
+        cell.leftCell.setBorderRight(BorderStyle.THIN)
         assert(cell.hasBorderLeft)
 
         assert(sheet.cell_(5,0).hasBorderLeft)
@@ -89,13 +89,13 @@ class ExcelRectangleSuite extends FunSuite with BeforeAndAfterEach {
 
         assert(! cell.hasBorderRight)
 
-        cell.setBorderRight_(BorderStyle.THIN)
+        cell.setBorderRight(BorderStyle.THIN)
         assert(cell.hasBorderRight)
 
-        cell.setBorderRight_(BorderStyle.NONE)
+        cell.setBorderRight(BorderStyle.NONE)
         assert(! cell.hasBorderRight)
 
-        cell.rightCell_.setBorderLeft_(BorderStyle.THIN)
+        cell.rightCell.setBorderLeft(BorderStyle.THIN)
         assert(cell.hasBorderRight)
     }
 
@@ -104,20 +104,20 @@ class ExcelRectangleSuite extends FunSuite with BeforeAndAfterEach {
         val sheet = workbook.sheet_(testSheet)
         val cell = sheet.cell_(5, 5)
 
-        cell.setBorderTop_(BorderStyle.NONE)
-        cell.setBorderBottom_(BorderStyle.THIN)
-        cell.setBorderLeft_(BorderStyle.NONE)
-        cell.setBorderRight_(BorderStyle.THIN)
+        cell.setBorderTop(BorderStyle.NONE)
+        cell.setBorderBottom(BorderStyle.THIN)
+        cell.setBorderLeft(BorderStyle.NONE)
+        cell.setBorderRight(BorderStyle.THIN)
 
         assert(cell.isOuterBorderBottom)
         assert(cell.isOuterBorderRight)
 
         assert(cell.getCellStyle.getBorderBottomEnum == BorderStyle.THIN)
-        assert(cell.lowerCell_.getCellStyle.getBorderTopEnum == BorderStyle.NONE)
+        assert(cell.lowerCell.getCellStyle.getBorderTopEnum == BorderStyle.NONE)
         assert(cell.isOuterBorderBottom)
 
         assert(cell.getCellStyle.getBorderRightEnum == BorderStyle.THIN)
-        assert(cell.rightCell_.getCellStyle.getBorderLeftEnum == BorderStyle.NONE)
+        assert(cell.rightCell.getCellStyle.getBorderLeftEnum == BorderStyle.NONE)
         assert(cell.isOuterBorderRight)
     }
 
@@ -128,10 +128,10 @@ class ExcelRectangleSuite extends FunSuite with BeforeAndAfterEach {
 
         for {i <- (5 to 10)
                 cell = sheet.cell_(i, 10)
-        } cell.setBorderRight_(BorderStyle.THIN)
+        } cell.setBorderRight(BorderStyle.THIN)
 
-        topRight.setBorderTop_(BorderStyle.THIN)
-        bottomRight.setBorderBottom_(BorderStyle.THIN)
+        topRight.setBorderTop(BorderStyle.THIN)
+        bottomRight.setBorderBottom(BorderStyle.THIN)
 
         findTopRightFromBottomRight(bottomRight) match {
             case Some(c) => assert(c == topRight)
@@ -146,10 +146,10 @@ class ExcelRectangleSuite extends FunSuite with BeforeAndAfterEach {
 
         for {i <- (5 to 10)
                 cell = sheet.cell_(10, i)
-        } cell.setBorderBottom_(BorderStyle.THIN)
+        } cell.setBorderBottom(BorderStyle.THIN)
 
-        bottomLeft.setBorderLeft_(BorderStyle.THIN)
-        bottomRight.setBorderRight_(BorderStyle.THIN)
+        bottomLeft.setBorderLeft(BorderStyle.THIN)
+        bottomRight.setBorderRight(BorderStyle.THIN)
 
         findBottomLeftFromBottomRight(bottomRight) match {
             case Some(c) => assert(c == bottomLeft)
@@ -164,10 +164,10 @@ class ExcelRectangleSuite extends FunSuite with BeforeAndAfterEach {
 
         for {i <- (6 to 10)
                 cell = sheet.cell_(10, i)
-        } cell.setBorderBottom_(BorderStyle.THIN)
+        } cell.setBorderBottom(BorderStyle.THIN)
 
-        bottomLeft.setBorderLeft_(BorderStyle.THIN)
-        bottomRight.setBorderRight_(BorderStyle.THIN)
+        bottomLeft.setBorderLeft(BorderStyle.THIN)
+        bottomRight.setBorderRight(BorderStyle.THIN)
 
         findBottomLeftFromBottomRight(bottomRight) match {
             case Some(c) => assert(false)
@@ -183,10 +183,10 @@ class ExcelRectangleSuite extends FunSuite with BeforeAndAfterEach {
         val bottomLeft = sheet.cell_(10, 5)
         val bottomRight = sheet.cell_(10, 10)
 
-        bottomLeft.setBorderLeft_(BorderStyle.THIN)
-        bottomLeft.setBorderBottom_(BorderStyle.THIN)
-        topRight.setBorderTop_(BorderStyle.THIN)
-        topRight.setBorderRight_(BorderStyle.THIN)
+        bottomLeft.setBorderLeft(BorderStyle.THIN)
+        bottomLeft.setBorderBottom(BorderStyle.THIN)
+        topRight.setBorderTop(BorderStyle.THIN)
+        topRight.setBorderRight(BorderStyle.THIN)
 
         findTopLeftFromBottomRight(bottomRight) match {
             case Some(c) => assert(c.getRowIndex == 5 && c.getColumnIndex == 5)
@@ -229,24 +229,24 @@ class ExcelRectangleSuite extends FunSuite with BeforeAndAfterEach {
         var bottomLeft = sheet.cell_(10, 5)
         var bottomRight = sheet.cell_(10, 10)
 
-        bottomRight.setBorderRight_(BorderStyle.THIN)
-        bottomRight.setBorderBottom_(BorderStyle.THIN)
-        bottomLeft.setBorderLeft_(BorderStyle.THIN)
-        bottomLeft.setBorderBottom_(BorderStyle.THIN)
-        topRight.setBorderTop_(BorderStyle.THIN)
-        topRight.setBorderRight_(BorderStyle.THIN)
+        bottomRight.setBorderRight(BorderStyle.THIN)
+        bottomRight.setBorderBottom(BorderStyle.THIN)
+        bottomLeft.setBorderLeft(BorderStyle.THIN)
+        bottomLeft.setBorderBottom(BorderStyle.THIN)
+        topRight.setBorderTop(BorderStyle.THIN)
+        topRight.setBorderRight(BorderStyle.THIN)
 
         topLeft = sheet.cell_(50, 50)
         topRight = sheet.cell_(50, 100)
         bottomLeft = sheet.cell_(100, 50)
         bottomRight = sheet.cell_(100, 100)
 
-        bottomRight.setBorderRight_(BorderStyle.THIN)
-        bottomRight.setBorderBottom_(BorderStyle.THIN)
-        bottomLeft.setBorderLeft_(BorderStyle.THIN)
-        bottomLeft.setBorderBottom_(BorderStyle.THIN)
-        topRight.setBorderTop_(BorderStyle.THIN)
-        topRight.setBorderRight_(BorderStyle.THIN)
+        bottomRight.setBorderRight(BorderStyle.THIN)
+        bottomRight.setBorderBottom(BorderStyle.THIN)
+        bottomLeft.setBorderLeft(BorderStyle.THIN)
+        bottomLeft.setBorderBottom(BorderStyle.THIN)
+        topRight.setBorderTop(BorderStyle.THIN)
+        topRight.setBorderRight(BorderStyle.THIN)
 
         val rectList = sheet.getRectangleList
         

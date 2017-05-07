@@ -69,7 +69,7 @@ object ExcelRectangle {
             def hasBorderBottom():Boolean = {
                 (cell.getCellStyle.getBorderBottomEnum != 
                     BorderStyle.NONE) ||
-                    (cell.getLowerCell_.map(
+                    (cell.getLowerCell.map(
                         _.getCellStyle.getBorderTopEnum != BorderStyle.NONE)
                     match {
                         case Some(b) => b
@@ -80,7 +80,7 @@ object ExcelRectangle {
             def hasBorderTop():Boolean = {
                 (cell.getRowIndex == 0) ||
                 (cell.getCellStyle.getBorderTopEnum != BorderStyle.NONE) ||
-                    (cell.getUpperCell_.map(
+                    (cell.getUpperCell.map(
                         _.getCellStyle.getBorderBottomEnum !=
                             BorderStyle.NONE)
                     match {
@@ -92,7 +92,7 @@ object ExcelRectangle {
             def hasBorderRight():Boolean = {
                 (cell.getCellStyle.getBorderRightEnum !=
                     BorderStyle.NONE) ||
-                    (cell.getRightCell_.map(
+                    (cell.getRightCell.map(
                         _.getCellStyle.getBorderLeftEnum !=
                             BorderStyle.NONE)
                     match {
@@ -105,7 +105,7 @@ object ExcelRectangle {
                 (cell.getColumnIndex == 0) ||
                 (cell.getCellStyle.getBorderLeftEnum !=
                     BorderStyle.NONE) ||
-                    (cell.getLeftCell_.map(
+                    (cell.getLeftCell.map(
                         _.getCellStyle.getBorderRightEnum !=
                             BorderStyle.NONE)
                     match {
@@ -119,7 +119,7 @@ object ExcelRectangle {
             //
             //
             def isOuterBorderTop():Boolean = {
-                val upperCell = cell.getUpperCell_
+                val upperCell = cell.getUpperCell
     
                 (cell.hasBorderTop) &&
                 (upperCell match {
@@ -131,7 +131,7 @@ object ExcelRectangle {
             }
     
             def isOuterBorderBottom():Boolean = {
-                val lowerCell = cell.getLowerCell_
+                val lowerCell = cell.getLowerCell
     
                 (cell.hasBorderBottom) &&
                 (lowerCell match {
@@ -143,7 +143,7 @@ object ExcelRectangle {
             }
     
             def isOuterBorderLeft():Boolean = {
-                val leftCell = cell.getLeftCell_
+                val leftCell = cell.getLeftCell
     
                 (cell.hasBorderLeft) &&
                 (leftCell match {
@@ -155,7 +155,7 @@ object ExcelRectangle {
             }
     
             def isOuterBorderRight():Boolean = {
-                val rightCell = cell.getRightCell_
+                val rightCell = cell.getRightCell
     
                 (cell.hasBorderRight) &&
                 (rightCell match {
@@ -186,7 +186,7 @@ object ExcelRectangle {
         //
         def findTopRightFromBottomRight(cell:Cell):Option[Cell] = (
             for {
-                cOpt <- cell.getUpperStream_
+                cOpt <- cell.getUpperStream
                 c <- cOpt
                 if c.isOuterBorderTop && c.isOuterBorderRight
             } yield c
@@ -194,7 +194,7 @@ object ExcelRectangle {
     
         def findBottomLeftFromBottomRight(cell:Cell):Option[Cell] = (
             for {
-                cOpt <- cell.getLeftStream_
+                cOpt <- cell.getLeftStream
                 c <- cOpt
                 if c.isOuterBorderBottom && c.isOuterBorderLeft
             } yield c
