@@ -82,6 +82,15 @@ object ExcelLib {
             sheet.getRow_(rownum).flatMap(_.getCell_(colnum))
 
         def cell_(rownum:Int, colnum:Int):Cell = sheet.row_(rownum).cell_(colnum)
+
+        def getDrawingPatriarch_():Option[Drawing[_ <: Shape]] = Option(sheet.getDrawingPatriarch)
+
+        def drawingPatriarch_():Drawing[_ <: Shape] = {
+            this.getDrawingPatriarch_ match {
+                case Some(d) => d
+                case None => sheet.createDrawingPatriarch()
+            }
+        }
     }
 
     implicit class RowImplicit(row:Row) {
