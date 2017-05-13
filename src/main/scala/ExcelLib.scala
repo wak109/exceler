@@ -44,12 +44,12 @@ object ExcelLib {
             out.close()
         }
 
-        def getSheet_(name:String):Option[Sheet] = Option(workbook.getSheet(name))
+        def getSheetOption(name:String):Option[Sheet] = Option(workbook.getSheet(name))
 
         def createSheet_(name:String):Try[Sheet] = Try(workbook.createSheet(name)) 
 
-        def sheet_(name:String):Sheet = {
-            this.getSheet_(name) match {
+        def sheet(name:String):Sheet = {
+            this.getSheetOption(name) match {
                 case Some(s) => s
                 case None => this.createSheet_(name) match {
                     case Success(s) => s
@@ -69,24 +69,24 @@ object ExcelLib {
 
     implicit class SheetImplicit(sheet:Sheet) {
 
-        def getRow_(rownum:Int):Option[Row] = Option(sheet.getRow(rownum))
+        def getRowOption(rownum:Int):Option[Row] = Option(sheet.getRow(rownum))
 
-        def row_(rownum:Int):Row = {
-            this.getRow_(rownum) match {
+        def row(rownum:Int):Row = {
+            this.getRowOption(rownum) match {
                 case Some(r) => r
                 case None => sheet.createRow(rownum)
             }
         }
 
-        def getCell_(rownum:Int, colnum:Int):Option[Cell] = 
-            sheet.getRow_(rownum).flatMap(_.getCell_(colnum))
+        def getCellOption(rownum:Int, colnum:Int):Option[Cell] = 
+            sheet.getRowOption(rownum).flatMap(_.getCellOption(colnum))
 
-        def cell_(rownum:Int, colnum:Int):Cell = sheet.row_(rownum).cell_(colnum)
+        def cell(rownum:Int, colnum:Int):Cell = sheet.row(rownum).cell(colnum)
 
-        def getDrawingPatriarch_():Option[Drawing[_ <: Shape]] = Option(sheet.getDrawingPatriarch)
+        def getDrawingPatriarchOption():Option[Drawing[_ <: Shape]] = Option(sheet.getDrawingPatriarch)
 
-        def drawingPatriarch_():Drawing[_ <: Shape] = {
-            this.getDrawingPatriarch_ match {
+        def drawingPatriarch():Drawing[_ <: Shape] = {
+            this.getDrawingPatriarchOption match {
                 case Some(d) => d
                 case None => sheet.createDrawingPatriarch()
             }
@@ -95,9 +95,9 @@ object ExcelLib {
 
     implicit class RowImplicit(row:Row) {
 
-        def getCell_(colnum:Int):Option[Cell] = Option(row.getCell(colnum))
+        def getCellOption(colnum:Int):Option[Cell] = Option(row.getCell(colnum))
 
-        def cell_(colnum:Int):Cell = row.getCell(colnum, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK)
+        def cell(colnum:Int):Cell = row.getCell(colnum, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK)
     }
 
     implicit class CellImplicit(cell:Cell) {
@@ -117,37 +117,37 @@ object ExcelLib {
         def getUpperCell():Option[Cell] = {
             val rownum = cell.getRowIndex
             if (rownum > 0)
-                cell.getSheet.getCell_(rownum - 1, cell.getColumnIndex)
+                cell.getSheet.getCellOption(rownum - 1, cell.getColumnIndex)
             else
                 None
         }
 
         def getLowerCell():Option[Cell] =
-            cell.getSheet.getCell_(cell.getRowIndex + 1, cell.getColumnIndex)
+            cell.getSheet.getCellOption(cell.getRowIndex + 1, cell.getColumnIndex)
 
         def getLeftCell():Option[Cell] = {
             val colnum = cell.getColumnIndex
             if (colnum > 0)
-                cell.getSheet.getCell_(cell.getRowIndex, colnum - 1)
+                cell.getSheet.getCellOption(cell.getRowIndex, colnum - 1)
             else
                 None
         }
 
         def getRightCell():Option[Cell] =
-            cell.getSheet.getCell_(cell.getRowIndex, cell.getColumnIndex + 1)
+            cell.getSheet.getCellOption(cell.getRowIndex, cell.getColumnIndex + 1)
 
 
         def upperCell():Cell =
-            cell.getSheet.cell_(cell.getRowIndex - 1, cell.getColumnIndex)
+            cell.getSheet.cell(cell.getRowIndex - 1, cell.getColumnIndex)
 
         def lowerCell():Cell =
-            cell.getSheet.cell_(cell.getRowIndex + 1, cell.getColumnIndex)
+            cell.getSheet.cell(cell.getRowIndex + 1, cell.getColumnIndex)
 
         def leftCell():Cell =
-            cell.getSheet.cell_(cell.getRowIndex, cell.getColumnIndex - 1)
+            cell.getSheet.cell(cell.getRowIndex, cell.getColumnIndex - 1)
 
         def rightCell():Cell =
-            cell.getSheet.cell_(cell.getRowIndex, cell.getColumnIndex + 1)
+            cell.getSheet.cell(cell.getRowIndex, cell.getColumnIndex + 1)
         
 
         ////////////////////////////////////////////////////////////////
@@ -155,7 +155,7 @@ object ExcelLib {
         //
         def getUpperStream():Stream[Option[Cell]] = {
             def inner(sheet:Sheet, rownum:Int, colnum:Int):Stream[Option[Cell]] =
-                Stream.cons(sheet.getCell_(rownum, colnum),
+                Stream.cons(sheet.getCellOption(rownum, colnum),
                     if (rownum > 0)
                         inner(sheet, rownum - 1, colnum)
                     else
@@ -166,13 +166,13 @@ object ExcelLib {
 
         def getLowerStream():Stream[Option[Cell]] = {
             def inner(sheet:Sheet, rownum:Int, colnum:Int):Stream[Option[Cell]] =
-                Stream.cons(sheet.getCell_(rownum, colnum), inner(sheet, rownum + 1, colnum))
+                Stream.cons(sheet.getCellOption(rownum, colnum), inner(sheet, rownum + 1, colnum))
             inner(cell.getSheet, cell.getRowIndex, cell.getColumnIndex)
         }
 
         def getLeftStream():Stream[Option[Cell]] = {
             def inner(sheet:Sheet, rownum:Int, colnum:Int):Stream[Option[Cell]] =
-                Stream.cons(sheet.getCell_(rownum, colnum),
+                Stream.cons(sheet.getCellOption(rownum, colnum),
                     if (colnum > 0)
                         inner(sheet, rownum, colnum - 1)
                     else
@@ -183,7 +183,7 @@ object ExcelLib {
 
         def getRightStream():Stream[Option[Cell]] = {
             def inner(sheet:Sheet, rownum:Int, colnum:Int):Stream[Option[Cell]] =
-                Stream.cons(sheet.getCell_(rownum, colnum), inner(sheet, rownum, colnum + 1))
+                Stream.cons(sheet.getCellOption(rownum, colnum), inner(sheet, rownum, colnum + 1))
             inner(cell.getSheet, cell.getRowIndex, cell.getColumnIndex)
         }
 

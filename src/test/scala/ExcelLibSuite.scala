@@ -36,7 +36,7 @@ class ExcelLibSuite extends FunSuite with BeforeAndAfterEach {
     test("Workbook.getSheet_") {
         val workbook = new XSSFWorkbook()
 
-        workbook.getSheet_(testSheet) match {
+        workbook.getSheetOption(testSheet) match {
             case Some(_) => assert(false)
             case None => assert(true)
         }
@@ -46,7 +46,7 @@ class ExcelLibSuite extends FunSuite with BeforeAndAfterEach {
             case Failure(e) => assert(false)
         }
 
-        workbook.getSheet_(testSheet) match {
+        workbook.getSheetOption(testSheet) match {
             case Some(_) => assert(true)
             case None => assert(false)
         }
@@ -58,25 +58,25 @@ class ExcelLibSuite extends FunSuite with BeforeAndAfterEach {
         }
     }
 
-    test("Workbook.sheet_") {
+    test("Workbook.sheet") {
         val workbook = new XSSFWorkbook()
 
-        Try(workbook.sheet_(testSheet)) match {
+        Try(workbook.sheet(testSheet)) match {
             case Success(s) => assert(s.getSheetName() == testSheet)
             case Failure(e) => assert(false)
         }
 
-        Try(workbook.sheet_(testSheet)) match {
+        Try(workbook.sheet(testSheet)) match {
             case Success(s) => assert(s.getSheetName() == testSheet)
             case Failure(e) => assert(false)
         }
-        assert(workbook.sheet_(testSheet) == workbook.getSheet(testSheet))
+        assert(workbook.sheet(testSheet) == workbook.getSheet(testSheet))
     }
 
     test("Workbook.findCellStyle") {
         val workbook = new XSSFWorkbook()
 
-        val cellStyle = workbook.sheet_(testSheet).cell_(5, 5).getCellStyle
+        val cellStyle = workbook.sheet(testSheet).cell(5, 5).getCellStyle
         assert(workbook.findCellStyle(cellStyle).nonEmpty)
 
         val tuple = cellStyle.toTuple
@@ -105,32 +105,48 @@ class ExcelLibSuite extends FunSuite with BeforeAndAfterEach {
     //
     test("Sheet.getRow_,Sheet.row_") {
         val workbook = new XSSFWorkbook()
-        val sheet = workbook.sheet_(testSheet)
+        val sheet = workbook.sheet(testSheet)
 
-        sheet.getRow_(0) match {
+        sheet.getRowOption(0) match {
             case Some(r) => assert(false)
             case None => assert(true)
         }
 
-        val row = sheet.row_(0)
+        val row = sheet.row(0)
 
-        sheet.getRow_(0) match {
+        sheet.getRowOption(0) match {
             case Some(r) => assert(true)
             case None => assert(false)
         }
     }
 
     test("Sheet.getCell_") {
-        val sheet = (new XSSFWorkbook()).sheet_(testSheet)
+        val sheet = (new XSSFWorkbook()).sheet(testSheet)
 
-        sheet.getCell_(0, 0) match {
+        sheet.getCellOption(0, 0) match {
             case Some(c) => assert(false)
             case None => assert(true)
         }
 
-        val cell = sheet.cell_(0, 0)
+        val cell = sheet.cell(0, 0)
 
-        sheet.getCell_(0, 0) match {
+        sheet.getCellOption(0, 0) match {
+            case Some(c) => assert(true)
+            case None => assert(false)
+        }
+    }
+
+    test("Sheet.getDrawingPatriarch") {
+        val sheet = (new XSSFWorkbook()).sheet(testSheet)
+
+        sheet.getDrawingPatriarchOption match {
+            case Some(c) => assert(false)
+            case None => assert(true)
+        }
+
+        val drawing = sheet.drawingPatriarch
+
+        sheet.getDrawingPatriarchOption match {
             case Some(c) => assert(true)
             case None => assert(false)
         }
@@ -140,16 +156,16 @@ class ExcelLibSuite extends FunSuite with BeforeAndAfterEach {
     // Row Tests
     //
     test("Row.getCell_") {
-        val row = (new XSSFWorkbook()).sheet_(testSheet).row_(100)
+        val row = (new XSSFWorkbook()).sheet(testSheet).row(100)
         
-        row.getCell_(100) match {
+        row.getCellOption(100) match {
             case Some(c) => assert(false)
             case None => assert(true)
         }
 
-        val cell = row.cell_(100)
+        val cell = row.cell(100)
 
-        row.getCell_(100) match {
+        row.getCellOption(100) match {
             case Some(c) => assert(true)
             case None => assert(false)
         }
@@ -176,7 +192,7 @@ class ExcelLibSuite extends FunSuite with BeforeAndAfterEach {
 
         (
             for {
-                sheet <- workbook.getSheet_(testSheet)
+                sheet <- workbook.getSheetOption(testSheet)
                 row = sheet.getRow(0)
                 cell = row.getCell(0)
             } yield cell
@@ -189,7 +205,7 @@ class ExcelLibSuite extends FunSuite with BeforeAndAfterEach {
     }
 
     test("Cell.getUppper,Cell.upper_ etc") {
-        val cell = (new XSSFWorkbook()).sheet_(testSheet).cell_(100, 100)
+        val cell = (new XSSFWorkbook()).sheet(testSheet).cell(100, 100)
 
         assert(cell.getUpperCell.isEmpty)
         assert(cell.getLowerCell.isEmpty)
@@ -209,7 +225,7 @@ class ExcelLibSuite extends FunSuite with BeforeAndAfterEach {
     }
 
     test("Cell.getUpperStream etc") {
-        val cell = (new XSSFWorkbook()).sheet_(testSheet).cell_(4, 4)
+        val cell = (new XSSFWorkbook()).sheet(testSheet).cell(4, 4)
 
         assert(cell.getUpperStream.take(10).toList.length == 5)
         assert(cell.getLowerStream.take(10).toList.length == 10)

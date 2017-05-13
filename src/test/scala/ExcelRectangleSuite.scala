@@ -25,8 +25,8 @@ class ExcelRectangleSuite extends FunSuite with BeforeAndAfterEach {
 
     test("Cell.hasBorderBottom") {
         val workbook = new XSSFWorkbook
-        val sheet = workbook.sheet_(testSheet)
-        val cell = sheet.cell_(5, 5)
+        val sheet = workbook.sheet(testSheet)
+        val cell = sheet.cell(5, 5)
         var style = workbook.createCellStyle
 
         assert(! cell.hasBorderBottom)
@@ -43,8 +43,8 @@ class ExcelRectangleSuite extends FunSuite with BeforeAndAfterEach {
 
     test("Cell.hasBorderTop") {
         val workbook = new XSSFWorkbook
-        val sheet = workbook.sheet_(testSheet)
-        val cell = sheet.cell_(5, 5)
+        val sheet = workbook.sheet(testSheet)
+        val cell = sheet.cell(5, 5)
         var style = workbook.createCellStyle
 
         assert(! cell.hasBorderTop)
@@ -58,13 +58,13 @@ class ExcelRectangleSuite extends FunSuite with BeforeAndAfterEach {
         cell.upperCell.setBorderBottom(BorderStyle.THIN)
         assert(cell.hasBorderTop)
 
-        assert(sheet.cell_(0,5).hasBorderTop)
+        assert(sheet.cell(0,5).hasBorderTop)
     }
 
     test("Cell.hasBorderLeft") {
         val workbook = new XSSFWorkbook
-        val sheet = workbook.sheet_(testSheet)
-        val cell = sheet.cell_(5, 5)
+        val sheet = workbook.sheet(testSheet)
+        val cell = sheet.cell(5, 5)
         var style = workbook.createCellStyle
 
         assert(! cell.hasBorderLeft)
@@ -78,13 +78,13 @@ class ExcelRectangleSuite extends FunSuite with BeforeAndAfterEach {
         cell.leftCell.setBorderRight(BorderStyle.THIN)
         assert(cell.hasBorderLeft)
 
-        assert(sheet.cell_(5,0).hasBorderLeft)
+        assert(sheet.cell(5,0).hasBorderLeft)
     }
 
     test("Cell.hasBorderRight") {
         val workbook = new XSSFWorkbook
-        val sheet = workbook.sheet_(testSheet)
-        val cell = sheet.cell_(5, 5)
+        val sheet = workbook.sheet(testSheet)
+        val cell = sheet.cell(5, 5)
         var style = workbook.createCellStyle
 
         assert(! cell.hasBorderRight)
@@ -101,8 +101,8 @@ class ExcelRectangleSuite extends FunSuite with BeforeAndAfterEach {
 
     test("Cell.isOuterBorderBottom etc") {
         val workbook = new XSSFWorkbook
-        val sheet = workbook.sheet_(testSheet)
-        val cell = sheet.cell_(5, 5)
+        val sheet = workbook.sheet(testSheet)
+        val cell = sheet.cell(5, 5)
 
         cell.setBorderTop(BorderStyle.NONE)
         cell.setBorderBottom(BorderStyle.THIN)
@@ -122,12 +122,12 @@ class ExcelRectangleSuite extends FunSuite with BeforeAndAfterEach {
     }
 
     test("Cell.findTopRightFromBottomRight") {
-        val sheet = (new XSSFWorkbook).sheet_(testSheet)
-        val topRight = sheet.cell_(5, 10)
-        val bottomRight = sheet.cell_(10, 10)
+        val sheet = (new XSSFWorkbook).sheet(testSheet)
+        val topRight = sheet.cell(5, 10)
+        val bottomRight = sheet.cell(10, 10)
 
         for {i <- (5 to 10)
-                cell = sheet.cell_(i, 10)
+                cell = sheet.cell(i, 10)
         } cell.setBorderRight(BorderStyle.THIN)
 
         topRight.setBorderTop(BorderStyle.THIN)
@@ -140,12 +140,12 @@ class ExcelRectangleSuite extends FunSuite with BeforeAndAfterEach {
     }
 
     test("Cell.findBottomLeftFromBottomRight") {
-        val sheet = (new XSSFWorkbook).sheet_(testSheet)
-        val bottomLeft = sheet.cell_(10, 5)
-        val bottomRight = sheet.cell_(10, 10)
+        val sheet = (new XSSFWorkbook).sheet(testSheet)
+        val bottomLeft = sheet.cell(10, 5)
+        val bottomRight = sheet.cell(10, 10)
 
         for {i <- (5 to 10)
-                cell = sheet.cell_(10, i)
+                cell = sheet.cell(10, i)
         } cell.setBorderBottom(BorderStyle.THIN)
 
         bottomLeft.setBorderLeft(BorderStyle.THIN)
@@ -158,12 +158,12 @@ class ExcelRectangleSuite extends FunSuite with BeforeAndAfterEach {
     }
 
     test("Cell.findBottomLeftFromBottomRight: Negative Case") {
-        val sheet = (new XSSFWorkbook).sheet_(testSheet)
-        val bottomLeft = sheet.cell_(10, 5)
-        val bottomRight = sheet.cell_(10, 10)
+        val sheet = (new XSSFWorkbook).sheet(testSheet)
+        val bottomLeft = sheet.cell(10, 5)
+        val bottomRight = sheet.cell(10, 10)
 
         for {i <- (6 to 10)
-                cell = sheet.cell_(10, i)
+                cell = sheet.cell(10, i)
         } cell.setBorderBottom(BorderStyle.THIN)
 
         bottomLeft.setBorderLeft(BorderStyle.THIN)
@@ -177,11 +177,11 @@ class ExcelRectangleSuite extends FunSuite with BeforeAndAfterEach {
 
     test("Cell.findTopLeftFromBottomRight") {
         val workbook = new XSSFWorkbook
-        val sheet = workbook.sheet_(testSheet)
-        val topLeft = sheet.cell_(5, 5)
-        val topRight = sheet.cell_(5, 10)
-        val bottomLeft = sheet.cell_(10, 5)
-        val bottomRight = sheet.cell_(10, 10)
+        val sheet = workbook.sheet(testSheet)
+        val topLeft = sheet.cell(5, 5)
+        val topRight = sheet.cell(5, 10)
+        val bottomLeft = sheet.cell(10, 5)
+        val bottomRight = sheet.cell(10, 10)
 
         bottomLeft.setBorderLeft(BorderStyle.THIN)
         bottomLeft.setBorderBottom(BorderStyle.THIN)
@@ -196,10 +196,10 @@ class ExcelRectangleSuite extends FunSuite with BeforeAndAfterEach {
 
     test("check apache poi") {
         val workbook = new XSSFWorkbook
-        val sheet = workbook.sheet_(testSheet)
-        val topRight = sheet.cell_(5, 10)
-        val bottomLeft = sheet.cell_(10, 5)
-        val bottomRight = sheet.cell_(10, 10)
+        val sheet = workbook.sheet(testSheet)
+        val topRight = sheet.cell(5, 10)
+        val bottomLeft = sheet.cell(10, 5)
+        val bottomRight = sheet.cell(10, 10)
 
         assert(sheet.getFirstRowNum == 5)
         assert(sheet.getLastRowNum == 10)
@@ -213,21 +213,21 @@ class ExcelRectangleSuite extends FunSuite with BeforeAndAfterEach {
 
     test("getCellList") {
         val workbook = new XSSFWorkbook
-        val sheet = workbook.sheet_(testSheet)
-        val topRight = sheet.cell_(5, 10)
-        val bottomLeft = sheet.cell_(10, 5)
-        val bottomRight = sheet.cell_(10, 10)
+        val sheet = workbook.sheet(testSheet)
+        val topRight = sheet.cell(5, 10)
+        val bottomLeft = sheet.cell(10, 5)
+        val bottomRight = sheet.cell(10, 10)
 
         assert(getCellList(sheet).length == 3)
     }
 
     test("getRectangleList") {
         val workbook = new XSSFWorkbook
-        val sheet = workbook.sheet_(testSheet)
-        var topLeft = sheet.cell_(5, 5)
-        var topRight = sheet.cell_(5, 10)
-        var bottomLeft = sheet.cell_(10, 5)
-        var bottomRight = sheet.cell_(10, 10)
+        val sheet = workbook.sheet(testSheet)
+        var topLeft = sheet.cell(5, 5)
+        var topRight = sheet.cell(5, 10)
+        var bottomLeft = sheet.cell(10, 5)
+        var bottomRight = sheet.cell(10, 10)
 
         bottomRight.setBorderRight(BorderStyle.THIN)
         bottomRight.setBorderBottom(BorderStyle.THIN)
@@ -236,10 +236,10 @@ class ExcelRectangleSuite extends FunSuite with BeforeAndAfterEach {
         topRight.setBorderTop(BorderStyle.THIN)
         topRight.setBorderRight(BorderStyle.THIN)
 
-        topLeft = sheet.cell_(50, 50)
-        topRight = sheet.cell_(50, 100)
-        bottomLeft = sheet.cell_(100, 50)
-        bottomRight = sheet.cell_(100, 100)
+        topLeft = sheet.cell(50, 50)
+        topRight = sheet.cell(50, 100)
+        bottomLeft = sheet.cell(100, 50)
+        bottomRight = sheet.cell(100, 100)
 
         bottomRight.setBorderRight(BorderStyle.THIN)
         bottomRight.setBorderBottom(BorderStyle.THIN)

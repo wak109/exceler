@@ -20,22 +20,22 @@ trait ExcelRectangleDraw {
 
     def drawOuterBorderTop(borderStyle:BorderStyle):Unit = {
         for (colnum <- (leftCol to rightCol).toList)
-            sheet.cell_(topRow, colnum).setBorderTop(borderStyle)
+            sheet.cell(topRow, colnum).setBorderTop(borderStyle)
     }
 
     def drawOuterBorderLeft(borderStyle:BorderStyle):Unit = {
         for (rownum <- (topRow to bottomRow).toList)
-            sheet.cell_(rownum, leftCol).setBorderLeft(borderStyle)
+            sheet.cell(rownum, leftCol).setBorderLeft(borderStyle)
     }
 
     def drawOuterBorderBottom(borderStyle:BorderStyle):Unit = {
         for (colnum <- (leftCol to rightCol).toList)
-            sheet.cell_(bottomRow, colnum).setBorderBottom(borderStyle)
+            sheet.cell(bottomRow, colnum).setBorderBottom(borderStyle)
     }
 
     def drawOuterBorderRight(borderStyle:BorderStyle):Unit = {
         for (rownum <- (topRow to bottomRow).toList)
-            sheet.cell_(rownum, rightCol).setBorderRight(borderStyle)
+            sheet.cell(rownum, rightCol).setBorderRight(borderStyle)
     }
 
     def drawOuterBorder(borderStyle:BorderStyle):Unit = {
@@ -48,11 +48,11 @@ trait ExcelRectangleDraw {
     def drawHorizontalLine(num:Int, borderStyle:BorderStyle):Unit = {
         if (num == 0) {
             for (colnum <- (leftCol to rightCol).toList)
-                sheet.cell_(0, colnum).setBorderTop(borderStyle)
+                sheet.cell(0, colnum).setBorderTop(borderStyle)
         }
         else if (0 < num && num <= bottomRow - topRow) {
             for (colnum <- (leftCol to rightCol).toList)
-                sheet.cell_(topRow + num - 1, colnum
+                sheet.cell(topRow + num - 1, colnum
                     ).setBorderBottom(borderStyle)
         }
     }
@@ -60,11 +60,11 @@ trait ExcelRectangleDraw {
     def drawVerticalLine(num:Int, borderStyle:BorderStyle):Unit = {
         if (num == 0) {
             for (rownum <- (topRow to bottomRow).toList)
-                sheet.cell_(rownum, 0).setBorderLeft(borderStyle)
+                sheet.cell(rownum, 0).setBorderLeft(borderStyle)
         }
         else if (0 < num && num <= rightCol - leftCol) {
             for (rownum <- (topRow to bottomRow).toList)
-                sheet.cell_(rownum, leftCol + num - 1
+                sheet.cell(rownum, leftCol + num - 1
                     ).setBorderRight(borderStyle)
         }
     }

@@ -32,13 +32,13 @@ class ExcelRectangle (
 
         val rownumList = (topRow-1) :: (for {
              rownum <- (topRow until bottomRow).toList
-             cell <- sheet.getCell_(rownum, leftCol)
+             cell <- sheet.getCellOption(rownum, leftCol)
              if cell.hasBorderBottom
         } yield rownum) ::: List(bottomRow)
 
         val colnumList = (leftCol-1) :: (for {
              colnum <- (leftCol until rightCol).toList
-             cell <- sheet.getCell_(topRow, colnum)
+             cell <- sheet.getCellOption(topRow, colnum)
              if cell.hasBorderRight
         } yield colnum) ::: List(rightCol)
 
@@ -55,8 +55,8 @@ class ExcelRectangle (
 
     override def toString():String =
         "ExcelRectangle:" + sheet.getSheetName + ":(" + 
-            sheet.cell_(topRow, leftCol).getAddress + "," +
-            sheet.cell_(bottomRow, rightCol).getAddress + ")"
+            sheet.cell(topRow, leftCol).getAddress + "," +
+            sheet.cell(bottomRow, rightCol).getAddress + ")"
 }
 
 
@@ -212,7 +212,7 @@ object ExcelRectangle {
             (findTopRightFromBottomRight(cell), 
                     findBottomLeftFromBottomRight(cell)) match {
                 case (Some(topRight), Some(bottomLeft)) =>
-                    cell.getSheet.getCell_(
+                    cell.getSheet.getCellOption(
                         topRight.getRowIndex, bottomLeft.getColumnIndex)
                 case _ => None
             }
@@ -222,10 +222,10 @@ object ExcelRectangle {
             for {
                 row <- for {
                     rownum <- (sheet.getFirstRowNum to sheet.getLastRowNum).toList
-                    row <- sheet.getRow_(rownum)
+                    row <- sheet.getRowOption(rownum)
                 } yield row
                 colnum <- (row.getFirstCellNum until row.getLastCellNum).toList
-                cell <- row.getCell_(colnum)
+                cell <- row.getCellOption(colnum)
             } yield cell
         }
 
