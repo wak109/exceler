@@ -1,10 +1,13 @@
 /* vim: set ts=4 et sw=4 sts=4 fileencoding=utf-8: */
+import scala.collection.JavaConverters._
 import scala.language.implicitConversions
 import scala.util.control.Exception._
 import scala.util.{Try, Success, Failure}
 
 import org.apache.poi.ss.usermodel._
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
+import org.apache.poi.xssf.usermodel.XSSFDrawing
+import org.apache.poi.POIXMLDocumentPart
 
 import java.io._
 import java.nio.file._
@@ -90,6 +93,15 @@ object ExcelLib {
                 case Some(d) => d
                 case None => sheet.createDrawingPatriarch()
             }
+        }
+
+        def getDrawing():Option[XSSFDrawing] = {
+            (
+                for {
+                    relation <- sheet.asInstanceOf[POIXMLDocumentPart].getRelations.asScala
+                        if relation.isInstanceOf[XSSFDrawing]
+                    } yield relation.asInstanceOf[XSSFDrawing]
+            ).headOption
         }
     }
 

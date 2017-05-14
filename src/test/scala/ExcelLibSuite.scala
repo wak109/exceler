@@ -1,16 +1,22 @@
 /* vim: set ts=4 et sw=4 sts=4 fileencoding=utf-8: */
 import scala.util.{Try, Success, Failure}
+import scala.collection.JavaConverters._
 import org.scalatest._
 
 import org.apache.poi.ss.usermodel._
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
+import org.apache.poi.xssf.usermodel.XSSFDrawing
+import org.apache.poi.POIXMLDocumentPart
 
+import java.io.File
 import java.nio.file.{Paths, Files}
 
 import ExcelLib._
 
 class ExcelLibSuite extends FunSuite with BeforeAndAfterEach {
   
+    val testWorkbook1 = "test1.xlsx"
+
     val testSheet = "test"
     val testMessage = "Hello, world!!"
 
@@ -241,5 +247,44 @@ class ExcelLibSuite extends FunSuite with BeforeAndAfterEach {
         assert(cell.getLowerStream.take(10).toList.length == 10)
         assert(cell.getLeftStream.take(10).toList.length == 5)
         assert(cell.getRightStream.take(10).toList.length == 10)
+    }
+    
+    test("Shapes") {
+        val file = new File(getClass.getResource(testWorkbook1).toURI)
+        val workbook = WorkbookFactory.create(file)
+        val relations = workbook.getSheet("shapes").asInstanceOf[POIXMLDocumentPart].getRelations.asScala
+        val drawing = (
+            for {
+                xfd <- relations
+                if xfd.isInstanceOf[XSSFDrawing]
+            } yield xfd.asInstanceOf[XSSFDrawing]
+        ).headOption 
+        drawing match {
+            case Some(xd) => assert(xd.getShapes.asScala.length == 3)
+            case None => assert(false)
+        }
+    }
+
+    test("getDrawing") {
+        val file = new File(getClass.getResource(testWorkbook1).toURI)
+        val workbook = WorkbookFactory.create(file)
+        val sheet = workbook.getSheet("shapes")
+
+        val drawing = sheet.getDrawing
+        drawing match {
+            case Some(xd) => assert(xd.getShapes.asScala.length == 3)
+            case None => assert(false)
+        }
+    }
+
+    test("getDrawing: no shapes") {
+        val workbook = new XSSFWorkbook()
+        val sheet = workbook.sheet("new sheet")
+
+        val drawing = sheet.getDrawing
+        drawing match {
+            case Some(xd) => assert(false)
+            case None => assert(true)
+        }
     }
 }
