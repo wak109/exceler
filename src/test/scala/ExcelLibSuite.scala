@@ -12,6 +12,7 @@ import java.io.File
 import java.nio.file.{Paths, Files}
 
 import ExcelLib._
+import WorkbookProxy._
 
 class ExcelLibSuite extends FunSuite with BeforeAndAfterEach {
   
@@ -26,6 +27,27 @@ class ExcelLibSuite extends FunSuite with BeforeAndAfterEach {
     override def afterEach() {
     }
     
+    //////////////////////////////////////////////////////////////// 
+    // WorkbookProxy
+    //
+    test("WorkbookProxy.saveAs") {
+        val testFile = "Test_Workbook_saveAs.xlsx"
+
+        val workbook = WorkbookProxy(new XSSFWorkbook())
+        workbook.saveAs(testFile)
+        assert(Files.exists(Paths.get(testFile)))
+
+        Files.deleteIfExists(Paths.get(testFile))
+    }
+    
+    test("WorkbookProxy.getSheet") {
+        val workbook = WorkbookProxy(new XSSFWorkbook())
+
+        assert(workbook.getSheet(testSheet).isEmpty == true)
+        val sheet = workbook.sheet(testSheet)
+        assert(workbook.getSheet(testSheet).get == sheet)
+    }
+
     //////////////////////////////////////////////////////////////// 
     // Workbook Tests
     //
@@ -152,6 +174,9 @@ class ExcelLibSuite extends FunSuite with BeforeAndAfterEach {
 
         val drawing = sheet.drawingPatriarch
 
+        println(drawing.getClass)
+
+
         sheet.getDrawingPatriarchOption match {
             case Some(c) => assert(true)
             case None => assert(false)
@@ -265,26 +290,11 @@ class ExcelLibSuite extends FunSuite with BeforeAndAfterEach {
         }
     }
 
-    test("getDrawing") {
+    test("getShapes") {
         val file = new File(getClass.getResource(testWorkbook1).toURI)
         val workbook = WorkbookFactory.create(file)
         val sheet = workbook.getSheet("shapes")
-
-        val drawing = sheet.getDrawing
-        drawing match {
-            case Some(xd) => assert(xd.getShapes.asScala.length == 3)
-            case None => assert(false)
-        }
+        assert(sheet.getXSSFShapes.length == 3)
     }
 
-    test("getDrawing: no shapes") {
-        val workbook = new XSSFWorkbook()
-        val sheet = workbook.sheet("new sheet")
-
-        val drawing = sheet.getDrawing
-        drawing match {
-            case Some(xd) => assert(false)
-            case None => assert(true)
-        }
-    }
 }

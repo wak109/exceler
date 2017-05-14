@@ -5,27 +5,78 @@ import scala.util.control.Exception._
 import scala.util.{Try, Success, Failure}
 
 import org.apache.poi.ss.usermodel._
-import org.apache.poi.xssf.usermodel.XSSFWorkbook
-import org.apache.poi.xssf.usermodel.XSSFDrawing
-import org.apache.poi.POIXMLDocumentPart
+import org.apache.poi.xssf.usermodel._
 
 import java.io._
 import java.nio.file._
 
-object ExcelLib {
 
-        //
-        // BorderTop
-        // BorderBottom
-        // BorderLeft
-        // BorderRight
-        // Foreground Color
-        // Background Color
-        // FillPatten
-        // Horizontal Alignment
-        // Vertical Alignment
-        // Wrap Text
-        //
+object WorkbookProxy {
+    implicit def toWorkbook(wp:WorkbookProxy) = wp.workbook
+
+}
+
+case class WorkbookProxy(workbook:Workbook)  {
+
+    import CellStyleProxy._
+
+    def saveAs(filename:String): Unit =  {
+        FileLib.createParentDir(filename)
+        val out = new FileOutputStream(filename)
+        workbook.write(out)
+        out.close()
+    }
+
+    def getSheet(name:String):Option[Sheet] = Option(
+            workbook.getSheet(name))
+
+    def sheet(name:String):Sheet = {
+        this.getSheet(name) match {
+            case Some(s) => s
+            case None => Try(workbook.createSheet(name)) match {
+                case Success(s) => s
+                case Failure(e) => throw e
+            }
+        }
+    }
+
+    def findCellStyle(tuple:CellStyleTuple):Option[CellStyleProxy] = (
+        for {
+            i <- (0 until workbook.getNumCellStyles).toStream
+            cellStyle = CellStyleProxy(workbook.getCellStyleAt(i))
+            if toCellStyleTuple(cellStyle) == tuple
+        } yield cellStyle
+    ).headOption
+}
+
+object CellStyleProxy {
+
+    implicit def toCellStyle(csp:CellStyleProxy) = csp.cellStyle
+    implicit def toCellStyleTuple(csp:CellStyleProxy) = (
+        csp.cellStyle.getBorderTopEnum,
+        csp.cellStyle.getBorderBottomEnum,
+        csp.cellStyle.getBorderLeftEnum,
+        csp.cellStyle.getBorderRightEnum,
+        csp.cellStyle.getFillForegroundColorColor,
+        csp.cellStyle.getFillBackgroundColorColor,
+        csp.cellStyle.getFillPatternEnum,
+        csp.cellStyle.getAlignmentEnum,
+        csp.cellStyle.getVerticalAlignmentEnum,
+        csp.cellStyle.getWrapText
+    )
+
+    //
+    // BorderTop
+    // BorderBottom
+    // BorderLeft
+    // BorderRight
+    // Foreground Color
+    // Background Color
+    // FillPatten
+    // Horizontal Alignment
+    // Vertical Alignment
+    // Wrap Text
+    //
     type CellStyleTuple = (
             BorderStyle, 
             BorderStyle,
@@ -38,6 +89,15 @@ object ExcelLib {
             VerticalAlignment,
             Boolean)
 
+}
+
+case class CellStyleProxy(cellStyle:CellStyle)
+
+
+object ExcelLib {
+
+    import CellStyleProxy._
+
     implicit class WorkbookImplicit(workbook:Workbook)  {
 
         def saveAs_(filename:String): Unit =  {
@@ -47,14 +107,15 @@ object ExcelLib {
             out.close()
         }
 
-        def getSheetOption(name:String):Option[Sheet] = Option(workbook.getSheet(name))
+        def getSheetOption(name:String):Option[Sheet] = Option(
+                workbook.getSheet(name))
 
-        def createSheet_(name:String):Try[Sheet] = Try(workbook.createSheet(name)) 
+        def createSheet_(name:String):Try[Sheet] = Try(workbook.createSheet(name))
 
         def sheet(name:String):Sheet = {
             this.getSheetOption(name) match {
                 case Some(s) => s
-                case None => this.createSheet_(name) match {
+                case None => Try(workbook.createSheet(name)) match {
                     case Success(s) => s
                     case Failure(e) => throw e
                 }
@@ -95,13 +156,12 @@ object ExcelLib {
             }
         }
 
-        def getDrawing():Option[XSSFDrawing] = {
-            (
-                for {
-                    relation <- sheet.asInstanceOf[POIXMLDocumentPart].getRelations.asScala
-                        if relation.isInstanceOf[XSSFDrawing]
-                    } yield relation.asInstanceOf[XSSFDrawing]
-            ).headOption
+        def getXSSFShapes():List[XSSFShape] = {
+            sheet.getDrawingPatriarchOption match {
+                case Some(drawing) => drawing.asInstanceOf[
+                        XSSFDrawing].getShapes.asScala.toList
+                case None => List()
+            }
         }
     }
 
