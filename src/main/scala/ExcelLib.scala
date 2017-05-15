@@ -12,8 +12,7 @@ import java.nio.file._
 
 
 object WorkbookProxy {
-    implicit def toWorkbook(wp:WorkbookProxy) = wp.workbook
-
+    implicit def toWorkbook(proxy:WorkbookProxy) = proxy.workbook
 }
 
 case class WorkbookProxy(workbook:Workbook)  {
@@ -47,6 +46,59 @@ case class WorkbookProxy(workbook:Workbook)  {
             if toCellStyleTuple(cellStyle) == tuple
         } yield cellStyle
     ).headOption
+}
+
+object SheetProxy {
+    implicit def toSheet(proxy:SheetProxy) = proxy.sheet
+}
+
+case class SheetProxy(sheet:Sheet)  {
+
+    def getRow(rownum:Int):Option[RowProxy] = Option(
+            sheet.getRow(rownum)).map(RowProxy(_))
+
+    def row(rownum:Int):RowProxy = {
+        this.getRow(rownum) match {
+            case Some(r) => r
+            case None => RowProxy(sheet.createRow(rownum))
+        }
+    }
+
+    def getCell(rownum:Int, colnum:Int):Option[Cell] = 
+        this.getRow(rownum).flatMap(_.getCell(colnum))
+
+    def cell(rownum:Int, colnum:Int):Cell = this.row(rownum).cell(colnum)
+
+    def getDrawingPatriarch():Option[Drawing[_ <: Shape]] = Option(
+            sheet.getDrawingPatriarch)
+
+    def drawingPatriarch():Drawing[_ <: Shape] = {
+        this.getDrawingPatriarch match {
+            case Some(d) => d
+            case None => sheet.createDrawingPatriarch()
+        }
+    }
+
+    def getXSSFShapes():List[XSSFShape] = {
+        this.getDrawingPatriarch match {
+            case Some(drawing) => drawing.asInstanceOf[
+                    XSSFDrawing].getShapes.asScala.toList
+            case None => List()
+        }
+    }
+
+}
+
+object RowProxy {
+    implicit def toRow(proxy:RowProxy) = proxy.row
+}
+
+case class RowProxy(row:Row)  {
+
+    def getCell(colnum:Int):Option[Cell] = Option(row.getCell(colnum))
+
+    def cell(colnum:Int):Cell = row.getCell(colnum,
+            Row.MissingCellPolicy.CREATE_NULL_AS_BLANK)
 }
 
 object CellStyleProxy {
