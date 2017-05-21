@@ -12,7 +12,6 @@ import java.io.File
 import java.nio.file.{Paths, Files}
 
 import ExcelLib._
-import WorkbookProxy._
 
 class ExcelLibSuite extends FunSuite with BeforeAndAfterEach {
   
@@ -28,34 +27,13 @@ class ExcelLibSuite extends FunSuite with BeforeAndAfterEach {
     }
     
     //////////////////////////////////////////////////////////////// 
-    // WorkbookProxy
-    //
-    test("WorkbookProxy.saveAs") {
-        val testFile = "Test_Workbook_saveAs.xlsx"
-
-        val workbook = WorkbookProxy(new XSSFWorkbook())
-        workbook.saveAs(testFile)
-        assert(Files.exists(Paths.get(testFile)))
-
-        Files.deleteIfExists(Paths.get(testFile))
-    }
-    
-    test("WorkbookProxy.getSheet") {
-        val workbook = WorkbookProxy(new XSSFWorkbook())
-
-        assert(workbook.getSheet(testSheet).isEmpty == true)
-        val sheet = workbook.sheet(testSheet)
-        assert(workbook.getSheet(testSheet).get == sheet)
-    }
-
-    //////////////////////////////////////////////////////////////// 
     // Workbook Tests
     //
-    test("Workbook.saveAs_") {
+    test("Workbook.saveAs") {
         val testFile = "Test_Workbook_saveAs.xlsx"
 
         val workbook = new XSSFWorkbook()
-        workbook.saveAs_(testFile)
+        workbook.saveAs(testFile)
         assert(Files.exists(Paths.get(testFile)))
 
         Files.deleteIfExists(Paths.get(testFile))
@@ -69,20 +47,11 @@ class ExcelLibSuite extends FunSuite with BeforeAndAfterEach {
             case None => assert(true)
         }
 
-        workbook.createSheet_(testSheet) match {
-            case Success(_) => assert(true)
-            case Failure(e) => assert(false)
-        }
+        workbook.sheet(testSheet)
 
         workbook.getSheetOption(testSheet) match {
             case Some(_) => assert(true)
             case None => assert(false)
-        }
-
-        /* Can't create sheets of same name */
-        workbook.createSheet_(testSheet) match {
-            case Success(_) => assert(false)
-            case Failure(e) => assert(true)
         }
     }
 
@@ -208,18 +177,11 @@ class ExcelLibSuite extends FunSuite with BeforeAndAfterEach {
     test("Cell.getValue_") {
 
         val workbook = new XSSFWorkbook()
-        (
-            for { 
-                sheet <- workbook.createSheet_(testSheet)
-                row = sheet.createRow(0)
-                cell = row.createCell(0)
-            } yield cell
-        ) match { 
-            case Success(cell) => {
-                cell.setCellValue(testMessage)
-            }
-            case Failure(e) => println(e.getMessage())
-        } 
+        val sheet = workbook.sheet(testSheet)
+        val row = sheet.createRow(0)
+        val cell = row.createCell(0)
+
+        cell.setCellValue(testMessage)
 
         (
             for {
