@@ -279,9 +279,7 @@ trait CellExtra {
     //
     def setBorderTop(borderStyle:BorderStyle):Unit = {
         val cellStyle = cell.getCellStyle
-        val t = cellStyle.toTuple
-        val newTuple = (borderStyle, t._2, t._3, t._4, t._5,
-            t._6, t._7, t._8, t._9, t._10)
+        val newTuple = cellStyle.toTuple.copy(_1 = borderStyle)
         val workbook = cell.getSheet.getWorkbook
 
         workbook.findCellStyle(newTuple) match {
@@ -297,9 +295,7 @@ trait CellExtra {
 
     def setBorderBottom(borderStyle:BorderStyle):Unit = {
         val cellStyle = cell.getCellStyle
-        val t = cellStyle.toTuple
-        val newTuple = (t._1, borderStyle, t._3, t._4, t._5,
-            t._6, t._7, t._8, t._9, t._10)
+        val newTuple = cellStyle.toTuple.copy(_2 = borderStyle)
         val workbook = cell.getSheet.getWorkbook
 
         workbook.findCellStyle(newTuple) match {
@@ -315,9 +311,7 @@ trait CellExtra {
 
     def setBorderLeft(borderStyle:BorderStyle):Unit = {
         val cellStyle = cell.getCellStyle
-        val t = cellStyle.toTuple
-        val newTuple = (t._1, t._2, borderStyle, t._4, t._5,
-            t._6, t._7, t._8, t._9, t._10)
+        val newTuple = cellStyle.toTuple.copy(_3 = borderStyle)
         val workbook = cell.getSheet.getWorkbook
 
         workbook.findCellStyle(newTuple) match {
@@ -333,9 +327,7 @@ trait CellExtra {
 
     def setBorderRight(borderStyle:BorderStyle):Unit = {
         val cellStyle = cell.getCellStyle
-        val t = cellStyle.toTuple
-        val newTuple = (t._1, t._2, t._3, borderStyle,
-            t._5, t._6, t._7, t._8, t._9, t._10)
+        val newTuple = cellStyle.toTuple.copy(_4 = borderStyle)
         val workbook = cell.getSheet.getWorkbook
 
         workbook.findCellStyle(newTuple) match {
