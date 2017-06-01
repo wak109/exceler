@@ -7,6 +7,8 @@ import scala.util.{Try, Success, Failure}
 import org.apache.poi.ss.usermodel._
 import org.apache.poi.xssf.usermodel._
 
+import org.apache.xmlbeans.XmlObject
+
 import java.io._
 import java.nio.file._
 
@@ -27,6 +29,9 @@ object ExcelLib {
 
     implicit class ToCellStyleExtra(c:CellStyle)
             extends Holder(c) with CellStyleExtra
+
+    implicit class ToXSSFShapeExtra(x:XSSFShape)
+            extends Holder(x) with XSSFShapeExtra
 
     implicit def toCellStyleTuple(cellStyle:CellStyle) =
             cellStyle.toTuple
@@ -366,4 +371,26 @@ trait CellStyleExtra {
             cellStyle.getAlignmentEnum,
             cellStyle.getVerticalAlignmentEnum,
             cellStyle.getWrapText)
+}
+
+
+trait XSSFShapeExtra {
+    shape:Holder[XSSFShape] =>
+
+    import ExcelLib._
+
+    def toXmlObject():XmlObject = {
+        shape.obj match {
+            case x:XSSFSimpleShape =>
+                    x.asInstanceOf[XSSFSimpleShape].getCTShape
+            case x:XSSFConnector =>
+                    x.asInstanceOf[XSSFConnector].getCTConnector
+            case x:XSSFGraphicFrame =>
+                    x.asInstanceOf[XSSFGraphicFrame].getCTGraphicalObjectFrame
+            case x:XSSFPicture =>
+                    x.asInstanceOf[XSSFPicture].getCTPicture
+            case x:XSSFShapeGroup =>
+                    x.asInstanceOf[XSSFShapeGroup].getCTGroupShape
+        }
+    }
 }

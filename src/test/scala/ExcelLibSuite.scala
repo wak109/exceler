@@ -4,8 +4,7 @@ import scala.collection.JavaConverters._
 import org.scalatest._
 
 import org.apache.poi.ss.usermodel._
-import org.apache.poi.xssf.usermodel.XSSFWorkbook
-import org.apache.poi.xssf.usermodel.XSSFDrawing
+import org.apache.poi.xssf.usermodel._
 import org.apache.poi.POIXMLDocumentPart
 
 import java.io.File
@@ -247,7 +246,7 @@ class ExcelLibSuite extends FunSuite with BeforeAndAfterEach {
             } yield xfd.asInstanceOf[XSSFDrawing]
         ).headOption 
         drawing match {
-            case Some(xd) => assert(xd.getShapes.asScala.length == 3)
+            case Some(xd) => assert(xd.getShapes.asScala.length == 8)
             case None => assert(false)
         }
     }
@@ -256,7 +255,15 @@ class ExcelLibSuite extends FunSuite with BeforeAndAfterEach {
         val file = new File(getClass.getResource(testWorkbook1).toURI)
         val workbook = WorkbookFactory.create(file)
         val sheet = workbook.getSheet("shapes")
-        assert(sheet.getXSSFShapes.length == 3)
+        assert(sheet.getXSSFShapes.length == 8)
     }
 
+    test("XSSFShapeExt") {
+        val file = new File(getClass.getResource(testWorkbook1).toURI)
+        val workbook = WorkbookFactory.create(file)
+        val sheet = workbook.getSheet("shapes")
+        for (shape <- sheet.getXSSFShapes) {
+           println(shape.toXmlObject)
+        }
+    }
 }
