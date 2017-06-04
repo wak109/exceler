@@ -9,7 +9,6 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import java.io._
 import java.nio.file._
 
-import ExcelLib._
 import ExcelRectangle._
 
 object Exceler {

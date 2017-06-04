@@ -10,10 +10,11 @@ import org.apache.poi.POIXMLDocumentPart
 import java.io.File
 import java.nio.file.{Paths, Files}
 
-import ExcelLib._
 
 class ExcelLibSuite extends FunSuite with BeforeAndAfterEach {
   
+    import ExcelLib._
+
     val testWorkbook1 = "test1.xlsx"
 
     val testSheet = "test"
@@ -235,6 +236,7 @@ class ExcelLibSuite extends FunSuite with BeforeAndAfterEach {
         assert(cell.getRightStream.take(10).toList.length == 10)
     }
     
+
     test("Shapes") {
         val file = new File(getClass.getResource(testWorkbook1).toURI)
         val workbook = WorkbookFactory.create(file)

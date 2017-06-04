@@ -9,8 +9,8 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import java.io._
 import java.nio.file._
 
+
 import ExcelLib._
-import ExcelRectangle._
 
 
 class ExcelRectangle (
@@ -62,80 +62,25 @@ class ExcelRectangle (
 
 object ExcelRectangle {
 
-        implicit def excelRectangleImplicit(rect:ExcelRectangle) = (
+    implicit def excelRectangleImplicit(rect:ExcelRectangle) = (
             rect.sheet,
             rect.topRow,
             rect.leftCol,
             rect.bottomRow,
             rect.rightCol)
 
-        implicit class CellBorderImplicit (cell:Cell) {
+    implicit class SheetRectangleImplicit (sheet:Sheet) {
 
-            ////////////////////////////////////////////////////////////
-            // isOuterBorder
-            //
-            //
-            def isOuterBorderTop():Boolean = {
-                val upperCell = cell.getUpperCell
-    
-                (cell.hasBorderTop) &&
-                (upperCell match {
-                    case Some(cell) =>
-                        (! cell.hasBorderLeft) &&
-                        (! cell.hasBorderRight)
-                    case None => true
-                })
-            }
-    
-            def isOuterBorderBottom():Boolean = {
-                val lowerCell = cell.getLowerCell
-    
-                (cell.hasBorderBottom) &&
-                (lowerCell match {
-                    case Some(cell) =>
-                        (! cell.hasBorderLeft) &&
-                        (! cell.hasBorderRight)
-                    case None => true
-                })
-            }
-    
-            def isOuterBorderLeft():Boolean = {
-                val leftCell = cell.getLeftCell
-    
-                (cell.hasBorderLeft) &&
-                (leftCell match {
-                    case Some(cell) =>
-                        (! cell.hasBorderTop) &&
-                        (! cell.hasBorderBottom)
-                    case None => true
-                })
-            }
-    
-            def isOuterBorderRight():Boolean = {
-                val rightCell = cell.getRightCell
-    
-                (cell.hasBorderRight) &&
-                (rightCell match {
-                    case Some(cell) =>
-                        (! cell.hasBorderTop) &&
-                        (! cell.hasBorderBottom)
-                    case None => true
-                })
-            }
+        def getRectangleList():List[ExcelRectangle] = {
+            for {
+                cell <- Helper.getCellList(sheet)
+                if cell.isOuterBorderBottom && cell.isOuterBorderRight
+                topLeft <- Helper.findTopLeftFromBottomRight(cell)
+            } yield new ExcelRectangle(sheet,
+                topLeft.getRowIndex, topLeft.getColumnIndex,
+                cell.getRowIndex, cell.getColumnIndex)
         }
-
-        implicit class SheetRectangleImplicit (sheet:Sheet) {
-
-            def getRectangleList():List[ExcelRectangle] = {
-                for {
-                    cell <- Helper.getCellList(sheet)
-                    if cell.isOuterBorderBottom && cell.isOuterBorderRight
-                    topLeft <- Helper.findTopLeftFromBottomRight(cell)
-                } yield new ExcelRectangle(sheet,
-                    topLeft.getRowIndex, topLeft.getColumnIndex,
-                    cell.getRowIndex, cell.getColumnIndex)
-            }
-        }
+    }
 
     object Helper {
         ////////////////////////////////////////////////////////////////
