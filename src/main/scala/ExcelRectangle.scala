@@ -28,29 +28,34 @@ class ExcelRectangle (
             rect.bottomRow,
             rect.rightCol)
 
-    def getInnerRectangleList():List[List[ExcelRectangle]] = {
-
+    def getRowList():List[ExcelRectangle] = {
         val rownumList = (topRow-1) :: (for {
-             rownum <- (topRow until bottomRow).toList
-             cell <- sheet.getCellOption(rownum, leftCol)
-             if cell.hasBorderBottom
+            rownum <- (topRow until bottomRow).toList
+            cell <- sheet.getCellOption(rownum, leftCol)
+            if cell.hasBorderBottom
         } yield rownum) ::: List(bottomRow)
 
+        (rownumList, rownumList.drop(1)).zipped.toList.map(
+                tpl => new ExcelRectangle(
+                    sheet, tpl._1 + 1, leftCol, tpl._2,  rightCol))
+    }
+
+    def getColumnList():List[ExcelRectangle] = {
         val colnumList = (leftCol-1) :: (for {
-             colnum <- (leftCol until rightCol).toList
-             cell <- sheet.getCellOption(topRow, colnum)
-             if cell.hasBorderRight
+            colnum <- (leftCol until rightCol).toList
+            cell <- sheet.getCellOption(topRow, colnum)
+            if cell.hasBorderRight
         } yield colnum) ::: List(rightCol)
 
-        (for {
-            (rownumStart, rownumEnd) <- (rownumList, rownumList.drop(1)).zipped
-        } yield (for {
-            (colnumStart, colnumEnd)
-                <- (colnumList, colnumList.drop(1)).zipped
-            } yield new ExcelRectangle(sheet,
-                rownumStart + 1, colnumStart + 1, rownumEnd, colnumEnd)
-            ).toList
-        ).toList
+        (colnumList, colnumList.drop(1)).zipped.toList.map(
+                tpl => new ExcelRectangle(
+                    sheet, topRow, tpl._1 + 1, bottomRow, tpl._2))
+    }
+
+    def getInnerRectangleList():List[List[ExcelRectangle]] = {
+        for (
+             row <- this.getRowList
+         ) yield row.getColumnList
     }
 
     override def toString():String =
@@ -115,10 +120,12 @@ object ExcelRectangle {
         def getCellList(sheet:Sheet):List[Cell] = {
             for {
                 row <- for {
-                    rownum <- (sheet.getFirstRowNum to sheet.getLastRowNum).toList
+                    rownum <- (sheet.getFirstRowNum
+                            to sheet.getLastRowNum).toList
                     row <- sheet.getRowOption(rownum)
                 } yield row
-                colnum <- (row.getFirstCellNum until row.getLastCellNum).toList
+                colnum <- (row.getFirstCellNum
+                            until row.getLastCellNum).toList
                 cell <- row.getCellOption(colnum)
             } yield cell
         }

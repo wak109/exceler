@@ -22,8 +22,10 @@ class ExcelRectangleTraitsSuite extends FunSuite with BeforeAndAfterEach {
     test("ExcelRectangleDraw mixin") {
         val workbook = new XSSFWorkbook
         val sheet = workbook.sheet("test")
-        val rect1 = new ExcelRectangle(sheet, 10, 10, 20, 20) with ExcelRectangleDraw
-        val rect2 = new ExcelRectangle(sheet, 30, 30, 40, 40) with ExcelRectangleDraw
+        val rect1 = new ExcelRectangle(sheet, 10, 10, 20, 20)
+                with ExcelRectangleDraw
+        val rect2 = new ExcelRectangle(sheet, 30, 30, 40, 40)
+                with ExcelRectangleDraw
 
         rect1.drawOuterBorder(BorderStyle.THIN)
         rect2.drawOuterBorder(BorderStyle.THIN)
@@ -32,10 +34,11 @@ class ExcelRectangleTraitsSuite extends FunSuite with BeforeAndAfterEach {
         assert(rectList.length == 2)
     }
 
-    test("getInnerRectangleList") {
+    test("getRowList") {
         val workbook = new XSSFWorkbook
         val sheet = workbook.sheet("test")
-        val rect = new ExcelRectangle(sheet, 10, 10, 20, 20) with ExcelRectangleDraw
+        val rect = new ExcelRectangle(sheet, 10, 10, 20, 20)
+                with ExcelRectangleDraw
 
         rect.drawOuterBorder(BorderStyle.THIN)
         rect.drawHorizontalLine(2, BorderStyle.THIN)
@@ -45,9 +48,15 @@ class ExcelRectangleTraitsSuite extends FunSuite with BeforeAndAfterEach {
         rect.drawVerticalLine(5, BorderStyle.THIN)
         rect.drawVerticalLine(7, BorderStyle.THIN)
 
-        assert(rect.getInnerRectangleList.length == 3)
-        assert(rect.getInnerRectangleList()(0).length == 4)
-        assert(rect.getInnerRectangleList()(1).length == 4)
+        assert(rect.getRowList.length == 3)
+        assert(rect.getRowList()(0).getColumnList.length == 4)
+        assert(rect.getRowList()(1).getColumnList.length == 4)
+
+        val row1 = new ExcelRectangle(rect.getRowList()(1))
+                with ExcelRectangleDraw
+        row1.drawVerticalLine(3, BorderStyle.THIN)
+        assert(rect.getRowList()(1).getColumnList.length == 5)
+
         assert(rect.getInnerRectangleList()(2).length == 4)
     }
 }
