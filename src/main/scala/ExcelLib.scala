@@ -25,7 +25,7 @@ object ExcelLib {
             extends Holder(r) with RowExtra
 
     implicit class ToCellExtra(c:Cell)
-            extends Holder(c) with CellExtra
+            extends Holder(c) with CellExtra with CellBorderExtra
 
     implicit class ToCellStyleExtra(c:CellStyle)
             extends Holder(c) with CellStyleExtra
@@ -48,7 +48,8 @@ object Holder {
 trait WorkbookExtra {
     workbook:Holder[Workbook] =>
 
-    import ExcelLib._
+    implicit class ToCellStyleExtra(c:CellStyle)
+            extends Holder(c) with CellStyleExtra
 
     def saveAs(filename:String): Unit =  {
         FileLib.createParentDir(filename)
@@ -107,7 +108,8 @@ trait WorkbookExtra {
 trait SheetExtra {
     sheet:Holder[Sheet] => 
 
-    import ExcelLib._
+    implicit class ToRowExtra(r:Row) extends Holder(r) with RowExtra
+
 
     def getRowOption(rownum:Int):Option[Row] =
             Option(sheet.getRow(rownum))
@@ -148,8 +150,6 @@ trait SheetExtra {
 trait RowExtra {
     row:Holder[Row] =>
 
-    import ExcelLib._
-
     def getCellOption(colnum:Int):Option[Cell] =
         Option(row.getCell(colnum))
 
@@ -161,7 +161,10 @@ trait RowExtra {
 trait CellExtra {
     cell:Holder[Cell] =>
 
-    import ExcelLib._
+    implicit class ToSheetExtra(s:Sheet) extends Holder(s) with SheetExtra
+
+    implicit class ToCellExtra(c:Cell) extends Holder(c) with CellExtra
+
 
     def getValue_():Any = {
         cell.getCellTypeEnum match {
@@ -278,6 +281,18 @@ trait CellExtra {
             case Failure(e) => Stream.empty
         })
     }
+}
+
+
+trait CellBorderExtra {
+    cell:Holder[Cell] with CellExtra =>
+
+    implicit class ToWorkbookExtra(w:Workbook)
+            extends Holder(w) with WorkbookExtra
+
+    implicit class ToCellStyleExtra(c:CellStyle)
+            extends Holder(c) with CellStyleExtra
+
 
     ////////////////////////////////////////////////////////////////
     // CellStyle
@@ -345,7 +360,102 @@ trait CellExtra {
             }
         }
     }
+
+    ////////////////////////////////////////////////////////////
+    // hasBorder
+    //
+    def hasBorderBottom():Boolean = {
+        (cell.getCellStyle.getBorderBottomEnum != 
+            BorderStyle.NONE) ||
+            (cell.getLowerCell.map(
+                _.getCellStyle.getBorderTopEnum != BorderStyle.NONE)
+            match {
+                case Some(b) => b
+                case None => false
+            })
+    }
+    
+    def hasBorderTop():Boolean = {
+        (cell.getRowIndex == 0) ||
+        (cell.getCellStyle.getBorderTopEnum != BorderStyle.NONE) ||
+            (cell.getUpperCell.map(
+                _.getCellStyle.getBorderBottomEnum !=
+                    BorderStyle.NONE)
+            match {
+                case Some(b) => b
+                case None => false
+            })
+    }
+    
+    def hasBorderRight():Boolean = {
+        (cell.getCellStyle.getBorderRightEnum !=
+            BorderStyle.NONE) ||
+            (cell.getRightCell.map(
+                _.getCellStyle.getBorderLeftEnum !=
+                    BorderStyle.NONE)
+            match {
+                case Some(b) => b
+                case None => false
+            })
+    }
+    
+    def hasBorderLeft():Boolean = {
+        (cell.getColumnIndex == 0) ||
+        (cell.getCellStyle.getBorderLeftEnum !=
+            BorderStyle.NONE) ||
+            (cell.getLeftCell.map(
+                _.getCellStyle.getBorderRightEnum !=
+                    BorderStyle.NONE)
+            match {
+                case Some(b) => b
+                case None => false
+            })
+    }
+
+    def hasThickBorderBottom():Boolean = {
+        (cell.getCellStyle.getBorderBottomEnum == BorderStyle.THICK) ||
+            (cell.getLowerCell.map(_.getCellStyle.getBorderTopEnum
+                    == BorderStyle.THICK)
+            match {
+                case Some(b) => b
+                case None => false
+            })
+    }
+
+    def hasThickBorderTop():Boolean = {
+        (cell.getRowIndex == 0) ||
+        (cell.getCellStyle.getBorderTopEnum == BorderStyle.THICK) ||
+            (cell.getUpperCell.map(_.getCellStyle.getBorderBottomEnum
+                    == BorderStyle.THICK)
+            match {
+                case Some(b) => b
+                case None => false
+            })
+    }
+
+    def hasThickBorderRight():Boolean = {
+        (cell.getCellStyle.getBorderRightEnum == BorderStyle.THICK) ||
+            (cell.getRightCell.map(_.getCellStyle.getBorderLeftEnum
+                    == BorderStyle.THICK)
+            match {
+                case Some(b) => b
+                case None => false
+            })
+    }
+
+    def hasThickBorderLeft():Boolean = {
+        (cell.getColumnIndex == 0) ||
+        (cell.getCellStyle.getBorderLeftEnum != BorderStyle.THICK) ||
+            (cell.getLeftCell.map(_.getCellStyle.getBorderRightEnum
+                    == BorderStyle.THICK)
+            match {
+                case Some(b) => b
+                case None => false
+            })
+    }
+    
 }
+
 
 trait CellStyleExtra {
     cellStyle:Holder[CellStyle] =>
@@ -376,8 +486,6 @@ trait CellStyleExtra {
 
 trait XSSFShapeExtra {
     shape:Holder[XSSFShape] =>
-
-    import ExcelLib._
 
     def toXmlObject():XmlObject = {
         shape.obj match {

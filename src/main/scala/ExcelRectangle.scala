@@ -70,58 +70,7 @@ object ExcelRectangle {
             rect.rightCol)
 
         implicit class CellBorderImplicit (cell:Cell) {
-    
-            ////////////////////////////////////////////////////////////
-            // hasBorder
-            //
-            def hasBorderBottom():Boolean = {
-                (cell.getCellStyle.getBorderBottomEnum != 
-                    BorderStyle.NONE) ||
-                    (cell.getLowerCell.map(
-                        _.getCellStyle.getBorderTopEnum != BorderStyle.NONE)
-                    match {
-                        case Some(b) => b
-                        case None => false
-                    })
-            }
-    
-            def hasBorderTop():Boolean = {
-                (cell.getRowIndex == 0) ||
-                (cell.getCellStyle.getBorderTopEnum != BorderStyle.NONE) ||
-                    (cell.getUpperCell.map(
-                        _.getCellStyle.getBorderBottomEnum !=
-                            BorderStyle.NONE)
-                    match {
-                        case Some(b) => b
-                        case None => false
-                    })
-            }
-    
-            def hasBorderRight():Boolean = {
-                (cell.getCellStyle.getBorderRightEnum !=
-                    BorderStyle.NONE) ||
-                    (cell.getRightCell.map(
-                        _.getCellStyle.getBorderLeftEnum !=
-                            BorderStyle.NONE)
-                    match {
-                        case Some(b) => b
-                        case None => false
-                    })
-            }
-    
-            def hasBorderLeft():Boolean = {
-                (cell.getColumnIndex == 0) ||
-                (cell.getCellStyle.getBorderLeftEnum !=
-                    BorderStyle.NONE) ||
-                    (cell.getLeftCell.map(
-                        _.getCellStyle.getBorderRightEnum !=
-                            BorderStyle.NONE)
-                    match {
-                        case Some(b) => b
-                        case None => false
-                    })
-            }
-    
+
             ////////////////////////////////////////////////////////////
             // isOuterBorder
             //
