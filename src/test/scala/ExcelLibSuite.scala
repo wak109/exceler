@@ -10,10 +10,10 @@ import org.apache.poi.POIXMLDocumentPart
 import java.io.File
 import java.nio.file.{Paths, Files}
 
+import ExcelLib._
 
 class ExcelLibSuite extends FunSuite with BeforeAndAfterEach {
   
-    import ExcelLib._
 
     val testWorkbook1 = "test1.xlsx"
 
@@ -194,6 +194,38 @@ class ExcelLibSuite extends FunSuite with BeforeAndAfterEach {
                 assert(cell.getValue_ == testMessage)
             }
             case None => assert(false)
+        }
+    }
+
+    test("Cell.getValueString") {
+
+        val workbook = new XSSFWorkbook()
+        val sheet = workbook.sheet(testSheet)
+        val row = sheet.createRow(0)
+        val cell = row.createCell(0)
+
+        cell.setCellValue(testMessage)
+        cell.getValueString match {
+            case Some(s) => assert(s == testMessage)
+            case None => assert(false)
+        }
+
+        cell.setCellType(CellType.BLANK)
+        cell.getValueString match {
+            case Some(s) => assert(false)
+            case None => assert(true)
+        }
+
+        cell.setCellValue(12345)
+        cell.getValueString match {
+            case Some(s) => assert(s.toDouble == 12345)
+            case None => assert(false)
+        }
+
+        cell.setCellValue("")
+        cell.getValueString match {
+            case Some(s) => assert(false)
+            case None => assert(true)
         }
     }
 

@@ -181,6 +181,16 @@ trait CellExtra {
         }
     }
 
+    def getValueString():Option[String] = {
+        cell.getValue_ match {
+            case null => None
+            case v => v.toString match {
+                case "" => None
+                case s => Some(s)
+            }
+        }
+    }
+
     def getUpperCell():Option[Cell] = {
         val rownum = cell.getRowIndex
         if (rownum > 0)

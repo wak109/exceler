@@ -21,10 +21,10 @@ object Exceler {
             for {
                 sheet <- workbook.sheetIterator.asScala
                 rect <- sheet.getRectangleList
-                trow <- rect.getInnerRectangleList
-                tcell <- trow
+                row <- rect.getRowList
+                cell <- row.getColumnList
             } {
-                println(tcell)
+                println(cell)
             }
         }
     }

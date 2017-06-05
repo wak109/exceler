@@ -56,7 +56,5 @@ class ExcelRectangleTraitsSuite extends FunSuite with BeforeAndAfterEach {
                 with ExcelRectangleDraw
         row1.drawVerticalLine(3, BorderStyle.THIN)
         assert(rect.getRowList()(1).getColumnList.length == 5)
-
-        assert(rect.getInnerRectangleList()(2).length == 4)
     }
 }

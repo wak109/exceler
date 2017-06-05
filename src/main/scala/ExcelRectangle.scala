@@ -21,6 +21,11 @@ class ExcelRectangle (
     val rightCol:Int
     ) {
 
+    assert(0 <= topRow)
+    assert(0 <= leftCol)
+    assert(topRow <= bottomRow)
+    assert(leftCol <= rightCol)
+
     def this(rect:ExcelRectangle) = this(
             rect.sheet,
             rect.topRow,
@@ -52,12 +57,6 @@ class ExcelRectangle (
                     sheet, topRow, tpl._1 + 1, bottomRow, tpl._2))
     }
 
-    def getInnerRectangleList():List[List[ExcelRectangle]] = {
-        for (
-             row <- this.getRowList
-         ) yield row.getColumnList
-    }
-
     override def toString():String =
         "ExcelRectangle:" + sheet.getSheetName + ":(" + 
             sheet.cell(topRow, leftCol).getAddress + "," +
@@ -67,14 +66,15 @@ class ExcelRectangle (
 
 object ExcelRectangle {
 
-    implicit def excelRectangleImplicit(rect:ExcelRectangle) = (
+    implicit def excelRectangleToTuple(rect:ExcelRectangle) = (
             rect.sheet,
             rect.topRow,
             rect.leftCol,
             rect.bottomRow,
             rect.rightCol)
 
-    implicit class SheetRectangleImplicit (sheet:Sheet) {
+
+    implicit class SheetToExcelRectangleExtra (sheet:Sheet) {
 
         def getRectangleList():List[ExcelRectangle] = {
             for {
@@ -87,6 +87,7 @@ object ExcelRectangle {
         }
     }
 
+    
     object Helper {
         ////////////////////////////////////////////////////////////////
         // Function
