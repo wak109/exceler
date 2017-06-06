@@ -91,11 +91,6 @@ class ExcelTableSuite extends FunSuite with BeforeAndAfterEach {
         assert(table.findColumn(_ == "bar").isEmpty)
 
         sheet.cell(17,17).setCellValue("hello")
-
-        assert(table.find(_ == "row3", _ == "col3").get.topRow == 17)
-        assert(table.find(_ == "row3", _ == "col3").get.leftCol == 17)
-        assert(table.find(_ == "row3", _ == "col3")
-            .get.getSingleValue.get == "hello")
     }
 
     test("ExcelTable#find") {
@@ -115,5 +110,7 @@ class ExcelTableSuite extends FunSuite with BeforeAndAfterEach {
             List("col2", "left").map(createStringEqual(_)),
             )
         assert(cell2.get.getSingleValue.get == "ul")
+
+        assert(table.getTableName.get == "test")
     }
 }

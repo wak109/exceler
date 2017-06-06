@@ -168,13 +168,18 @@ trait CellExtra {
 
     import ExcelLib._    
 
-
     def getValue_():Any = {
         cell.getCellTypeEnum match {
             case CellType.BLANK => cell.getStringCellValue
             case CellType.BOOLEAN => cell.getBooleanCellValue
             case CellType.ERROR => cell.getErrorCellValue
-            case CellType.FORMULA => cell.getCellFormula
+            // case CellType.FORMULA => cell.getCellFormula
+            case CellType.FORMULA =>
+                cell.getCachedFormulaResultTypeEnum match {
+                    case CellType.NUMERIC => cell.getNumericCellValue
+                    case CellType.STRING => cell.getStringCellValue
+                    case _ => cell.getStringCellValue
+                }
             case CellType.NUMERIC => cell.getNumericCellValue
             case CellType.STRING => cell.getStringCellValue
             case _ => cell.getStringCellValue

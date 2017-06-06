@@ -11,6 +11,7 @@ import java.nio.file._
 
 
 import ExcelLib._
+import ExcelRectangle._
 
 
 class ExcelTable (
@@ -58,17 +59,6 @@ class ExcelTable (
             sheet, row.topRow, col.leftCol, row.bottomRow, col.rightCol)
     }
 
-    def find(
-        rowpred:String => Boolean,
-        colpred:String => Boolean
-    ):Option[ExcelTable] = {
-        for {
-            row <- this.findRow(rowpred)
-            col <- this.findColumn(colpred)
-        } yield new ExcelTable(
-            sheet, row.topRow, col.leftCol, row.bottomRow, col.rightCol)
-    }
-
     def findRow(predList:List[String => Boolean]):Option[ExcelTable] = {
         predList match {
             case Nil => Some(this)
@@ -88,7 +78,6 @@ class ExcelTable (
         } yield row
     ).headOption
 
-
     def findColumn(predList:List[String => Boolean]):Option[ExcelTable] = {
         predList match {
             case Nil => Some(this)
@@ -99,6 +88,7 @@ class ExcelTable (
             } yield colNext
         }
     }
+
     def findColumn(pred:String => Boolean):Option[ExcelTable] = (
         for {
             col <- this.columnList
@@ -107,9 +97,31 @@ class ExcelTable (
         } yield col
     ).headOption
 
+    def getTableName():Option[String] = {
+        topRow match {
+            case 0 => None
+            case _ => sheet.cell(topRow - 1, leftCol).getValueString
+        }
+    }
 
     override def toString():String =
         "ExcelTable:" + sheet.getSheetName + ":(" + 
             sheet.cell(topRow, leftCol).getAddress + "," +
             sheet.cell(bottomRow, rightCol).getAddress + ")"
+}
+
+object ExcelTable {
+
+    implicit class ExcelTableSheetExtra (sheet:Sheet) {
+
+        def getTableMap():Map[String,ExcelTable] = {
+            val tableList = sheet.getRectangleList.map(
+                    (r:ExcelRectangle) => new ExcelTable(r))
+            tableList.zip(tableList.map(_.getTableName)).zipWithIndex.map(
+                _ match {
+                    case ((t, Some(name)), _) => (name, t)
+                    case ((t, None), idx) => ("Table" + idx, t)
+                }).toMap
+        }
+    }
 }

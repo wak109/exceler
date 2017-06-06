@@ -11,6 +11,7 @@ import java.nio.file._
 
 import ExcelLib._
 import ExcelRectangle._
+import ExcelTable._
 
 object Exceler {
 
@@ -29,18 +30,27 @@ object Exceler {
         }
     }
 
-    def readExcelTables(
+    def readExcelTable(
         filename:String,
         sheetname:String,
         tablename:String,
         rowKeys:String,
         colKeys:String):Try[Unit] = {
         Try {
+            def isSameStr(s:String) = (x:String) => x == s
             val file = new File(filename)
             val workbook = WorkbookFactory.create(file, null ,true) 
-            workbook.getSheetOption(sheetname) match {
-                case Some(sheet) => println("Some")
-                case None => println("None")
+
+            for {
+                sheet <- workbook.getSheetOption(sheetname)
+                tableMap = sheet.getTableMap
+                table <- tableMap.get(tablename)
+                cell <- table.find(
+                    rowKeys.split(",").toList.map(isSameStr),
+                    colKeys.split(",").toList.map(isSameStr))
+                value <- cell.getSingleValue
+            } {
+                println(value)
             }
         }
     }
