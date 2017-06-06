@@ -51,17 +51,20 @@ class ExcelTable (
     def find(
         rowpredList:List[String => Boolean],
         colpredList:List[String => Boolean]
-    ):Option[ExcelTable] = {
+    ):List[List[ExcelTable]] = {
         for {
             row <- this.findRow(rowpredList)
-            col <- this.findColumn(colpredList)
-        } yield new ExcelTable(
-            sheet, row.topRow, col.leftCol, row.bottomRow, col.rightCol)
+        } yield {
+            for {
+                col <- this.findColumn(colpredList)
+            } yield new ExcelTable(sheet,
+                    row.topRow, col.leftCol, row.bottomRow, col.rightCol)
+        }
     }
 
-    def findRow(predList:List[String => Boolean]):Option[ExcelTable] = {
+    def findRow(predList:List[String => Boolean]):List[ExcelTable] = {
         predList match {
-            case Nil => Some(this)
+            case Nil => List(this)
             case pred::predTail => for {
                 row <- this.findRow(pred)
                 rowNext <- (new ExcelTable(row.columnList.tail))
@@ -70,17 +73,17 @@ class ExcelTable (
         }
     }
 
-    def findRow(pred:String => Boolean):Option[ExcelTable] = (
+    def findRow(pred:String => Boolean):List[ExcelTable] = {
         for {
             row <- this.rowList
             value <- row.columnList.head.value
             if pred(value)
         } yield row
-    ).headOption
+    }
 
-    def findColumn(predList:List[String => Boolean]):Option[ExcelTable] = {
+    def findColumn(predList:List[String => Boolean]):List[ExcelTable] = {
         predList match {
-            case Nil => Some(this)
+            case Nil => List(this)
             case pred::predTail => for {
                 col <- this.findColumn(pred)
                 colNext <- (new ExcelTable(col.rowList.tail))
@@ -89,13 +92,13 @@ class ExcelTable (
         }
     }
 
-    def findColumn(pred:String => Boolean):Option[ExcelTable] = (
+    def findColumn(pred:String => Boolean):List[ExcelTable] = {
         for {
             col <- this.columnList
             value <- col.rowList.head.value
             if pred(value)
         } yield col
-    ).headOption
+    }
 
     def getTableName():Option[String] = {
         topRow match {

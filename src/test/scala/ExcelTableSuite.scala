@@ -72,11 +72,11 @@ class ExcelTableSuite extends FunSuite with BeforeAndAfterEach {
         sheet.cell(17,10).setCellValue("row3")
         sheet.cell(17,20).setCellValue("foo")
 
-        assert(table.findRow(_ == "row1").get.topRow == 10)
+        assert(table.findRow(_ == "row1")(0).topRow == 10)
         assert(table.findRow(
-            List((x:String) => x == "row1")).get.topRow == 10)
-        assert(table.findRow(_ == "row2").get.topRow == 12)
-        assert(table.findRow(_ == "row3").get.topRow == 17)
+            List((x:String) => x == "row1"))(0).topRow == 10)
+        assert(table.findRow(_ == "row2")(0).topRow == 12)
+        assert(table.findRow(_ == "row3")(0).topRow == 17)
         assert(table.findRow(_ == "foo").isEmpty)
 
         sheet.cell(10,14).setCellValue("col2")
@@ -84,10 +84,10 @@ class ExcelTableSuite extends FunSuite with BeforeAndAfterEach {
         sheet.cell(10,17).setCellValue("col3")
         sheet.cell(20,17).setCellValue("bar")
 
-        assert(table.findColumn(_ == "col2").get.leftCol == 12)
+        assert(table.findColumn(_ == "col2")(0).leftCol == 12)
         assert(table.findColumn(
-            List((x:String) => x == "col2")).get.leftCol == 12)
-        assert(table.findColumn(_ == "col3").get.leftCol == 17)
+            List((x:String) => x == "col2"))(0).leftCol == 12)
+        assert(table.findColumn(_ == "col3")(0).leftCol == 17)
         assert(table.findColumn(_ == "bar").isEmpty)
 
         sheet.cell(17,17).setCellValue("hello")
@@ -103,13 +103,13 @@ class ExcelTableSuite extends FunSuite with BeforeAndAfterEach {
             List("row1", "lower").map(createStringEqual(_)),
             List("col2", "right").map(createStringEqual(_)),
             )
-        assert(cell.get.getSingleValue.get == "lr")
+        assert(cell(0)(0).getSingleValue.get == "lr")
 
         val cell2 = table.find(
             List("row1", "upper").map(createStringEqual(_)),
             List("col2", "left").map(createStringEqual(_)),
             )
-        assert(cell2.get.getSingleValue.get == "ul")
+        assert(cell2(0)(0).getSingleValue.get == "ul")
 
         assert(table.getTableName.get == "test")
     }

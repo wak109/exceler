@@ -45,9 +45,10 @@ object Exceler {
                 sheet <- workbook.getSheetOption(sheetname)
                 tableMap = sheet.getTableMap
                 table <- tableMap.get(tablename)
-                cell <- table.find(
+                row <- table.find(
                     rowKeys.split(",").toList.map(isSameStr),
                     colKeys.split(",").toList.map(isSameStr))
+                cell <- row
                 value <- cell.getSingleValue
             } {
                 println(value)
