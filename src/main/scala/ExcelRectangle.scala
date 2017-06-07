@@ -9,8 +9,8 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import java.io._
 import java.nio.file._
 
+
 import ExcelLib._
-import ExcelRectangle._
 
 
 class ExcelRectangle (
@@ -21,6 +21,11 @@ class ExcelRectangle (
     val rightCol:Int
     ) {
 
+    assert(0 <= topRow)
+    assert(0 <= leftCol)
+    assert(topRow <= bottomRow)
+    assert(leftCol <= rightCol)
+
     def this(rect:ExcelRectangle) = this(
             rect.sheet,
             rect.topRow,
@@ -28,29 +33,28 @@ class ExcelRectangle (
             rect.bottomRow,
             rect.rightCol)
 
-    def getInnerRectangleList():List[List[ExcelRectangle]] = {
-
+    def getRowList():List[ExcelRectangle] = {
         val rownumList = (topRow-1) :: (for {
-             rownum <- (topRow until bottomRow).toList
-             cell <- sheet.getCellOption(rownum, leftCol)
-             if cell.hasBorderBottom
+            rownum <- (topRow until bottomRow).toList
+            cell <- sheet.getCellOption(rownum, leftCol)
+            if cell.hasBorderBottom
         } yield rownum) ::: List(bottomRow)
 
+        (rownumList, rownumList.drop(1)).zipped.toList.map(
+                tpl => new ExcelRectangle(
+                    sheet, tpl._1 + 1, leftCol, tpl._2,  rightCol))
+    }
+
+    def getColumnList():List[ExcelRectangle] = {
         val colnumList = (leftCol-1) :: (for {
-             colnum <- (leftCol until rightCol).toList
-             cell <- sheet.getCellOption(topRow, colnum)
-             if cell.hasBorderRight
+            colnum <- (leftCol until rightCol).toList
+            cell <- sheet.getCellOption(topRow, colnum)
+            if cell.hasBorderRight
         } yield colnum) ::: List(rightCol)
 
-        (for {
-            (rownumStart, rownumEnd) <- (rownumList, rownumList.drop(1)).zipped
-        } yield (for {
-            (colnumStart, colnumEnd)
-                <- (colnumList, colnumList.drop(1)).zipped
-            } yield new ExcelRectangle(sheet,
-                rownumStart + 1, colnumStart + 1, rownumEnd, colnumEnd)
-            ).toList
-        ).toList
+        (colnumList, colnumList.drop(1)).zipped.toList.map(
+                tpl => new ExcelRectangle(
+                    sheet, topRow, tpl._1 + 1, bottomRow, tpl._2))
     }
 
     override def toString():String =
@@ -62,81 +66,28 @@ class ExcelRectangle (
 
 object ExcelRectangle {
 
-        implicit def excelRectangleImplicit(rect:ExcelRectangle) = (
+    implicit def excelRectangleToTuple(rect:ExcelRectangle) = (
             rect.sheet,
             rect.topRow,
             rect.leftCol,
             rect.bottomRow,
             rect.rightCol)
 
-        implicit class CellBorderImplicit (cell:Cell) {
 
-            ////////////////////////////////////////////////////////////
-            // isOuterBorder
-            //
-            //
-            def isOuterBorderTop():Boolean = {
-                val upperCell = cell.getUpperCell
-    
-                (cell.hasBorderTop) &&
-                (upperCell match {
-                    case Some(cell) =>
-                        (! cell.hasBorderLeft) &&
-                        (! cell.hasBorderRight)
-                    case None => true
-                })
-            }
-    
-            def isOuterBorderBottom():Boolean = {
-                val lowerCell = cell.getLowerCell
-    
-                (cell.hasBorderBottom) &&
-                (lowerCell match {
-                    case Some(cell) =>
-                        (! cell.hasBorderLeft) &&
-                        (! cell.hasBorderRight)
-                    case None => true
-                })
-            }
-    
-            def isOuterBorderLeft():Boolean = {
-                val leftCell = cell.getLeftCell
-    
-                (cell.hasBorderLeft) &&
-                (leftCell match {
-                    case Some(cell) =>
-                        (! cell.hasBorderTop) &&
-                        (! cell.hasBorderBottom)
-                    case None => true
-                })
-            }
-    
-            def isOuterBorderRight():Boolean = {
-                val rightCell = cell.getRightCell
-    
-                (cell.hasBorderRight) &&
-                (rightCell match {
-                    case Some(cell) =>
-                        (! cell.hasBorderTop) &&
-                        (! cell.hasBorderBottom)
-                    case None => true
-                })
-            }
+    implicit class SheetToExcelRectangleExtra (sheet:Sheet) {
+
+        def getRectangleList():List[ExcelRectangle] = {
+            for {
+                cell <- Helper.getCellList(sheet)
+                if cell.isOuterBorderBottom && cell.isOuterBorderRight
+                topLeft <- Helper.findTopLeftFromBottomRight(cell)
+            } yield new ExcelRectangle(sheet,
+                topLeft.getRowIndex, topLeft.getColumnIndex,
+                cell.getRowIndex, cell.getColumnIndex)
         }
+    }
 
-        implicit class SheetRectangleImplicit (sheet:Sheet) {
-
-            def getRectangleList():List[ExcelRectangle] = {
-                for {
-                    cell <- Helper.getCellList(sheet)
-                    if cell.isOuterBorderBottom && cell.isOuterBorderRight
-                    topLeft <- Helper.findTopLeftFromBottomRight(cell)
-                } yield new ExcelRectangle(sheet,
-                    topLeft.getRowIndex, topLeft.getColumnIndex,
-                    cell.getRowIndex, cell.getColumnIndex)
-            }
-        }
-
+    
     object Helper {
         ////////////////////////////////////////////////////////////////
         // Function
@@ -170,10 +121,12 @@ object ExcelRectangle {
         def getCellList(sheet:Sheet):List[Cell] = {
             for {
                 row <- for {
-                    rownum <- (sheet.getFirstRowNum to sheet.getLastRowNum).toList
+                    rownum <- (sheet.getFirstRowNum
+                            to sheet.getLastRowNum).toList
                     row <- sheet.getRowOption(rownum)
                 } yield row
-                colnum <- (row.getFirstCellNum until row.getLastCellNum).toList
+                colnum <- (row.getFirstCellNum
+                            until row.getLastCellNum).toList
                 cell <- row.getCellOption(colnum)
             } yield cell
         }

@@ -14,6 +14,7 @@ import ExcelLib._
 
 class ExcelLibSuite extends FunSuite with BeforeAndAfterEach {
   
+
     val testWorkbook1 = "test1.xlsx"
 
     val testSheet = "test"
@@ -67,6 +68,22 @@ class ExcelLibSuite extends FunSuite with BeforeAndAfterEach {
             case Failure(e) => assert(false)
         }
         assert(workbook.sheet(testSheet) == workbook.getSheet(testSheet))
+    }
+
+    test("Workbook.removeSheet") {
+        val workbook = new XSSFWorkbook()
+
+        Try(workbook.sheet(testSheet)) match {
+            case Success(s) => assert(s.getSheetName() == testSheet)
+            case Failure(e) => assert(false)
+        }
+
+        workbook.removeSheet(testSheet)
+
+        workbook.getSheetOption(testSheet) match {
+            case Some(s) => assert(false)
+            case None => assert(true)
+        }
     }
 
     test("Workbook.findCellStyle") {
@@ -196,6 +213,38 @@ class ExcelLibSuite extends FunSuite with BeforeAndAfterEach {
         }
     }
 
+    test("Cell.getValueString") {
+
+        val workbook = new XSSFWorkbook()
+        val sheet = workbook.sheet(testSheet)
+        val row = sheet.createRow(0)
+        val cell = row.createCell(0)
+
+        cell.setCellValue(testMessage)
+        cell.getValueString match {
+            case Some(s) => assert(s == testMessage)
+            case None => assert(false)
+        }
+
+        cell.setCellType(CellType.BLANK)
+        cell.getValueString match {
+            case Some(s) => assert(false)
+            case None => assert(true)
+        }
+
+        cell.setCellValue(12345)
+        cell.getValueString match {
+            case Some(s) => assert(s.toDouble == 12345)
+            case None => assert(false)
+        }
+
+        cell.setCellValue("")
+        cell.getValueString match {
+            case Some(s) => assert(false)
+            case None => assert(true)
+        }
+    }
+
     test("Cell.getUppper,Cell.upper_ etc") {
         val cell = (new XSSFWorkbook()).sheet(testSheet).cell(100, 100)
 
@@ -235,6 +284,7 @@ class ExcelLibSuite extends FunSuite with BeforeAndAfterEach {
         assert(cell.getRightStream.take(10).toList.length == 10)
     }
     
+
     test("Shapes") {
         val file = new File(getClass.getResource(testWorkbook1).toURI)
         val workbook = WorkbookFactory.create(file)

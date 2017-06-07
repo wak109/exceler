@@ -1,5 +1,5 @@
 name := "exceler"
-version := "0.0.4"
+version := "0.1.0"
 scalaVersion := "2.12.2"
 
 scalacOptions := Seq("-unchecked", "-deprecation", "-feature")

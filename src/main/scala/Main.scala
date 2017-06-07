@@ -70,9 +70,22 @@ object Main {
         ) match {
             case Success(cl) => {
                 cl.getArgs()(0) match {
-                    case "xml" => convertExcelTableToXML(cl.getArgs()(1)) match {
+                    case "xml" => convertExcelTableToXML(
+                            cl.getArgs()(1)) match {
                         case Success(_) => None
-                        case Failure(e) => println(e.getMessage); printUsage()
+                        case Failure(e) =>
+                            println(e.getMessage); printUsage()
+                    }
+                    case "get" => readExcelTable(
+                            cl.getArgs()(1),
+                            cl.getArgs()(2),
+                            cl.getArgs()(3),
+                            cl.getArgs()(4),
+                            cl.getArgs()(5)
+                            ) match {
+                        case Success(_) => None
+                        case Failure(e) =>
+                            println(e.getMessage); printUsage()
                     }
                     case _ => printUsage()
                 }

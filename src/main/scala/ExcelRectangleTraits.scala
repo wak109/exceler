@@ -8,7 +8,6 @@ import java.io._
 import java.nio.file._
 
 import ExcelLib._
-import ExcelRectangle._
 
 trait ExcelRectangleDraw {
 

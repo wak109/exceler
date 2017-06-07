@@ -11,21 +11,52 @@ import java.nio.file._
 
 import ExcelLib._
 import ExcelRectangle._
+import ExcelTable._
 
 object Exceler {
 
     def convertExcelTableToXML(filename:String):Try[Unit] = {
-
         Try {
             val file = new File(filename)
             val workbook = WorkbookFactory.create(file, null ,true) 
             for {
                 sheet <- workbook.sheetIterator.asScala
                 rect <- sheet.getRectangleList
-                trow <- rect.getInnerRectangleList
-                tcell <- trow
+                row <- rect.getRowList
+                cell <- row.getColumnList
             } {
-                println(tcell)
+                println(cell)
+            }
+        }
+    }
+
+    def readExcelTable(
+        filename:String,
+        sheetname:String,
+        tablename:String,
+        rowKeys:String,
+        colKeys:String):Try[Unit] = {
+        Try {
+            def isSameStr(s:String): String => Boolean = {
+                s match {
+                    case "" => (x:String) => true
+                    case _  => (x:String) => x == s
+                }
+            }
+            val file = new File(filename)
+            val workbook = WorkbookFactory.create(file, null ,true) 
+
+            for {
+                sheet <- workbook.getSheetOption(sheetname)
+                tableMap = sheet.getTableMap
+                table <- tableMap.get(tablename)
+                row <- table.find(
+                    rowKeys.split(",").toList.map(isSameStr),
+                    colKeys.split(",").toList.map(isSameStr))
+                cell <- row
+                value <- cell.getSingleValue
+            } {
+                println(value)
             }
         }
     }

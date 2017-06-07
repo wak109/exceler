@@ -12,6 +12,7 @@ import ExcelLib._
 import ExcelRectangle._
 import ExcelRectangle.Helper._
 
+
 class ExcelRectangleSuite extends FunSuite with BeforeAndAfterEach {
   
     val testSheet = "test"
@@ -97,6 +98,27 @@ class ExcelRectangleSuite extends FunSuite with BeforeAndAfterEach {
 
         cell.rightCell.setBorderLeft(BorderStyle.THIN)
         assert(cell.hasBorderRight)
+    }
+
+    test("Cell.hasThickBorderRight") {
+        val workbook = new XSSFWorkbook
+        val sheet = workbook.sheet(testSheet)
+        val cell = sheet.cell(5, 5)
+        var style = workbook.createCellStyle
+
+        assert(! cell.hasBorderRight)
+
+        cell.setBorderRight(BorderStyle.THIN)
+        assert(!cell.hasThickBorderRight)
+
+        cell.setBorderRight(BorderStyle.THICK)
+        assert(cell.hasThickBorderRight)
+
+        cell.setBorderRight(BorderStyle.THIN)
+        assert(!cell.hasThickBorderRight)
+
+        cell.rightCell.setBorderLeft(BorderStyle.THICK)
+        assert(cell.hasThickBorderRight)
     }
 
     test("Cell.isOuterBorderBottom etc") {
