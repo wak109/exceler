@@ -37,6 +37,7 @@ object ExcelLib {
 
     implicit def toCellStyleTuple(cellStyle:CellStyle) =
             cellStyle.toTuple
+
 }
 
 
@@ -73,6 +74,13 @@ trait WorkbookExtra {
         }
     }
 
+    def removeSheet(name:String):Unit = {
+        for {
+            sheet <- workbook.getSheetOption(name)
+        } {
+            workbook.removeSheetAt(workbook.getSheetIndex(sheet))
+        }
+    }
 
     //
     // BorderTop

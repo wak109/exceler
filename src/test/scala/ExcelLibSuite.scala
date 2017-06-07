@@ -70,6 +70,22 @@ class ExcelLibSuite extends FunSuite with BeforeAndAfterEach {
         assert(workbook.sheet(testSheet) == workbook.getSheet(testSheet))
     }
 
+    test("Workbook.removeSheet") {
+        val workbook = new XSSFWorkbook()
+
+        Try(workbook.sheet(testSheet)) match {
+            case Success(s) => assert(s.getSheetName() == testSheet)
+            case Failure(e) => assert(false)
+        }
+
+        workbook.removeSheet(testSheet)
+
+        workbook.getSheetOption(testSheet) match {
+            case Some(s) => assert(false)
+            case None => assert(true)
+        }
+    }
+
     test("Workbook.findCellStyle") {
         val workbook = new XSSFWorkbook()
 
