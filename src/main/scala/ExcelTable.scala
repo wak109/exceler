@@ -44,7 +44,7 @@ class ExcelTable (
         for {
             colnum <- (leftCol to rightCol).toStream
             rownum <- (topRow to bottomRow).toStream
-            value <- sheet.cell(rownum, colnum).getValueString
+            value <- sheet.cell(rownum, colnum).getValueString.map(_.trim)
         } yield value
     ).headOption
 
