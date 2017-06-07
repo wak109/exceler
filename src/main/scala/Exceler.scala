@@ -37,7 +37,12 @@ object Exceler {
         rowKeys:String,
         colKeys:String):Try[Unit] = {
         Try {
-            def isSameStr(s:String) = (x:String) => x == s
+            def isSameStr(s:String): String => Boolean = {
+                s match {
+                    case "" => (x:String) => true
+                    case _  => (x:String) => x == s
+                }
+            }
             val file = new File(filename)
             val workbook = WorkbookFactory.create(file, null ,true) 
 

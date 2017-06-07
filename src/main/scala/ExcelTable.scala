@@ -57,8 +57,10 @@ class ExcelTable (
         } yield {
             for {
                 col <- this.findColumn(colpredList)
-            } yield new ExcelTable(sheet,
+            } yield {
+                new ExcelTable(sheet,
                     row.topRow, col.leftCol, row.bottomRow, col.rightCol)
+            }
         }
     }
 
@@ -76,8 +78,7 @@ class ExcelTable (
     def findRow(pred:String => Boolean):List[ExcelTable] = {
         for {
             row <- this.rowList
-            value <- row.columnList.head.value
-            if pred(value)
+            if pred(row.columnList.head.value.getOrElse(""))
         } yield row
     }
 
@@ -95,8 +96,7 @@ class ExcelTable (
     def findColumn(pred:String => Boolean):List[ExcelTable] = {
         for {
             col <- this.columnList
-            value <- col.rowList.head.value
-            if pred(value)
+            if pred(col.rowList.head.value.getOrElse(""))
         } yield col
     }
 
