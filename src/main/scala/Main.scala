@@ -76,7 +76,7 @@ object Main {
                         case Failure(e) =>
                             println(e.getMessage); printUsage()
                     }
-                    case "get" => readExcelTable(
+                    case "query" => readExcelTable(
                             cl.getArgs()(1),
                             cl.getArgs()(2),
                             cl.getArgs()(3),
