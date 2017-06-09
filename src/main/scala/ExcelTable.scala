@@ -9,10 +9,25 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import java.io._
 import java.nio.file._
 
-
 import ExcelLib._
 import ExcelRectangle._
 
+//
+// NormalTable
+//
+// table_name
+// +-------+------+------+
+// |       |      |      |    
+// +-------+------+------+
+//
+//
+// HeadingTable
+//
+// +---------------------+
+// |  table_name         |
+// +-------+------+------+
+// |       |      |      |    
+// +-------+------+------+
 
 class ExcelTable (
     val sheet:Sheet,
@@ -35,16 +50,10 @@ class ExcelTable (
             rectList.head.leftCol,
             rectList(rectList.length - 1).bottomRow,
             rectList(rectList.length - 1).rightCol)
-/*
-    override def getRowList():List[ExcelTable] =
-            super.getRowList.map(new ExcelTable(_))
-    override def getColumnList():List[ExcelTable] =
-            super.getColumnList.map(new ExcelTable(_))
-*/
+
     lazy val rowList = this.getRowList
     lazy val columnList = this.getColumnList
     lazy val value = this.getSingleValue
-
 
     def getSingleValue():Option[String] = (
         for {
