@@ -13,27 +13,16 @@ import java.nio.file._
 import ExcelLib._
 
 
-class ExcelRectangle (
-    val sheet:Sheet,
-    val topRow:Int,
-    val leftCol:Int,
-    val bottomRow:Int,
+abstract trait ExcelRectangle[T <: ExcelRectangle[T]] {
+    val sheet:Sheet
+    val topRow:Int
+    val leftCol:Int
+    val bottomRow:Int
     val rightCol:Int
-    ) {
 
-    assert(0 <= topRow)
-    assert(0 <= leftCol)
-    assert(topRow <= bottomRow)
-    assert(leftCol <= rightCol)
 
-    def this(rect:ExcelRectangle) = this(
-            rect.sheet,
-            rect.topRow,
-            rect.leftCol,
-            rect.bottomRow,
-            rect.rightCol)
-
-    def getRowList():List[ExcelRectangle] = {
+    def getRowList()(implicit newInstance:(
+            Sheet, Int, Int, Int, Int) => T):List[T] = {
         val rownumList = (topRow-1) :: (for {
             rownum <- (topRow until bottomRow).toList
             cell <- sheet.getCellOption(rownum, leftCol)
@@ -41,11 +30,12 @@ class ExcelRectangle (
         } yield rownum) ::: List(bottomRow)
 
         (rownumList, rownumList.drop(1)).zipped.toList.map(
-                tpl => new ExcelRectangle(
+                tpl => newInstance(
                     sheet, tpl._1 + 1, leftCol, tpl._2,  rightCol))
     }
 
-    def getColumnList():List[ExcelRectangle] = {
+    def getColumnList()(implicit newInstance:(
+            Sheet, Int, Int, Int, Int) => T):List[T] = {
         val colnumList = (leftCol-1) :: (for {
             colnum <- (leftCol until rightCol).toList
             cell <- sheet.getCellOption(topRow, colnum)
@@ -53,7 +43,7 @@ class ExcelRectangle (
         } yield colnum) ::: List(rightCol)
 
         (colnumList, colnumList.drop(1)).zipped.toList.map(
-                tpl => new ExcelRectangle(
+                tpl => newInstance(
                     sheet, topRow, tpl._1 + 1, bottomRow, tpl._2))
     }
 
@@ -65,23 +55,25 @@ class ExcelRectangle (
 
 
 object ExcelRectangle {
-
+/*
     implicit def excelRectangleToTuple(rect:ExcelRectangle) = (
             rect.sheet,
             rect.topRow,
             rect.leftCol,
             rect.bottomRow,
             rect.rightCol)
+*/
 
+    implicit class SheetToExcelRectangle (sheet:Sheet) {
 
-    implicit class SheetToExcelRectangleExtra (sheet:Sheet) {
-
-        def getRectangleList():List[ExcelRectangle] = {
+        def getRectangleList[T <: ExcelRectangle[T]]()
+                (implicit newInstance:(
+                    Sheet, Int, Int, Int, Int) => T):List[T] = {
             for {
                 cell <- Helper.getCellList(sheet)
                 if cell.isOuterBorderBottom && cell.isOuterBorderRight
                 topLeft <- Helper.findTopLeftFromBottomRight(cell)
-            } yield new ExcelRectangle(sheet,
+            } yield newInstance(sheet,
                 topLeft.getRowIndex, topLeft.getColumnIndex,
                 cell.getRowIndex, cell.getColumnIndex)
         }

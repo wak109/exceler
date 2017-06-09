@@ -15,30 +15,36 @@ import ExcelRectangle._
 
 
 class ExcelTable (
-    sheet:Sheet,
-    topRow:Int,
-    leftCol:Int,
-    bottomRow:Int,
-    rightCol:Int
-    ) extends ExcelRectangle(sheet, topRow, leftCol, bottomRow, rightCol){
+    val sheet:Sheet,
+    val topRow:Int,
+    val leftCol:Int,
+    val bottomRow:Int,
+    val rightCol:Int
+    ) extends ExcelRectangle[ExcelTable] {
 
-    def this(rect:ExcelRectangle) = this(
+    def this(rect:ExcelTable) = this(
             rect.sheet,
             rect.topRow,
             rect.leftCol,
             rect.bottomRow,
             rect.rightCol)
 
-    def this(rectList:List[ExcelRectangle]) = this(
+    def this(rectList:List[ExcelTable]) = this(
             rectList.head.sheet,
             rectList.head.topRow,
             rectList.head.leftCol,
             rectList(rectList.length - 1).bottomRow,
             rectList(rectList.length - 1).rightCol)
-
-    lazy val rowList = super.getRowList.map(new ExcelTable(_))
-    lazy val columnList = super.getColumnList.map(new ExcelTable(_))
+/*
+    override def getRowList():List[ExcelTable] =
+            super.getRowList.map(new ExcelTable(_))
+    override def getColumnList():List[ExcelTable] =
+            super.getColumnList.map(new ExcelTable(_))
+*/
+    lazy val rowList = this.getRowList
+    lazy val columnList = this.getColumnList
     lazy val value = this.getSingleValue
+
 
     def getSingleValue():Option[String] = (
         for {
@@ -111,15 +117,24 @@ class ExcelTable (
         "ExcelTable:" + sheet.getSheetName + ":(" + 
             sheet.cell(topRow, leftCol).getAddress + "," +
             sheet.cell(bottomRow, rightCol).getAddress + ")"
+
 }
 
 object ExcelTable {
 
+    implicit def newExcelTable(
+        sheet:Sheet,
+        topRow:Int,
+        leftCol:Int,
+        bottomRow:Int,
+        rightCol:Int
+    ):ExcelTable =
+        new ExcelTable(sheet, topRow, leftCol, bottomRow, rightCol)
+
     implicit class ExcelTableSheetExtra (sheet:Sheet) {
 
         def getTableMap():Map[String,ExcelTable] = {
-            val tableList = sheet.getRectangleList.map(
-                    (r:ExcelRectangle) => new ExcelTable(r))
+            val tableList = sheet.getRectangleList[ExcelTable]
             tableList.zip(tableList.map(_.getTableName)).zipWithIndex.map(
                 _ match {
                     case ((t, Some(name)), _) => (name, t)

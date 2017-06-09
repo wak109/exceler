@@ -25,10 +25,9 @@ class ExcelTableSuite extends FunSuite with BeforeAndAfterEach {
         val workbook = new XSSFWorkbook
         val sheet = workbook.sheet("test")
 
-        val table = new ExcelTable(sheet, 5, 5, 5, 5)
-        assert(table.getSingleValue.isEmpty)
-
         sheet.cell(5, 5).setCellValue("foo")
+        val table = new ExcelTable(sheet, 5, 5, 5, 5)
+
         assert(table.getSingleValue.isDefined)
         assert(table.getSingleValue.get == "foo")
 
@@ -40,10 +39,9 @@ class ExcelTableSuite extends FunSuite with BeforeAndAfterEach {
         val workbook = new XSSFWorkbook
         val sheet = workbook.sheet("test")
 
-        val table = new ExcelTable(sheet, 5, 5, 10, 10)
-        assert(table.getSingleValue.isEmpty)
-
         sheet.cell(6, 6).setCellValue("foo")
+        val table = new ExcelTable(sheet, 5, 5, 10, 10)
+
         assert(table.getSingleValue.isDefined)
         assert(table.getSingleValue.get == "foo")
 
