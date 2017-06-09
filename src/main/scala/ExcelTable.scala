@@ -23,8 +23,7 @@ abstract trait ExcelTableQuery[T <: ExcelTableQuery[T]] {
 
     val rowList:List[T]
     val columnList:List[T]
-
-    def getSingleValue():Option[String]
+    val value:Option[String]
 
     def query(
         rowpredList:List[String => Boolean],
@@ -60,7 +59,7 @@ abstract trait ExcelTableQuery[T <: ExcelTableQuery[T]] {
     def queryRow(pred:String => Boolean):List[T] = {
         for {
             row <- this.rowList
-            if pred(row.columnList.head.getSingleValue.getOrElse(""))
+            if pred(row.columnList.head.value.getOrElse(""))
         } yield row
     }
 
@@ -85,7 +84,7 @@ abstract trait ExcelTableQuery[T <: ExcelTableQuery[T]] {
     def queryColumn(pred:String => Boolean):List[T] = {
         for {
             col <- this.columnList
-            if pred(col.rowList.head.getSingleValue.getOrElse(""))
+            if pred(col.rowList.head.value.getOrElse(""))
         } yield col
     }
 }
