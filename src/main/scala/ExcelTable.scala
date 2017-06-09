@@ -9,36 +9,102 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import java.io._
 import java.nio.file._
 
-
 import ExcelLib._
 import ExcelRectangle._
 
+abstract trait ExcelTableQuery[T <: ExcelTableQuery[T]] {
+    this:T =>
+
+    val sheet:Sheet
+    val topRow:Int
+    val leftCol:Int
+    val bottomRow:Int
+    val rightCol:Int
+
+    val rowList:List[T]
+    val columnList:List[T]
+    val value:Option[String]
+
+    def query(
+        rowpredList:List[String => Boolean],
+        colpredList:List[String => Boolean]
+        )(implicit newInstance:(
+            Sheet,Int,Int,Int,Int)=>T):List[List[T]] = {
+        for {
+            row <- this.queryRow(rowpredList)
+        } yield for {
+            col <- this.queryColumn(colpredList)
+        } yield newInstance(sheet,
+            row.topRow, col.leftCol, row.bottomRow, col.rightCol)
+    }
+
+    def queryRow(predList:List[String => Boolean])(
+            implicit newInstance:(Sheet,Int,Int,Int,Int)=>T):List[T] = {
+        predList match {
+            case Nil => List(this)
+            case pred::predTail => for {
+                row <- this.queryRow(pred)
+                rtail = row.columnList.tail
+                rowNext <- newInstance(
+                    rtail.head.sheet,
+                    rtail.head.topRow,
+                    rtail.head.leftCol,
+                    rtail(rtail.length - 1).bottomRow,
+                    rtail(rtail.length - 1).rightCol
+                ).queryRow(predTail)
+            } yield rowNext
+        }
+    }
+
+    def queryRow(pred:String => Boolean):List[T] = {
+        for {
+            row <- this.rowList
+            if pred(row.columnList.head.value.getOrElse(""))
+        } yield row
+    }
+
+    def queryColumn(predList:List[String => Boolean])(
+            implicit newInstance:(Sheet,Int,Int,Int,Int)=>T):List[T] = {
+        predList match {
+            case Nil => List(this)
+            case pred::predTail => for {
+                col <- this.queryColumn(pred)
+                ctail = col.rowList.tail
+                colNext <- newInstance(
+                    ctail.head.sheet,
+                    ctail.head.topRow,
+                    ctail.head.leftCol,
+                    ctail(ctail.length - 1).bottomRow,
+                    ctail(ctail.length - 1).rightCol
+                ).queryColumn(predTail)
+            } yield colNext
+        }
+    }
+
+    def queryColumn(pred:String => Boolean):List[T] = {
+        for {
+            col <- this.columnList
+            if pred(col.rowList.head.value.getOrElse(""))
+        } yield col
+    }
+}
 
 class ExcelTable (
-    sheet:Sheet,
-    topRow:Int,
-    leftCol:Int,
-    bottomRow:Int,
-    rightCol:Int
-    ) extends ExcelRectangle(sheet, topRow, leftCol, bottomRow, rightCol){
+    val sheet:Sheet,
+    val topRow:Int,
+    val leftCol:Int,
+    val bottomRow:Int,
+    val rightCol:Int
+    )
+    extends ExcelRectangle[ExcelTable]
+    with ExcelTableQuery[ExcelTable] {
 
-    def this(rect:ExcelRectangle) = this(
-            rect.sheet,
-            rect.topRow,
-            rect.leftCol,
-            rect.bottomRow,
-            rect.rightCol)
-
-    def this(rectList:List[ExcelRectangle]) = this(
-            rectList.head.sheet,
-            rectList.head.topRow,
-            rectList.head.leftCol,
-            rectList(rectList.length - 1).bottomRow,
-            rectList(rectList.length - 1).rightCol)
-
-    lazy val rowList = super.getRowList.map(new ExcelTable(_))
-    lazy val columnList = super.getColumnList.map(new ExcelTable(_))
+    lazy val rowList = this.getRowList
+    lazy val columnList = this.getColumnList
     lazy val value = this.getSingleValue
+
+    def this(t:ExcelTable) = this(
+            t.sheet, t.topRow, t.leftCol, t.bottomRow, t.rightCol)
 
     def getSingleValue():Option[String] = (
         for {
@@ -47,58 +113,6 @@ class ExcelTable (
             value <- sheet.cell(rownum, colnum).getValueString.map(_.trim)
         } yield value
     ).headOption
-
-    def find(
-        rowpredList:List[String => Boolean],
-        colpredList:List[String => Boolean]
-    ):List[List[ExcelTable]] = {
-        for {
-            row <- this.findRow(rowpredList)
-        } yield {
-            for {
-                col <- this.findColumn(colpredList)
-            } yield {
-                new ExcelTable(sheet,
-                    row.topRow, col.leftCol, row.bottomRow, col.rightCol)
-            }
-        }
-    }
-
-    def findRow(predList:List[String => Boolean]):List[ExcelTable] = {
-        predList match {
-            case Nil => List(this)
-            case pred::predTail => for {
-                row <- this.findRow(pred)
-                rowNext <- (new ExcelTable(row.columnList.tail))
-                        .findRow(predTail)
-            } yield rowNext
-        }
-    }
-
-    def findRow(pred:String => Boolean):List[ExcelTable] = {
-        for {
-            row <- this.rowList
-            if pred(row.columnList.head.value.getOrElse(""))
-        } yield row
-    }
-
-    def findColumn(predList:List[String => Boolean]):List[ExcelTable] = {
-        predList match {
-            case Nil => List(this)
-            case pred::predTail => for {
-                col <- this.findColumn(pred)
-                colNext <- (new ExcelTable(col.rowList.tail))
-                        .findColumn(predTail)
-            } yield colNext
-        }
-    }
-
-    def findColumn(pred:String => Boolean):List[ExcelTable] = {
-        for {
-            col <- this.columnList
-            if pred(col.rowList.head.value.getOrElse(""))
-        } yield col
-    }
 
     def getTableName():Option[String] = {
         topRow match {
@@ -111,15 +125,24 @@ class ExcelTable (
         "ExcelTable:" + sheet.getSheetName + ":(" + 
             sheet.cell(topRow, leftCol).getAddress + "," +
             sheet.cell(bottomRow, rightCol).getAddress + ")"
+
 }
 
 object ExcelTable {
 
+    implicit def newExcelTable(
+        sheet:Sheet,
+        topRow:Int,
+        leftCol:Int,
+        bottomRow:Int,
+        rightCol:Int
+    ):ExcelTable =
+        new ExcelTable(sheet, topRow, leftCol, bottomRow, rightCol)
+
     implicit class ExcelTableSheetExtra (sheet:Sheet) {
 
         def getTableMap():Map[String,ExcelTable] = {
-            val tableList = sheet.getRectangleList.map(
-                    (r:ExcelRectangle) => new ExcelTable(r))
+            val tableList = sheet.getRectangleList[ExcelTable]
             tableList.zip(tableList.map(_.getTableName)).zipWithIndex.map(
                 _ match {
                     case ((t, Some(name)), _) => (name, t)

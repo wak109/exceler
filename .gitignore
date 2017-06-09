@@ -1,4 +1,5 @@
 *.swp
+*.prev
 project/project
 project/target
 project/build.properties
@@ -6,4 +7,5 @@ target
 .classpath
 .project
 .settings
+.idea
 tmp

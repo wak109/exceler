@@ -50,7 +50,7 @@ object Exceler {
                 sheet <- workbook.getSheetOption(sheetname)
                 tableMap = sheet.getTableMap
                 table <- tableMap.get(tablename)
-                row <- table.find(
+                row <- table.query(
                     rowKeys.split(",").toList.map(isSameStr),
                     colKeys.split(",").toList.map(isSameStr))
                 cell <- row

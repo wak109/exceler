@@ -270,7 +270,7 @@ class ExcelRectangleSuite extends FunSuite with BeforeAndAfterEach {
         topRight.setBorderTop(BorderStyle.THIN)
         topRight.setBorderRight(BorderStyle.THIN)
 
-        val rectList = sheet.getRectangleList
+        val rectList = sheet.getRectangleList[ExcelTable]
         
         assert(rectList.length == 2)
     }

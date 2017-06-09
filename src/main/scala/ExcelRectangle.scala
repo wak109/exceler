@@ -12,28 +12,16 @@ import java.nio.file._
 
 import ExcelLib._
 
+abstract trait ExcelRectangle[T <: ExcelRectangle[T]] {
 
-class ExcelRectangle (
-    val sheet:Sheet,
-    val topRow:Int,
-    val leftCol:Int,
-    val bottomRow:Int,
+    val sheet:Sheet
+    val topRow:Int
+    val leftCol:Int
+    val bottomRow:Int
     val rightCol:Int
-    ) {
 
-    assert(0 <= topRow)
-    assert(0 <= leftCol)
-    assert(topRow <= bottomRow)
-    assert(leftCol <= rightCol)
-
-    def this(rect:ExcelRectangle) = this(
-            rect.sheet,
-            rect.topRow,
-            rect.leftCol,
-            rect.bottomRow,
-            rect.rightCol)
-
-    def getRowList():List[ExcelRectangle] = {
+    def getRowList()(implicit newInstance:(
+            Sheet, Int, Int, Int, Int) => T):List[T] = {
         val rownumList = (topRow-1) :: (for {
             rownum <- (topRow until bottomRow).toList
             cell <- sheet.getCellOption(rownum, leftCol)
@@ -41,11 +29,12 @@ class ExcelRectangle (
         } yield rownum) ::: List(bottomRow)
 
         (rownumList, rownumList.drop(1)).zipped.toList.map(
-                tpl => new ExcelRectangle(
+                tpl => newInstance(
                     sheet, tpl._1 + 1, leftCol, tpl._2,  rightCol))
     }
 
-    def getColumnList():List[ExcelRectangle] = {
+    def getColumnList()(implicit newInstance:(
+            Sheet, Int, Int, Int, Int) => T):List[T] = {
         val colnumList = (leftCol-1) :: (for {
             colnum <- (leftCol until rightCol).toList
             cell <- sheet.getCellOption(topRow, colnum)
@@ -53,7 +42,7 @@ class ExcelRectangle (
         } yield colnum) ::: List(rightCol)
 
         (colnumList, colnumList.drop(1)).zipped.toList.map(
-                tpl => new ExcelRectangle(
+                tpl => newInstance(
                     sheet, topRow, tpl._1 + 1, bottomRow, tpl._2))
     }
 
@@ -66,22 +55,16 @@ class ExcelRectangle (
 
 object ExcelRectangle {
 
-    implicit def excelRectangleToTuple(rect:ExcelRectangle) = (
-            rect.sheet,
-            rect.topRow,
-            rect.leftCol,
-            rect.bottomRow,
-            rect.rightCol)
+    implicit class SheetToExcelRectangle (sheet:Sheet) {
 
-
-    implicit class SheetToExcelRectangleExtra (sheet:Sheet) {
-
-        def getRectangleList():List[ExcelRectangle] = {
+        def getRectangleList[T <: ExcelRectangle[T]]()
+                (implicit newInstance:(
+                    Sheet, Int, Int, Int, Int) => T):List[T] = {
             for {
                 cell <- Helper.getCellList(sheet)
                 if cell.isOuterBorderBottom && cell.isOuterBorderRight
                 topLeft <- Helper.findTopLeftFromBottomRight(cell)
-            } yield new ExcelRectangle(sheet,
+            } yield newInstance(sheet,
                 topLeft.getRowIndex, topLeft.getColumnIndex,
                 cell.getRowIndex, cell.getColumnIndex)
         }
@@ -131,5 +114,66 @@ object ExcelRectangle {
             } yield cell
         }
 
+    }
+}
+
+
+trait ExcelRectangleDraw {
+
+    val sheet:Sheet
+    val topRow:Int
+    val leftCol:Int
+    val bottomRow:Int
+    val rightCol:Int
+
+    def drawOuterBorderTop(borderStyle:BorderStyle):Unit = {
+        for (colnum <- (leftCol to rightCol).toList)
+            sheet.cell(topRow, colnum).setBorderTop(borderStyle)
+    }
+
+    def drawOuterBorderLeft(borderStyle:BorderStyle):Unit = {
+        for (rownum <- (topRow to bottomRow).toList)
+            sheet.cell(rownum, leftCol).setBorderLeft(borderStyle)
+    }
+
+    def drawOuterBorderBottom(borderStyle:BorderStyle):Unit = {
+        for (colnum <- (leftCol to rightCol).toList)
+            sheet.cell(bottomRow, colnum).setBorderBottom(borderStyle)
+    }
+
+    def drawOuterBorderRight(borderStyle:BorderStyle):Unit = {
+        for (rownum <- (topRow to bottomRow).toList)
+            sheet.cell(rownum, rightCol).setBorderRight(borderStyle)
+    }
+
+    def drawOuterBorder(borderStyle:BorderStyle):Unit = {
+        drawOuterBorderTop(borderStyle)
+        drawOuterBorderLeft(borderStyle)
+        drawOuterBorderBottom(borderStyle)
+        drawOuterBorderRight(borderStyle)
+    }
+
+    def drawHorizontalLine(num:Int, borderStyle:BorderStyle):Unit = {
+        if (num == 0) {
+            for (colnum <- (leftCol to rightCol).toList)
+                sheet.cell(0, colnum).setBorderTop(borderStyle)
+        }
+        else if (0 < num && num <= bottomRow - topRow) {
+            for (colnum <- (leftCol to rightCol).toList)
+                sheet.cell(topRow + num - 1, colnum
+                    ).setBorderBottom(borderStyle)
+        }
+    }
+
+    def drawVerticalLine(num:Int, borderStyle:BorderStyle):Unit = {
+        if (num == 0) {
+            for (rownum <- (topRow to bottomRow).toList)
+                sheet.cell(rownum, 0).setBorderLeft(borderStyle)
+        }
+        else if (0 < num && num <= rightCol - leftCol) {
+            for (rownum <- (topRow to bottomRow).toList)
+                sheet.cell(rownum, leftCol + num - 1
+                    ).setBorderRight(borderStyle)
+        }
     }
 }
