@@ -8,12 +8,11 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook
 
 import java.nio.file.{Paths, Files}
 
-import ExcelLib._
-import ExcelRectangle._
-import ExcelRectangle.Helper._
+import ExcelRectangleLib._
 
 
-class ExcelRectangleSuite extends FunSuite with BeforeAndAfterEach {
+class ExcelRectangleSuite extends FunSuite with BeforeAndAfterEach 
+    with ExcelRectangleSheetConversion {
   
     val testSheet = "test"
     val testMessage = "Hello, world!!"
@@ -155,7 +154,7 @@ class ExcelRectangleSuite extends FunSuite with BeforeAndAfterEach {
         topRight.setBorderTop(BorderStyle.THIN)
         bottomRight.setBorderBottom(BorderStyle.THIN)
 
-        findTopRightFromBottomRight(bottomRight) match {
+        Helper.findTopRightFromBottomRight(bottomRight) match {
             case Some(c) => assert(c == topRight)
             case None => assert(false)
         }
@@ -173,7 +172,7 @@ class ExcelRectangleSuite extends FunSuite with BeforeAndAfterEach {
         bottomLeft.setBorderLeft(BorderStyle.THIN)
         bottomRight.setBorderRight(BorderStyle.THIN)
 
-        findBottomLeftFromBottomRight(bottomRight) match {
+        Helper.findBottomLeftFromBottomRight(bottomRight) match {
             case Some(c) => assert(c == bottomLeft)
             case None => assert(false)
         }
@@ -191,7 +190,7 @@ class ExcelRectangleSuite extends FunSuite with BeforeAndAfterEach {
         bottomLeft.setBorderLeft(BorderStyle.THIN)
         bottomRight.setBorderRight(BorderStyle.THIN)
 
-        findBottomLeftFromBottomRight(bottomRight) match {
+        Helper.findBottomLeftFromBottomRight(bottomRight) match {
             case Some(c) => assert(false)
             case None => assert(true)
         }
@@ -210,7 +209,7 @@ class ExcelRectangleSuite extends FunSuite with BeforeAndAfterEach {
         topRight.setBorderTop(BorderStyle.THIN)
         topRight.setBorderRight(BorderStyle.THIN)
 
-        findTopLeftFromBottomRight(bottomRight) match {
+        Helper.findTopLeftFromBottomRight(bottomRight) match {
             case Some(c) => assert(c.getRowIndex == 5 && c.getColumnIndex == 5)
             case None => assert(false)
         }
@@ -240,7 +239,7 @@ class ExcelRectangleSuite extends FunSuite with BeforeAndAfterEach {
         val bottomLeft = sheet.cell(10, 5)
         val bottomRight = sheet.cell(10, 10)
 
-        assert(getCellList(sheet).length == 3)
+        assert(Helper.getCellList(sheet).length == 3)
     }
 
     test("getRectangleList") {

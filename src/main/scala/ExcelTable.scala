@@ -9,8 +9,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import java.io._
 import java.nio.file._
 
-import ExcelLib._
-import ExcelRectangle._
+import ExcelRectangleLib._
 
 abstract trait ExcelTableQuery[T <: ExcelTableQuery[T]] {
     this:T =>
@@ -89,6 +88,22 @@ abstract trait ExcelTableQuery[T <: ExcelTableQuery[T]] {
     }
 }
 
+trait ExcelTableName {
+
+    val sheet:Sheet
+    val topRow:Int
+    val leftCol:Int
+    val bottomRow:Int
+    val rightCol:Int
+
+    def getTableName():Option[String] = {
+        topRow match {
+            case 0 => None
+            case _ => sheet.cell(topRow - 1, leftCol).getValueString
+        }
+    }
+}
+
 class ExcelTable (
     val sheet:Sheet,
     val topRow:Int,
@@ -96,8 +111,9 @@ class ExcelTable (
     val bottomRow:Int,
     val rightCol:Int
     )
-    extends ExcelRectangle[ExcelTable]
-    with ExcelTableQuery[ExcelTable] {
+    extends RectSplitter[ExcelTable]
+    with ExcelTableQuery[ExcelTable]
+    with ExcelTableName {
 
     lazy val rowList = this.getRowList
     lazy val columnList = this.getColumnList
@@ -113,13 +129,6 @@ class ExcelTable (
             value <- sheet.cell(rownum, colnum).getValueString.map(_.trim)
         } yield value
     ).headOption
-
-    def getTableName():Option[String] = {
-        topRow match {
-            case 0 => None
-            case _ => sheet.cell(topRow - 1, leftCol).getValueString
-        }
-    }
 
     override def toString():String =
         "ExcelTable:" + sheet.getSheetName + ":(" + 

@@ -12,47 +12,55 @@ import org.apache.xmlbeans.XmlObject
 import java.io._
 import java.nio.file._
 
+import ExcelLib._
 
-object ExcelLib {
+object ExcelLib extends ExcelConversion
 
-    implicit class ToWorkbookExtra(w:Workbook)
-            extends Holder(w) with WorkbookExtra
+trait ExcelConversion
+        extends WorkbookConversion
+        with SheetConversion
+        with RowConversion
+        with CellConversion
+        with CellStyleConversion 
+        with XSSFShapeConversion
 
-    implicit class ToSheetExtra(s:Sheet)
-            extends Holder(s) with SheetExtra
+trait WorkbookConversion {
+    implicit class ToWorkbookExtra(val workbook:Workbook)
+            extends WorkbookExtra
+}
 
-    implicit class ToRowExtra(r:Row)
-            extends Holder(r) with RowExtra
+trait SheetConversion {
+    implicit class ToSheetExtra(val sheet:Sheet) extends SheetExtra
+}
 
-    implicit class ToCellExtra(c:Cell)
-            extends Holder(c) with CellExtra
+trait RowConversion {
+    implicit class ToRowExtra(val row:Row) extends RowExtra
+}
+
+trait CellConversion {
+    implicit class ToCellExtra(val cell:Cell) extends CellExtra
             with CellBorderExtra
             with CellOuterBorderExtra
+}
 
-    implicit class ToCellStyleExtra(c:CellStyle)
-            extends Holder(c) with CellStyleExtra
+trait CellStyleConversion {
+    implicit class ToCellStyleExtra(val cellStyle:CellStyle)
+            extends CellStyleExtra
 
-    implicit class ToXSSFShapeExtra(x:XSSFShape)
-            extends Holder(x) with XSSFShapeExtra
+    implicit def toCellStyleTuple(cellStyle:CellStyle) = cellStyle.toTuple
+}
 
-    implicit def toCellStyleTuple(cellStyle:CellStyle) =
-            cellStyle.toTuple
+trait XSSFShapeConversion {
+    implicit class ToXSSFShapeExtra(val shape:XSSFShape)
+            extends XSSFShapeExtra
 
 }
 
+////////////////////////////////////////////////////////////////////////
+// WorkbookExtra
 
-class Holder[T](val obj:T)
-
-object Holder {
-    implicit def toObj[T](holder:Holder[T]):T = holder.obj
-}
-
-
-trait WorkbookExtra {
-    workbook:Holder[Workbook] =>
-
-    import ExcelLib._    
-
+abstract trait WorkbookExtra {
+    val workbook:Workbook
 
     def saveAs(filename:String): Unit =  {
         FileLib.createParentDir(filename)
@@ -115,11 +123,8 @@ trait WorkbookExtra {
 }
 
 
-trait SheetExtra {
-    sheet:Holder[Sheet] => 
-
-    import ExcelLib._    
-
+abstract trait SheetExtra {
+    val sheet:Sheet
 
     def getRowOption(rownum:Int):Option[Row] =
             Option(sheet.getRow(rownum))
@@ -157,11 +162,8 @@ trait SheetExtra {
 }
 
 
-trait RowExtra {
-    row:Holder[Row] =>
-
-    import ExcelLib._    
-
+abstract trait RowExtra {
+    val row:Row
 
     def getCellOption(colnum:Int):Option[Cell] =
         Option(row.getCell(colnum))
@@ -171,10 +173,8 @@ trait RowExtra {
 }
 
 
-trait CellExtra {
-    cell:Holder[Cell] =>
-
-    import ExcelLib._    
+abstract trait CellExtra {
+    val cell:Cell
 
     def getValue_():Any = {
         cell.getCellTypeEnum match {
@@ -312,8 +312,8 @@ trait CellExtra {
 }
 
 
-trait CellBorderExtra {
-    cell:Holder[Cell] with CellExtra =>
+abstract trait CellBorderExtra {
+    val cell:Cell
 
     import ExcelLib._    
 
@@ -452,10 +452,8 @@ trait CellBorderExtra {
     }
 }
 
-trait CellOuterBorderExtra {
-    cell:Holder[Cell] with CellExtra with CellBorderExtra =>
-
-    import ExcelLib._
+abstract trait CellOuterBorderExtra {
+    val cell:Cell
 
     ////////////////////////////////////////////////////////////
     // isOuterBorder
@@ -510,8 +508,8 @@ trait CellOuterBorderExtra {
 }
 
 
-trait CellStyleExtra {
-    cellStyle:Holder[CellStyle] =>
+abstract trait CellStyleExtra {
+    val cellStyle:CellStyle
 
     def toTuple():(
         BorderStyle, 
@@ -537,11 +535,11 @@ trait CellStyleExtra {
 }
 
 
-trait XSSFShapeExtra {
-    shape:Holder[XSSFShape] =>
+abstract trait XSSFShapeExtra {
+    val shape:XSSFShape
 
     def toXmlObject():XmlObject = {
-        shape.obj match {
+        shape match {
             case x:XSSFSimpleShape =>
                     x.asInstanceOf[XSSFSimpleShape].getCTShape
             case x:XSSFConnector =>

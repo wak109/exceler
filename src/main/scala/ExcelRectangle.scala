@@ -10,15 +10,22 @@ import java.io._
 import java.nio.file._
 
 
+object ExcelRectangleLib
+    extends ExcelConversion
+    with ExcelRectangleSheetConversion
+
 import ExcelLib._
 
-abstract trait ExcelRectangle[T <: ExcelRectangle[T]] {
-
+abstract trait ExcelRectangle {
     val sheet:Sheet
     val topRow:Int
     val leftCol:Int
     val bottomRow:Int
     val rightCol:Int
+}
+
+abstract trait RectSplitter[T <: RectSplitter[T]]
+        extends ExcelRectangle {
 
     def getRowList()(implicit newInstance:(
             Sheet, Int, Int, Int, Int) => T):List[T] = {
@@ -47,17 +54,17 @@ abstract trait ExcelRectangle[T <: ExcelRectangle[T]] {
     }
 
     override def toString():String =
-        "ExcelRectangle:" + sheet.getSheetName + ":(" + 
+        "RectSplitter:" + sheet.getSheetName + ":(" + 
             sheet.cell(topRow, leftCol).getAddress + "," +
             sheet.cell(bottomRow, rightCol).getAddress + ")"
 }
 
 
-object ExcelRectangle {
+trait ExcelRectangleSheetConversion {
 
-    implicit class SheetToExcelRectangle (sheet:Sheet) {
+    implicit class SheetToRectSplitter (sheet:Sheet) {
 
-        def getRectangleList[T <: ExcelRectangle[T]]()
+        def getRectangleList[T <: RectSplitter[T]]()
                 (implicit newInstance:(
                     Sheet, Int, Int, Int, Int) => T):List[T] = {
             for {
@@ -69,12 +76,9 @@ object ExcelRectangle {
                 cell.getRowIndex, cell.getColumnIndex)
         }
     }
-
     
     object Helper {
-        ////////////////////////////////////////////////////////////////
-        // Function
-        //
+    
         def findTopRightFromBottomRight(cell:Cell):Option[Cell] = (
             for {
                 cOpt <- cell.getUpperStream
@@ -113,18 +117,11 @@ object ExcelRectangle {
                 cell <- row.getCellOption(colnum)
             } yield cell
         }
-
     }
 }
 
 
-trait ExcelRectangleDraw {
-
-    val sheet:Sheet
-    val topRow:Int
-    val leftCol:Int
-    val bottomRow:Int
-    val rightCol:Int
+trait RectDrawer extends ExcelRectangle {
 
     def drawOuterBorderTop(borderStyle:BorderStyle):Unit = {
         for (colnum <- (leftCol to rightCol).toList)
