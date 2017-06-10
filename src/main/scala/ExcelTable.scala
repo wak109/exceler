@@ -11,14 +11,8 @@ import java.nio.file._
 
 import ExcelRectangleLib._
 
-abstract trait ExcelTableQuery[T <: ExcelTableQuery[T]] {
+trait ExcelTableQuery[T <: ExcelTableQuery[T]] extends RectSplitter[T] {
     this:T =>
-
-    val sheet:Sheet
-    val topRow:Int
-    val leftCol:Int
-    val bottomRow:Int
-    val rightCol:Int
 
     val rowList:List[T]
     val columnList:List[T]
@@ -48,8 +42,8 @@ abstract trait ExcelTableQuery[T <: ExcelTableQuery[T]] {
                     rtail.head.sheet,
                     rtail.head.topRow,
                     rtail.head.leftCol,
-                    rtail(rtail.length - 1).bottomRow,
-                    rtail(rtail.length - 1).rightCol
+                    rtail.last.bottomRow,
+                    rtail.last.rightCol
                 ).queryRow(predTail)
             } yield rowNext
         }
@@ -73,8 +67,8 @@ abstract trait ExcelTableQuery[T <: ExcelTableQuery[T]] {
                     ctail.head.sheet,
                     ctail.head.topRow,
                     ctail.head.leftCol,
-                    ctail(ctail.length - 1).bottomRow,
-                    ctail(ctail.length - 1).rightCol
+                    ctail.last.bottomRow,
+                    ctail.last.rightCol
                 ).queryColumn(predTail)
             } yield colNext
         }
@@ -88,18 +82,12 @@ abstract trait ExcelTableQuery[T <: ExcelTableQuery[T]] {
     }
 }
 
-trait ExcelTableName {
-
-    val sheet:Sheet
-    val topRow:Int
-    val leftCol:Int
-    val bottomRow:Int
-    val rightCol:Int
+trait ExcelTableName extends ExcelRectangle  {
 
     def getTableName():Option[String] = {
         topRow match {
             case 0 => None
-            case _ => sheet.cell(topRow - 1, leftCol).getValueString
+            case _ => sheet.cell(topRow - 1, leftCol).getValueString()
         }
     }
 }
@@ -117,7 +105,7 @@ class ExcelTable (
 
     lazy val rowList = this.getRowList
     lazy val columnList = this.getColumnList
-    lazy val value = this.getSingleValue
+    lazy val value = this.getSingleValue()
 
     def this(t:ExcelTable) = this(
             t.sheet, t.topRow, t.leftCol, t.bottomRow, t.rightCol)
@@ -150,7 +138,7 @@ object ExcelTable {
 
     implicit class ExcelTableSheetExtra (sheet:Sheet) {
 
-        def getTableMap():Map[String,ExcelTable] = {
+        def getTableMap:Map[String,ExcelTable] = {
             val tableList = sheet.getRectangleList[ExcelTable]
             tableList.zip(tableList.map(_.getTableName)).zipWithIndex.map(
                 _ match {

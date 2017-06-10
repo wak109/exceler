@@ -273,4 +273,43 @@ class ExcelRectangleSuite extends FunSuite with BeforeAndAfterEach
         
         assert(rectList.length == 2)
     }
+
+    test("RectDrawer mixin") {
+        val workbook = new XSSFWorkbook
+        val sheet = workbook.sheet("test")
+        val rect1 = new ExcelTable(sheet, 10, 10, 20, 20)
+          with RectDrawer
+        val rect2 = new ExcelTable(sheet, 30, 30, 40, 40)
+          with RectDrawer
+
+        rect1.drawOuterBorder(BorderStyle.THIN)
+        rect2.drawOuterBorder(BorderStyle.THIN)
+
+        val rectList = sheet.getRectangleList[ExcelTable]
+        assert(rectList.length == 2)
+    }
+
+    test("getRowList") {
+        val workbook = new XSSFWorkbook
+        val sheet = workbook.sheet("test")
+        val rect = new ExcelTable(sheet, 10, 10, 20, 20)
+          with RectDrawer
+
+        rect.drawOuterBorder(BorderStyle.THIN)
+        rect.drawHorizontalLine(2, BorderStyle.THIN)
+        rect.drawHorizontalLine(7, BorderStyle.THIN)
+
+        rect.drawVerticalLine(2, BorderStyle.THIN)
+        rect.drawVerticalLine(5, BorderStyle.THIN)
+        rect.drawVerticalLine(7, BorderStyle.THIN)
+
+        assert(rect.getRowList.length == 3)
+        assert(rect.getRowList.apply(0).getColumnList.length == 4)
+        assert(rect.getRowList.apply(1).getColumnList.length == 4)
+
+        val row1 = new ExcelTable(rect.getRowList.apply(1))
+          with RectDrawer
+        row1.drawVerticalLine(3, BorderStyle.THIN)
+        assert(rect.getRowList.apply(1).getColumnList.length == 5)
+    }
 }
