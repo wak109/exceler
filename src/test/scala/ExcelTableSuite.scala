@@ -53,7 +53,7 @@ class ExcelTableSuite extends FunSuite with BeforeAndAfterEach {
         val workbook = new XSSFWorkbook
         val sheet = workbook.sheet("test")
         val table = new ExcelTable(sheet, 10, 10, 20, 20)
-                with ExcelRectangleDraw
+                with RectDrawer
 
         table.drawOuterBorder(BorderStyle.THIN)
         table.drawHorizontalLine(2, BorderStyle.THIN)
