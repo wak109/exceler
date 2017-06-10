@@ -53,7 +53,7 @@ class ExcelTableSuite extends FunSuite with BeforeAndAfterEach {
         val workbook = new XSSFWorkbook
         val sheet = workbook.sheet("test")
         val table = new ExcelTable(sheet, 10, 10, 20, 20)
-                with RectDrawer
+                with RectangleBorderDraw
 
         table.drawOuterBorder(BorderStyle.THIN)
         table.drawHorizontalLine(2, BorderStyle.THIN)
@@ -99,13 +99,13 @@ class ExcelTableSuite extends FunSuite with BeforeAndAfterEach {
         val table = new ExcelTable(sheet, 2, 1, 17, 8)
         val cell = table.query(
             List("row1", "lower").map(createStringEqual(_)),
-            List("col2", "right").map(createStringEqual(_)),
+            List("col2", "right").map(createStringEqual(_))
             )
         assert(cell(0)(0).getSingleValue.get == "lr")
 
         val cell2 = table.query(
             List("row1", "upper").map(createStringEqual(_)),
-            List("col2", "left").map(createStringEqual(_)),
+            List("col2", "left").map(createStringEqual(_))
             )
         assert(cell2(0)(0).getSingleValue.get == "ul")
 

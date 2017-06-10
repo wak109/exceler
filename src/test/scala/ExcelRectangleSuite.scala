@@ -278,9 +278,9 @@ class ExcelRectangleSuite extends FunSuite with BeforeAndAfterEach
         val workbook = new XSSFWorkbook
         val sheet = workbook.sheet("test")
         val rect1 = new ExcelTable(sheet, 10, 10, 20, 20)
-          with RectDrawer
+          with RectangleBorderDraw
         val rect2 = new ExcelTable(sheet, 30, 30, 40, 40)
-          with RectDrawer
+          with RectangleBorderDraw
 
         rect1.drawOuterBorder(BorderStyle.THIN)
         rect2.drawOuterBorder(BorderStyle.THIN)
@@ -293,7 +293,7 @@ class ExcelRectangleSuite extends FunSuite with BeforeAndAfterEach
         val workbook = new XSSFWorkbook
         val sheet = workbook.sheet("test")
         val rect = new ExcelTable(sheet, 10, 10, 20, 20)
-          with RectDrawer
+          with RectangleBorderDraw
 
         rect.drawOuterBorder(BorderStyle.THIN)
         rect.drawHorizontalLine(2, BorderStyle.THIN)
@@ -308,7 +308,7 @@ class ExcelRectangleSuite extends FunSuite with BeforeAndAfterEach
         assert(rect.getRowList.apply(1).getColumnList.length == 4)
 
         val row1 = new ExcelTable(rect.getRowList.apply(1))
-          with RectDrawer
+          with RectangleBorderDraw
         row1.drawVerticalLine(3, BorderStyle.THIN)
         assert(rect.getRowList.apply(1).getColumnList.length == 5)
     }

@@ -11,7 +11,7 @@ import java.nio.file._
 
 import ExcelRectangleLib._
 
-trait ExcelTableQuery[T <: ExcelTableQuery[T]] extends RectSplitter[T] {
+trait ExcelTableQuery[T <: ExcelTableQuery[T]] extends RectangleGrid[T] {
     this:T =>
 
     val rowList:List[T]
@@ -99,7 +99,7 @@ class ExcelTable (
     val bottomRow:Int,
     val rightCol:Int
     )
-    extends RectSplitter[ExcelTable]
+    extends RectangleGrid[ExcelTable]
     with ExcelTableQuery[ExcelTable]
     with ExcelTableName {
 

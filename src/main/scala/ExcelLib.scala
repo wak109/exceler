@@ -84,7 +84,7 @@ abstract trait WorkbookExtra {
 
     def removeSheet(name:String):Unit = {
         for {
-            sheet <- workbook.getSheetOption(name)
+            sheet <- this.getSheetOption(name)
         } {
             workbook.removeSheetAt(workbook.getSheetIndex(sheet))
         }
@@ -137,10 +137,10 @@ abstract trait SheetExtra {
     }
 
     def getCellOption(rownum:Int, colnum:Int):Option[Cell] = 
-            sheet.getRowOption(rownum).flatMap(_.getCellOption(colnum))
+            this.getRowOption(rownum).flatMap(_.getCellOption(colnum))
 
     def cell(rownum:Int, colnum:Int):Cell =
-            sheet.row(rownum).cell(colnum)
+            this.row(rownum).cell(colnum)
 
     def getDrawingPatriarchOption():Option[Drawing[_ <: Shape]] =
             Option(sheet.getDrawingPatriarch)
@@ -153,7 +153,7 @@ abstract trait SheetExtra {
     }
 
     def getXSSFShapes():List[XSSFShape] = {
-        sheet.getDrawingPatriarchOption match {
+        this.getDrawingPatriarchOption match {
             case Some(drawing) => drawing.asInstanceOf[
                     XSSFDrawing].getShapes.asScala.toList
             case None => List()
@@ -197,7 +197,7 @@ abstract trait CellExtra {
     }
 
     def getValueString():Option[String] = {
-        cell.getValue_ match {
+        this.getValue_ match {
             case null => None
             case v => v.toString match {
                 case "" => None
@@ -508,7 +508,7 @@ abstract trait CellOuterBorderExtra {
 }
 
 
-abstract trait CellStyleExtra {
+trait CellStyleExtra {
     val cellStyle:CellStyle
 
     def toTuple():(

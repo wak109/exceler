@@ -24,7 +24,7 @@ abstract trait ExcelRectangle {
     val rightCol:Int
 }
 
-abstract trait RectSplitter[T <: RectSplitter[T]]
+abstract trait RectangleGrid[T <: RectangleGrid[T]]
         extends ExcelRectangle {
 
     def getRowList()(implicit newInstance:(
@@ -54,7 +54,7 @@ abstract trait RectSplitter[T <: RectSplitter[T]]
     }
 
     override def toString():String =
-        "RectSplitter:" + sheet.getSheetName + ":(" + 
+        "RectSplitter:" + sheet.getSheetName + ":(" +
             sheet.cell(topRow, leftCol).getAddress + "," +
             sheet.cell(bottomRow, rightCol).getAddress + ")"
 }
@@ -64,8 +64,8 @@ trait ExcelRectangleSheetConversion {
 
     implicit class SheetToRectSplitter (sheet:Sheet) {
 
-        def getRectangleList[T <: RectSplitter[T]]()
-                (implicit newInstance:(
+        def getRectangleList[T <: RectangleGrid[T]]()
+                                                   (implicit newInstance:(
                     Sheet, Int, Int, Int, Int) => T):List[T] = {
             for {
                 cell <- Helper.getCellList(sheet)
@@ -121,7 +121,7 @@ trait ExcelRectangleSheetConversion {
 }
 
 
-trait RectDrawer extends ExcelRectangle {
+trait RectangleBorderDraw extends ExcelRectangle {
 
     def drawOuterBorderTop(borderStyle:BorderStyle):Unit = {
         for (colnum <- (leftCol to rightCol).toList)
