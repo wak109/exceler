@@ -16,7 +16,7 @@ object ExcelRectangleLib
 
 import ExcelLib._
 
-abstract trait ExcelRectangle {
+abstract class ExcelRectangle {
     val sheet:Sheet
     val topRow:Int
     val leftCol:Int
@@ -24,8 +24,7 @@ abstract trait ExcelRectangle {
     val rightCol:Int
 }
 
-abstract trait RectangleGrid[T <: RectangleGrid[T]]
-        extends ExcelRectangle {
+trait RectangleGrid[T <: ExcelRectangle] extends ExcelRectangle {
 
     def getRowList()(implicit newInstance:(
             Sheet, Int, Int, Int, Int) => T):List[T] = {
@@ -54,7 +53,7 @@ abstract trait RectangleGrid[T <: RectangleGrid[T]]
     }
 
     override def toString():String =
-        "RectSplitter:" + sheet.getSheetName + ":(" +
+        this.getClass.getSimpleName + ":" + sheet.getSheetName + ":(" +
             sheet.cell(topRow, leftCol).getAddress + "," +
             sheet.cell(bottomRow, rightCol).getAddress + ")"
 }
@@ -76,7 +75,7 @@ trait ExcelRectangleSheetConversion {
                 cell.getRowIndex, cell.getColumnIndex)
         }
     }
-    
+
     object Helper {
     
         def findTopRightFromBottomRight(cell:Cell):Option[Cell] = (

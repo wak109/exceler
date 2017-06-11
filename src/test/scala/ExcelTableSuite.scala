@@ -10,6 +10,7 @@ import java.io.File
 import java.nio.file.{Paths, Files}
 
 import ExcelLib._
+import ExcelTableLib._
 
 object ExcelTableSuite {
     def createStringEqual(s:String) = (x:String) => x == s

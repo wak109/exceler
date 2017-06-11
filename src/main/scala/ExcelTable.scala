@@ -11,6 +11,8 @@ import java.nio.file._
 
 import ExcelRectangleLib._
 
+object ExcelTableLib extends ExcelTableSheetConversion
+
 trait ExcelTableQuery[T <: ExcelTableQuery[T]] extends RectangleGrid[T] {
     this:T =>
 
@@ -92,7 +94,7 @@ trait ExcelTableName extends ExcelRectangle  {
     }
 }
 
-class ExcelTable (
+case class ExcelTable (
     val sheet:Sheet,
     val topRow:Int,
     val leftCol:Int,
@@ -127,14 +129,17 @@ class ExcelTable (
 
 object ExcelTable {
 
-    implicit def newExcelTable(
+    implicit def applyImplicitly(
         sheet:Sheet,
         topRow:Int,
         leftCol:Int,
         bottomRow:Int,
         rightCol:Int
-    ):ExcelTable =
-        new ExcelTable(sheet, topRow, leftCol, bottomRow, rightCol)
+    ):ExcelTable = this.apply(sheet, topRow, leftCol, bottomRow, rightCol)
+}
+
+
+trait ExcelTableSheetConversion {
 
     implicit class ExcelTableSheetExtra (sheet:Sheet) {
 

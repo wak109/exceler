@@ -10,7 +10,7 @@ import java.io._
 import java.nio.file._
 
 import ExcelRectangleLib._
-import ExcelTable._
+import ExcelTableLib._
 
 object Exceler {
 
@@ -20,7 +20,7 @@ object Exceler {
             val workbook = WorkbookFactory.create(file, null ,true) 
             for {
                 sheet <- workbook.sheetIterator.asScala
-                rect <- sheet.getRectangleList
+                rect <- sheet.getRectangleList[ExcelTable]
                 row <- rect.getRowList
                 cell <- row.getColumnList
             } {
