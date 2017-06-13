@@ -1,31 +1,23 @@
 /* vim: set ts=4 et sw=4 sts=4 fileencoding=utf-8: */
 import scala.util.{Try, Success, Failure}
 import scala.collection.JavaConverters._
-import org.scalatest._
+import org.scalatest.FunSuite
 
 import org.apache.poi.ss.usermodel._
 import org.apache.poi.xssf.usermodel._
-import org.apache.poi.POIXMLDocumentPart
 
 import java.io.File
 import java.nio.file.{Paths, Files}
 
 import ExcelLib._
 
-class ExcelLibSuite extends FunSuite with BeforeAndAfterEach {
-  
+class ExcelLibTest extends FunSuite {
 
     val testWorkbook1 = "test1.xlsx"
 
     val testSheet = "test"
     val testMessage = "Hello, world!!"
 
-    override def beforeEach() {
-    }
-    
-    override def afterEach() {
-    }
-    
     //////////////////////////////////////////////////////////////// 
     // Workbook Tests
     //
@@ -282,38 +274,5 @@ class ExcelLibSuite extends FunSuite with BeforeAndAfterEach {
         assert(cell.getLowerStream.take(10).toList.length == 10)
         assert(cell.getLeftStream.take(10).toList.length == 5)
         assert(cell.getRightStream.take(10).toList.length == 10)
-    }
-    
-
-    test("Shapes") {
-        val file = new File(getClass.getResource(testWorkbook1).toURI)
-        val workbook = WorkbookFactory.create(file)
-        val relations = workbook.getSheet("shapes").asInstanceOf[POIXMLDocumentPart].getRelations.asScala
-        val drawing = (
-            for {
-                xfd <- relations
-                if xfd.isInstanceOf[XSSFDrawing]
-            } yield xfd.asInstanceOf[XSSFDrawing]
-        ).headOption 
-        drawing match {
-            case Some(xd) => assert(xd.getShapes.asScala.length == 8)
-            case None => assert(false)
-        }
-    }
-
-    test("getShapes") {
-        val file = new File(getClass.getResource(testWorkbook1).toURI)
-        val workbook = WorkbookFactory.create(file)
-        val sheet = workbook.getSheet("shapes")
-        assert(sheet.getXSSFShapes.length == 8)
-    }
-
-    test("XSSFShapeExt") {
-        val file = new File(getClass.getResource(testWorkbook1).toURI)
-        val workbook = WorkbookFactory.create(file)
-        val sheet = workbook.getSheet("shapes")
-        for (shape <- sheet.getXSSFShapes) {
-           println(shape.toXmlObject)
-        }
     }
 }

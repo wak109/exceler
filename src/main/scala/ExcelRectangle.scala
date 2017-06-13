@@ -76,7 +76,7 @@ trait ExcelRectangleSheetConversion {
         }
     }
 
-    object Helper {
+    protected object Helper {
     
         def findTopRightFromBottomRight(cell:Cell):Option[Cell] = (
             for {

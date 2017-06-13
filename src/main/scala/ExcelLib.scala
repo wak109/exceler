@@ -7,8 +7,6 @@ import scala.util.{Try, Success, Failure}
 import org.apache.poi.ss.usermodel._
 import org.apache.poi.xssf.usermodel._
 
-import org.apache.xmlbeans.XmlObject
-
 import java.io._
 import java.nio.file._
 
@@ -22,7 +20,7 @@ trait ExcelConversion
         with RowConversion
         with CellConversion
         with CellStyleConversion 
-        with XSSFShapeConversion
+
 
 trait WorkbookConversion {
     implicit class ToWorkbookExtra(val workbook:Workbook)
@@ -50,11 +48,6 @@ trait CellStyleConversion {
     implicit def toCellStyleTuple(cellStyle:CellStyle) = cellStyle.toTuple
 }
 
-trait XSSFShapeConversion {
-    implicit class ToXSSFShapeExtra(val shape:XSSFShape)
-            extends XSSFShapeExtra
-
-}
 
 ////////////////////////////////////////////////////////////////////////
 // WorkbookExtra
@@ -532,24 +525,4 @@ trait CellStyleExtra {
             cellStyle.getAlignmentEnum,
             cellStyle.getVerticalAlignmentEnum,
             cellStyle.getWrapText)
-}
-
-
-abstract trait XSSFShapeExtra {
-    val shape:XSSFShape
-
-    def toXmlObject():XmlObject = {
-        shape match {
-            case x:XSSFSimpleShape =>
-                    x.asInstanceOf[XSSFSimpleShape].getCTShape
-            case x:XSSFConnector =>
-                    x.asInstanceOf[XSSFConnector].getCTConnector
-            case x:XSSFGraphicFrame =>
-                    x.asInstanceOf[XSSFGraphicFrame].getCTGraphicalObjectFrame
-            case x:XSSFPicture =>
-                    x.asInstanceOf[XSSFPicture].getCTPicture
-            case x:XSSFShapeGroup =>
-                    x.asInstanceOf[XSSFShapeGroup].getCTGroupShape
-        }
-    }
 }
