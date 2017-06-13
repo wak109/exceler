@@ -11,9 +11,7 @@ import java.nio.file.{Paths, Files}
 
 import ExcelLib._
 
-class ExcelLibTest extends FunSuite {
-
-    val testWorkbook1 = "test1.xlsx"
+class ExcelLibTest extends FunSuite with TestCommon {
 
     val testSheet = "test"
     val testMessage = "Hello, world!!"
