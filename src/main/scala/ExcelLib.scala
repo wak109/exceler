@@ -134,24 +134,6 @@ abstract trait SheetExtra {
 
     def cell(rownum:Int, colnum:Int):Cell =
             this.row(rownum).cell(colnum)
-
-    def getDrawingPatriarchOption():Option[Drawing[_ <: Shape]] =
-            Option(sheet.getDrawingPatriarch)
-
-    def drawingPatriarch():Drawing[_ <: Shape] = {
-        this.getDrawingPatriarchOption match {
-            case Some(d) => d
-            case None => sheet.createDrawingPatriarch()
-        }
-    }
-
-    def getXSSFShapes():List[XSSFShape] = {
-        this.getDrawingPatriarchOption match {
-            case Some(drawing) => drawing.asInstanceOf[
-                    XSSFDrawing].getShapes.asScala.toList
-            case None => List()
-        }
-    }
 }
 
 

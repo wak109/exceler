@@ -18,6 +18,25 @@ import ExcelShape.Conversion._
 
 class ExcelShapeTest extends FunSuite with TestCommon {
 
+    test("Sheet.getDrawingPatriarch") {
+        val sheet = (new XSSFWorkbook()).sheet("test")
+
+        sheet.getDrawingPatriarchOption match {
+            case Some(c) => assert(false)
+            case None => assert(true)
+        }
+
+        val drawing = sheet.drawingPatriarch
+
+        println(drawing.getClass)
+
+
+        sheet.getDrawingPatriarchOption match {
+            case Some(c) => assert(true)
+            case None => assert(false)
+        }
+    }
+
     test("Shapes") {
         val file = new File(getClass.getResource(testWorkbook1).toURI)
         val workbook = WorkbookFactory.create(file)
@@ -41,7 +60,7 @@ class ExcelShapeTest extends FunSuite with TestCommon {
         assert(sheet.getXSSFShapes.length == 8)
     }
 
-    test("XSSFShapeExt") {
+    test("print Xml of Shape") {
         val file = new File(getClass.getResource(testWorkbook1).toURI)
         val workbook = WorkbookFactory.create(file)
         val sheet = workbook.getSheet("shapes")

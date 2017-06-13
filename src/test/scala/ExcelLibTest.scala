@@ -139,25 +139,6 @@ class ExcelLibTest extends FunSuite with TestCommon {
         }
     }
 
-    test("Sheet.getDrawingPatriarch") {
-        val sheet = (new XSSFWorkbook()).sheet(testSheet)
-
-        sheet.getDrawingPatriarchOption match {
-            case Some(c) => assert(false)
-            case None => assert(true)
-        }
-
-        val drawing = sheet.drawingPatriarch
-
-        println(drawing.getClass)
-
-
-        sheet.getDrawingPatriarchOption match {
-            case Some(c) => assert(true)
-            case None => assert(false)
-        }
-    }
-
     //////////////////////////////////////////////////////////////// 
     // Row Tests
     //

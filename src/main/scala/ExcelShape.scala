@@ -1,4 +1,5 @@
 /* vim: set ts=4 et sw=4 sts=4 fileencoding=utf-8: */
+import scala.collection.JavaConverters._
 import scala.language.implicitConversions
 import scala.util.control.Exception._
 
@@ -11,13 +12,18 @@ import org.openxmlformats.schemas.drawingml.x2006.spreadsheetDrawing.CTShape
 
 object ExcelShape {
     object Conversion 
-        extends XSSFShapeConversion
+        extends ExcelShapeXSSFShapeConversion
+        with ExcelShapeSheetConversion
 }
 
-
-trait XSSFShapeConversion {
+trait ExcelShapeXSSFShapeConversion {
     implicit class ToXSSFShapeExtra(val shape:XSSFShape)
             extends XSSFShapeExtra
+}
+
+trait ExcelShapeSheetConversion {
+    implicit class ExcelShapeSheetExtraConversion(val sheet:Sheet)
+            extends ExcelShapeSheetExtra
 }
 
 
@@ -26,6 +32,28 @@ class ExcelSimpleShape(
     ctShape:CTShape
     ) extends XSSFSimpleShape(drawing, ctShape)
 
+
+trait ExcelShapeSheetExtra {
+    val sheet:Sheet
+
+    def getDrawingPatriarchOption():Option[Drawing[_ <: Shape]] =
+            Option(sheet.getDrawingPatriarch)
+
+    def drawingPatriarch():Drawing[_ <: Shape] = {
+        this.getDrawingPatriarchOption match {
+            case Some(d) => d
+            case None => sheet.createDrawingPatriarch()
+        }
+    }
+
+    def getXSSFShapes():List[XSSFShape] = {
+        this.getDrawingPatriarchOption match {
+            case Some(drawing) => drawing.asInstanceOf[
+                    XSSFDrawing].getShapes.asScala.toList
+            case None => List()
+        }
+    }
+}
 
 trait XSSFShapeExtra {
     val shape:XSSFShape
