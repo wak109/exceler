@@ -11,21 +11,14 @@ import org.openxmlformats.schemas.drawingml.x2006.spreadsheetDrawing.CTShape
 
 
 object ExcelShape {
-    object Conversion 
-        extends ExcelShapeXSSFShapeConversion
-        with ExcelShapeSheetConversion
-}
-
-trait ExcelShapeXSSFShapeConversion {
-    implicit class ToXSSFShapeExtra(val shape:XSSFShape)
-            extends XSSFShapeExtra
-}
-
-trait ExcelShapeSheetConversion {
-    implicit class ExcelShapeSheetExtraConversion(val sheet:Sheet)
+    object Conversion {
+        implicit class ToExcelShapeSheet(val sheet:Sheet)
             extends ExcelShapeSheetExtra
-}
 
+        implicit class ToExcelShapeXSSFShape(val shape:XSSFShape)
+            extends ExcelShapeXSSFShapeExtra
+    }
+}
 
 class ExcelSimpleShape(
     drawing:XSSFDrawing,
@@ -55,7 +48,7 @@ trait ExcelShapeSheetExtra {
     }
 }
 
-trait XSSFShapeExtra {
+trait ExcelShapeXSSFShapeExtra {
     val shape:XSSFShape
 
     def toXmlObject():XmlObject = {
