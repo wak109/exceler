@@ -127,7 +127,7 @@ trait ExcelRectangleSheetConversion {
     import ExcelRectangleSheetConversion.Helper
 
     def getRectangleList[T <: RectangleGrid[T]]()
-                                               (implicit newInstance:(
+            (implicit newInstance:(
                 Sheet, Int, Int, Int, Int) => T):List[T] = {
         for {
             cell <- Helper.getCellList(sheet)

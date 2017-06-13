@@ -68,4 +68,35 @@ class ExcelShapeTest extends FunSuite with TestCommon {
            println(shape.toXmlObject)
         }
     }
+
+    test("copy shape") {
+        
+        val file = new File(getClass.getResource(testWorkbook1).toURI)
+        val workbook = WorkbookFactory.create(file)
+        val sheet = workbook.getSheet("shapes")
+
+        val workbook2 = new XSSFWorkbook
+        val sheet2 = workbook2.sheet("shapes")
+        for {
+            row <- (0 until 100)
+            col <- (0 until 100)
+        } sheet2.cell(row, col)
+
+        val drawing2 = sheet2.drawingPatriarch
+
+        for (shape <- sheet.getXSSFShapes) {
+            shape match {
+                case x:XSSFSimpleShape =>
+                    val anchor = shape.getAnchor.asInstanceOf[XSSFClientAnchor]
+                    val s = drawing2.createSimpleShape(anchor);
+                    s.setShapeType(x.getShapeType)
+                    s.setLineWidth(3)
+                    s.setLineStyleColor(0, 0, 0)
+                    //new ExcelSimpleShape(drawing2, x.getCTShape)
+                case _ =>
+            }
+        }
+
+        workbook2.saveAs("hello.xlsx")
+    }
 }

@@ -32,13 +32,13 @@ class ExcelSimpleShape(
 trait ExcelShapeSheetExtra {
     val sheet:Sheet
 
-    def getDrawingPatriarchOption():Option[Drawing[_ <: Shape]] =
-            Option(sheet.getDrawingPatriarch)
+    def getDrawingPatriarchOption():Option[XSSFDrawing] =
+            Option(sheet.asInstanceOf[XSSFSheet].getDrawingPatriarch)
 
-    def drawingPatriarch():Drawing[_ <: Shape] = {
+    def drawingPatriarch():XSSFDrawing = {
         this.getDrawingPatriarchOption match {
             case Some(d) => d
-            case None => sheet.createDrawingPatriarch()
+            case None => sheet.asInstanceOf[XSSFSheet].createDrawingPatriarch()
         }
     }
 
