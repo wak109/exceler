@@ -9,19 +9,14 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import java.io.File
 import java.nio.file.{Paths, Files}
 
-import ExcelLib.Converters._
-import ExcelTableLib._
+import ExcelLib.ImplicitConversions._
+import ExcelLib.Table.ImplicitConversions._
 
-object ExcelTableSuite {
-    def createStringEqual(s:String) = (x:String) => x == s
-}
 
-class ExcelTableSuite extends FunSuite with BeforeAndAfterEach {
+class ExcelTableSuite extends FunSuite with ExcelLibResource {
   
-    import ExcelTableSuite._
+    def createStringEqual(s:String) = (x:String) => x == s
 
-    val testWorkbook1 = "test1.xlsx"
-    
     test("ExcelTable#getSingleValue (1x1)") {
         val workbook = new XSSFWorkbook
         val sheet = workbook.sheet("test")

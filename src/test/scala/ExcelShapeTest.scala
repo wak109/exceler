@@ -13,10 +13,10 @@ import org.openxmlformats.schemas.drawingml.x2006.spreadsheetDrawing.CTShape
 import java.io.File
 import java.nio.file.{Paths, Files}
 
-import ExcelLib.Converters._
-import ExcelShape.Converters._
+import ExcelLib.ImplicitConversions._
+import ExcelLib.Shape.ImplicitConversions._
 
-class ExcelShapeTest extends FunSuite with TestCommon {
+class ExcelShapeTest extends FunSuite with ExcelLibResource {
 
     test("Sheet.getDrawingPatriarch") {
         val sheet = (new XSSFWorkbook()).sheet("test")

@@ -3,7 +3,7 @@
 import java.io._
 import java.nio.file._
 
-object FileLib {
+trait CommonLib {
 
     def createParentDir(filename:String) : Path = {
         val dir = Paths.get(filename).getParent()
@@ -12,9 +12,7 @@ object FileLib {
         else
             null
     }
-
-    def isFileExist(filename:String) : Boolean = {
-        Files.exists(Paths.get(filename))
-    }
 }
+
+object CommonLib extends CommonLib
 

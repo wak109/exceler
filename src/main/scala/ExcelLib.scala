@@ -10,10 +10,11 @@ import org.apache.poi.xssf.usermodel._
 import java.io._
 import java.nio.file._
 
+import CommonLib._
 
 package ExcelLib {
 
-    trait Converters {
+    trait ImplicitConversions {
         implicit class ToWorkbookExtra(val workbook:Workbook)
                 extends WorkbookExtra
 
@@ -32,11 +33,11 @@ package ExcelLib {
                 cellStyle.toTuple
     }
 
-    object Converters extends Converters
+    object ImplicitConversions extends ImplicitConversions
 }
 
 
-import ExcelLib.Converters._
+import ExcelLib.ImplicitConversions._
 
 ////////////////////////////////////////////////////////////////////////
 // WorkbookExtra
@@ -45,7 +46,7 @@ trait WorkbookExtra {
     val workbook:Workbook
 
     def saveAs(filename:String): Unit =  {
-        FileLib.createParentDir(filename)
+        createParentDir(filename)
         val out = new FileOutputStream(filename)
         workbook.write(out)
         out.close()

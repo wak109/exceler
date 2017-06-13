@@ -9,10 +9,18 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import java.io._
 import java.nio.file._
 
-import ExcelLib.Converters._
-import ExcelLib.Rectangle.Converters._
+import ExcelLib.ImplicitConversions._
+import ExcelLib.Rectangle.ImplicitConversions._
 
-object ExcelTableLib extends ExcelTableSheetConversion
+package ExcelLib {
+    package Table {
+        trait ImplicitConversions {
+            implicit class ToExcelTableSheetConversion(val sheet:Sheet)
+                    extends ExcelTableSheetConversion
+        }
+        object ImplicitConversions extends ImplicitConversions
+    }
+}
 
 trait ExcelTableQuery[T <: ExcelTableQuery[T]] extends RectangleGrid[T] {
     this:T =>
@@ -141,16 +149,15 @@ object ExcelTable {
 
 
 trait ExcelTableSheetConversion {
+    val sheet:Sheet
 
-    implicit class ExcelTableSheetExtra (sheet:Sheet) {
+    def getTableMap:Map[String,ExcelTable] = {
+        val tableList = sheet.getRectangleList[ExcelTable]
 
-        def getTableMap:Map[String,ExcelTable] = {
-            val tableList = sheet.getRectangleList[ExcelTable]
-            tableList.zip(tableList.map(_.getTableName)).zipWithIndex.map(
-                _ match {
-                    case ((t, Some(name)), _) => (name, t)
-                    case ((t, None), idx) => ("Table" + idx, t)
-                }).toMap
-        }
+        tableList.zip(tableList.map(_.getTableName)).zipWithIndex.map(
+            _ match {
+                case ((t, Some(name)), _) => (name, t)
+                case ((t, None), idx) => ("Table" + idx, t)
+            }).toMap
     }
 }

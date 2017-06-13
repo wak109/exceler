@@ -9,9 +9,9 @@ import org.apache.poi.xssf.usermodel._
 import java.io.File
 import java.nio.file.{Paths, Files}
 
-import ExcelLib.Converters._
+import ExcelLib.ImplicitConversions._
 
-class ExcelLibTest extends FunSuite with TestCommon {
+class ExcelLibTest extends FunSuite with ExcelLibResource {
 
     val testSheet = "test"
     val testMessage = "Hello, world!!"

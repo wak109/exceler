@@ -9,9 +9,9 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import java.io._
 import java.nio.file._
 
-import ExcelLib.Converters._
-import ExcelLib.Rectangle.Converters._
-import ExcelTableLib._
+import ExcelLib.ImplicitConversions._
+import ExcelLib.Rectangle.ImplicitConversions._
+import ExcelLib.Table.ImplicitConversions._
 
 object Exceler {
 

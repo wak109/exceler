@@ -11,16 +11,15 @@ import java.nio.file._
 
 package ExcelLib {
     package Rectangle {
-        trait Converters {
+        trait ImplicitConversions {
             implicit class ToExcelRectangleSheet(val sheet:Sheet)
                 extends ExcelRectangleSheetConversion
         }
-
-        object Converters extends Converters
+        object ImplicitConversions extends ImplicitConversions
     }
 }
 
-import ExcelLib.Converters._
+import ExcelLib.ImplicitConversions._
 
 abstract class ExcelRectangle {
     val sheet:Sheet

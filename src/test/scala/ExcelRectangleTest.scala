@@ -8,22 +8,16 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook
 
 import java.nio.file.{Paths, Files}
 
-import ExcelLib.Converters._
-import ExcelLib.Rectangle.Converters._
+import ExcelLib.ImplicitConversions._
+import ExcelLib.Rectangle.ImplicitConversions._
 
 
-class ExcelRectangleSuite extends FunSuite with BeforeAndAfterEach {
+class ExcelRectangleSuite extends FunSuite {
   
     import ExcelRectangleSheetConversion.Helper
 
     val testSheet = "test"
     val testMessage = "Hello, world!!"
-
-    override def beforeEach() {
-    }
-    
-    override def afterEach() {
-    }
 
     test("Cell.hasBorderBottom") {
         val workbook = new XSSFWorkbook
