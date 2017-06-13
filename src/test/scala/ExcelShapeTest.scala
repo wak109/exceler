@@ -13,8 +13,8 @@ import org.openxmlformats.schemas.drawingml.x2006.spreadsheetDrawing.CTShape
 import java.io.File
 import java.nio.file.{Paths, Files}
 
-import ExcelLib._
-import ExcelShape.Conversion._
+import ExcelLib.Converters._
+import ExcelShape.Converters._
 
 class ExcelShapeTest extends FunSuite with TestCommon {
 

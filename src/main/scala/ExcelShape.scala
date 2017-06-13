@@ -10,14 +10,17 @@ import org.apache.xmlbeans.XmlObject
 import org.openxmlformats.schemas.drawingml.x2006.spreadsheetDrawing.CTShape
 
 
-object ExcelShape {
-    object Conversion {
+package ExcelShape {
+
+    trait Converters {
         implicit class ToExcelShapeSheet(val sheet:Sheet)
             extends ExcelShapeSheetExtra
 
         implicit class ToExcelShapeXSSFShape(val shape:XSSFShape)
             extends ExcelShapeXSSFShapeExtra
     }
+
+    object Converters extends Converters
 }
 
 class ExcelSimpleShape(

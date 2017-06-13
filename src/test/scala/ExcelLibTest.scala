@@ -9,7 +9,7 @@ import org.apache.poi.xssf.usermodel._
 import java.io.File
 import java.nio.file.{Paths, Files}
 
-import ExcelLib._
+import ExcelLib.Converters._
 
 class ExcelLibTest extends FunSuite with TestCommon {
 

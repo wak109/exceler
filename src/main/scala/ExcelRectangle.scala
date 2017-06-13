@@ -9,12 +9,18 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import java.io._
 import java.nio.file._
 
+package ExcelLib {
+    package Rectangle {
+        trait Converters {
+            implicit class ToExcelRectangleSheet(val sheet:Sheet)
+                extends ExcelRectangleSheetConversion
+        }
 
-object ExcelRectangleLib
-    extends ExcelConversion
-    with ExcelRectangleSheetConversion
+        object Converters extends Converters
+    }
+}
 
-import ExcelLib._
+import ExcelLib.Converters._
 
 abstract class ExcelRectangle {
     val sheet:Sheet
@@ -58,66 +64,6 @@ trait RectangleGrid[T <: ExcelRectangle] extends ExcelRectangle {
             sheet.cell(bottomRow, rightCol).getAddress + ")"
 }
 
-
-trait ExcelRectangleSheetConversion {
-
-    implicit class SheetToRectSplitter (sheet:Sheet) {
-
-        def getRectangleList[T <: RectangleGrid[T]]()
-                                                   (implicit newInstance:(
-                    Sheet, Int, Int, Int, Int) => T):List[T] = {
-            for {
-                cell <- Helper.getCellList(sheet)
-                if cell.isOuterBorderBottom && cell.isOuterBorderRight
-                topLeft <- Helper.findTopLeftFromBottomRight(cell)
-            } yield newInstance(sheet,
-                topLeft.getRowIndex, topLeft.getColumnIndex,
-                cell.getRowIndex, cell.getColumnIndex)
-        }
-    }
-
-    protected object Helper {
-    
-        def findTopRightFromBottomRight(cell:Cell):Option[Cell] = (
-            for {
-                cOpt <- cell.getUpperStream
-                c <- cOpt
-                if c.isOuterBorderTop && c.isOuterBorderRight
-            } yield c
-        ).headOption
-    
-        def findBottomLeftFromBottomRight(cell:Cell):Option[Cell] = (
-            for {
-                cOpt <- cell.getLeftStream
-                c <- cOpt
-                if c.isOuterBorderBottom && c.isOuterBorderLeft
-            } yield c
-        ).headOption
-    
-        def findTopLeftFromBottomRight(cell:Cell):Option[Cell] = {
-            (findTopRightFromBottomRight(cell), 
-                    findBottomLeftFromBottomRight(cell)) match {
-                case (Some(topRight), Some(bottomLeft)) =>
-                    cell.getSheet.getCellOption(
-                        topRight.getRowIndex, bottomLeft.getColumnIndex)
-                case _ => None
-            }
-        }
-    
-        def getCellList(sheet:Sheet):List[Cell] = {
-            for {
-                row <- for {
-                    rownum <- (sheet.getFirstRowNum
-                            to sheet.getLastRowNum).toList
-                    row <- sheet.getRowOption(rownum)
-                } yield row
-                colnum <- (row.getFirstCellNum
-                            until row.getLastCellNum).toList
-                cell <- row.getCellOption(colnum)
-            } yield cell
-        }
-    }
-}
 
 
 trait RectangleBorderDraw extends ExcelRectangle {
@@ -173,3 +119,68 @@ trait RectangleBorderDraw extends ExcelRectangle {
         }
     }
 }
+
+
+trait ExcelRectangleSheetConversion {
+    val sheet:Sheet
+
+    import ExcelRectangleSheetConversion.Helper
+
+    def getRectangleList[T <: RectangleGrid[T]]()
+                                               (implicit newInstance:(
+                Sheet, Int, Int, Int, Int) => T):List[T] = {
+        for {
+            cell <- Helper.getCellList(sheet)
+            if cell.isOuterBorderBottom && cell.isOuterBorderRight
+            topLeft <- Helper.findTopLeftFromBottomRight(cell)
+        } yield newInstance(sheet,
+            topLeft.getRowIndex, topLeft.getColumnIndex,
+            cell.getRowIndex, cell.getColumnIndex)
+    }
+}
+
+object ExcelRectangleSheetConversion {
+
+    object Helper {
+    
+        def findTopRightFromBottomRight(cell:Cell):Option[Cell] = (
+            for {
+                cOpt <- cell.getUpperStream
+                c <- cOpt
+                if c.isOuterBorderTop && c.isOuterBorderRight
+            } yield c
+        ).headOption
+    
+        def findBottomLeftFromBottomRight(cell:Cell):Option[Cell] = (
+            for {
+                cOpt <- cell.getLeftStream
+                c <- cOpt
+                if c.isOuterBorderBottom && c.isOuterBorderLeft
+            } yield c
+        ).headOption
+    
+        def findTopLeftFromBottomRight(cell:Cell):Option[Cell] = {
+            (findTopRightFromBottomRight(cell), 
+                    findBottomLeftFromBottomRight(cell)) match {
+                case (Some(topRight), Some(bottomLeft)) =>
+                    cell.getSheet.getCellOption(
+                        topRight.getRowIndex, bottomLeft.getColumnIndex)
+                case _ => None
+            }
+        }
+    
+        def getCellList(sheet:Sheet):List[Cell] = {
+            for {
+                row <- for {
+                    rownum <- (sheet.getFirstRowNum
+                            to sheet.getLastRowNum).toList
+                    row <- sheet.getRowOption(rownum)
+                } yield row
+                colnum <- (row.getFirstCellNum
+                            until row.getLastCellNum).toList
+                cell <- row.getCellOption(colnum)
+            } yield cell
+        }
+    }
+}
+

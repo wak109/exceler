@@ -10,49 +10,38 @@ import org.apache.poi.xssf.usermodel._
 import java.io._
 import java.nio.file._
 
-import ExcelLib._
 
-object ExcelLib extends ExcelConversion
+package ExcelLib {
 
-trait ExcelConversion
-        extends WorkbookConversion
-        with SheetConversion
-        with RowConversion
-        with CellConversion
-        with CellStyleConversion 
+    trait Converters {
+        implicit class ToWorkbookExtra(val workbook:Workbook)
+                extends WorkbookExtra
 
+        implicit class ToSheetExtra(val sheet:Sheet) extends SheetExtra
 
-trait WorkbookConversion {
-    implicit class ToWorkbookExtra(val workbook:Workbook)
-            extends WorkbookExtra
+        implicit class ToRowExtra(val row:Row) extends RowExtra
+
+        implicit class ToCellExtra(val cell:Cell) extends CellExtra
+                with CellBorderExtra
+                with CellOuterBorderExtra
+
+        implicit class ToCellStyleExtra(val cellStyle:CellStyle)
+                extends CellStyleExtra
+
+        implicit def toCellStyleTuple(cellStyle:CellStyle) =
+                cellStyle.toTuple
+    }
+
+    object Converters extends Converters
 }
 
-trait SheetConversion {
-    implicit class ToSheetExtra(val sheet:Sheet) extends SheetExtra
-}
 
-trait RowConversion {
-    implicit class ToRowExtra(val row:Row) extends RowExtra
-}
-
-trait CellConversion {
-    implicit class ToCellExtra(val cell:Cell) extends CellExtra
-            with CellBorderExtra
-            with CellOuterBorderExtra
-}
-
-trait CellStyleConversion {
-    implicit class ToCellStyleExtra(val cellStyle:CellStyle)
-            extends CellStyleExtra
-
-    implicit def toCellStyleTuple(cellStyle:CellStyle) = cellStyle.toTuple
-}
-
+import ExcelLib.Converters._
 
 ////////////////////////////////////////////////////////////////////////
 // WorkbookExtra
 
-abstract trait WorkbookExtra {
+trait WorkbookExtra {
     val workbook:Workbook
 
     def saveAs(filename:String): Unit =  {
@@ -116,7 +105,7 @@ abstract trait WorkbookExtra {
 }
 
 
-abstract trait SheetExtra {
+trait SheetExtra {
     val sheet:Sheet
 
     def getRowOption(rownum:Int):Option[Row] =
@@ -137,7 +126,7 @@ abstract trait SheetExtra {
 }
 
 
-abstract trait RowExtra {
+trait RowExtra {
     val row:Row
 
     def getCellOption(colnum:Int):Option[Cell] =
@@ -148,7 +137,7 @@ abstract trait RowExtra {
 }
 
 
-abstract trait CellExtra {
+trait CellExtra {
     val cell:Cell
 
     def getValue_():Any = {
@@ -287,11 +276,8 @@ abstract trait CellExtra {
 }
 
 
-abstract trait CellBorderExtra {
+trait CellBorderExtra {
     val cell:Cell
-
-    import ExcelLib._    
-
 
     ////////////////////////////////////////////////////////////
     // setBorder
@@ -427,7 +413,7 @@ abstract trait CellBorderExtra {
     }
 }
 
-abstract trait CellOuterBorderExtra {
+trait CellOuterBorderExtra {
     val cell:Cell
 
     ////////////////////////////////////////////////////////////

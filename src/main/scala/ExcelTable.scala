@@ -9,7 +9,8 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import java.io._
 import java.nio.file._
 
-import ExcelRectangleLib._
+import ExcelLib.Converters._
+import ExcelLib.Rectangle.Converters._
 
 object ExcelTableLib extends ExcelTableSheetConversion
 

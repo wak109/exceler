@@ -8,12 +8,14 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook
 
 import java.nio.file.{Paths, Files}
 
-import ExcelRectangleLib._
+import ExcelLib.Converters._
+import ExcelLib.Rectangle.Converters._
 
 
-class ExcelRectangleSuite extends FunSuite with BeforeAndAfterEach 
-    with ExcelRectangleSheetConversion {
+class ExcelRectangleSuite extends FunSuite with BeforeAndAfterEach {
   
+    import ExcelRectangleSheetConversion.Helper
+
     val testSheet = "test"
     val testMessage = "Hello, world!!"
 
