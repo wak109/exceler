@@ -65,7 +65,7 @@ class ExcelShapeTest extends FunSuite with ExcelLibResource {
         val workbook = WorkbookFactory.create(file)
         val sheet = workbook.getSheet("shapes")
         for (shape <- sheet.getXSSFShapes) {
-           println(shape.toXmlObject)
+           // println(shape.toXmlObject)
         }
     }
 
@@ -88,11 +88,8 @@ class ExcelShapeTest extends FunSuite with ExcelLibResource {
             shape match {
                 case x:XSSFSimpleShape =>
                     val anchor = shape.getAnchor.asInstanceOf[XSSFClientAnchor]
-                    val s = drawing2.createSimpleShape(anchor);
-                    s.setShapeType(x.getShapeType)
-                    s.setLineWidth(3)
-                    s.setLineStyleColor(0, 0, 0)
-                    //new ExcelSimpleShape(drawing2, x.getCTShape)
+                    val s = drawing2.createSimpleShape(anchor)
+                    s.asInstanceOf[XSSFSimpleShape].copyFrom(shape.asInstanceOf[XSSFSimpleShape])
                 case _ =>
             }
         }

@@ -9,14 +9,12 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import java.io._
 import java.nio.file._
 
-package ExcelLib {
-    package Rectangle {
-        trait ImplicitConversions {
-            implicit class ToExcelRectangleSheet(val sheet:Sheet)
-                extends ExcelRectangleSheetConversion
-        }
-        object ImplicitConversions extends ImplicitConversions
+package ExcelLib.Rectangle {
+    trait ImplicitConversions {
+        implicit class ToExcelRectangleSheet(val sheet:Sheet)
+            extends ExcelRectangleSheetConversion
     }
+    object ImplicitConversions extends ImplicitConversions
 }
 
 import ExcelLib.ImplicitConversions._

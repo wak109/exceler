@@ -105,6 +105,21 @@ class ExcelTableSuite extends FunSuite with ExcelLibResource {
             )
         assert(cell2(0)(0).getSingleValue.get == "ul")
 
-        assert(table.getTableName.get == "test")
+        assert(table.getNameAndTable._1.get == "test")
+    }
+
+    test("ExcelTable Sheet#getTableMap") {
+        val file = new File(getClass.getResource(testWorkbook1).toURI)
+        val workbook = WorkbookFactory.create(file)
+        val sheet = workbook.sheet("table")
+        val tableMap = sheet.getTableMap
+
+        val table = tableMap("test2")
+
+        val cell = table.query(
+            List("row1", "lower").map(createStringEqual(_)),
+            List("col2", "right").map(createStringEqual(_))
+            )
+        assert(cell(0)(0).getSingleValue.get == "lr")
     }
 }

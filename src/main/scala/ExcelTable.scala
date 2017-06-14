@@ -12,14 +12,12 @@ import java.nio.file._
 import ExcelLib.ImplicitConversions._
 import ExcelLib.Rectangle.ImplicitConversions._
 
-package ExcelLib {
-    package Table {
-        trait ImplicitConversions {
-            implicit class ToExcelTableSheetConversion(val sheet:Sheet)
-                    extends ExcelTableSheetConversion
-        }
-        object ImplicitConversions extends ImplicitConversions
+package ExcelLib.Table {
+    trait ImplicitConversions {
+        implicit class ToExcelTableSheetConversion(val sheet:Sheet)
+                extends ExcelTableSheetConversion
     }
+    object ImplicitConversions extends ImplicitConversions
 }
 
 trait ExcelTableQuery[T <: ExcelTableQuery[T]] extends RectangleGrid[T] {
@@ -93,12 +91,21 @@ trait ExcelTableQuery[T <: ExcelTableQuery[T]] extends RectangleGrid[T] {
     }
 }
 
-trait ExcelTableName extends ExcelRectangle  {
+trait ExcelNameAndTable {
+    table:ExcelTable =>
 
-    def getTableName():Option[String] = {
-        topRow match {
-            case 0 => None
-            case _ => sheet.cell(topRow - 1, leftCol).getValueString()
+    def getNameAndTable():(Option[String], ExcelTable) = {
+        (topRow match {
+            case 0 => (None, table)
+            case _ => (sheet.cell(topRow - 1, leftCol).getValueString,
+                            table)
+        }) match {
+            case (Some(name), t) => (Some(name), t)
+            case (None, t) => t.rowList(0).columnList.length match {
+                case r if r <= 1 => (t.rowList(0).getSingleValue,
+                            new ExcelTable(t.rowList.tail))
+                case _ => (None, t)
+            }
         }
     }
 }
@@ -112,7 +119,7 @@ case class ExcelTable (
     )
     extends RectangleGrid[ExcelTable]
     with ExcelTableQuery[ExcelTable]
-    with ExcelTableName {
+    with ExcelNameAndTable {
 
     lazy val rowList = this.getRowList
     lazy val columnList = this.getColumnList
@@ -120,6 +127,13 @@ case class ExcelTable (
 
     def this(t:ExcelTable) = this(
             t.sheet, t.topRow, t.leftCol, t.bottomRow, t.rightCol)
+
+    def this(tList:List[ExcelTable]) = this(
+        tList.head.sheet,
+        tList.head.topRow,
+        tList.head.leftCol,
+        tList.last.bottomRow,
+        tList.last.rightCol)
 
     def getSingleValue():Option[String] = (
         for {
@@ -154,10 +168,10 @@ trait ExcelTableSheetConversion {
     def getTableMap:Map[String,ExcelTable] = {
         val tableList = sheet.getRectangleList[ExcelTable]
 
-        tableList.zip(tableList.map(_.getTableName)).zipWithIndex.map(
+        tableList.map(_.getNameAndTable).zipWithIndex.map(
             _ match {
-                case ((t, Some(name)), _) => (name, t)
-                case ((t, None), idx) => ("Table" + idx, t)
+                case ((Some(name), t), _) => (name, t)
+                case ((None, t), idx) => ("Table" + idx, t)
             }).toMap
     }
 }
