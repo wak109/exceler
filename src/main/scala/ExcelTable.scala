@@ -26,7 +26,7 @@ trait TableCell {
 
 trait TableCellList[T <: TableCell] {
     def getHead():T
-    def getTail():Table[T]
+    def getTail():TableQuery[T]
 }
 
 trait Table[T <: TableCell] {
@@ -35,10 +35,52 @@ trait Table[T <: TableCell] {
 }
 
 trait TableQuery[T <: TableCell] extends Table[T] {
+
     def query(
         rowpredList:List[String => Boolean],
         colpredList:List[String => Boolean]
-    ):List[List[T]]
+        )(implicit newInstance:(TableQuery[T], TableQuery[T]) => T) = {
+        for {
+            row <- this.queryRow(rowpredList)
+        } yield for {
+            col <- this.queryColumn(colpredList)
+        } yield newInstance(row, col)
+    }
+
+    def queryRow(predList:List[String => Boolean]):List[TableQuery[T]] = {
+        predList match {
+            case Nil => List[TableQuery[T]](this)
+            case pred::predTail => for {
+                row <- this.queryRow(pred)
+                row <- row.queryRow(predTail)
+            } yield row
+        }
+    }
+
+    def queryRow(pred:String => Boolean):List[TableQuery[T]] = {
+        for {
+            row <- this.rowList
+            if pred(row.getHead.value)
+        } yield row.getTail
+    }
+
+    def queryColumn(predList:List[String => Boolean])
+            :List[TableQuery[T]] = {
+        predList match {
+            case Nil => List[TableQuery[T]](this)
+            case pred::predTail => for {
+                col <- this.queryColumn(pred)
+                col <- col.queryColumn(predTail)
+            } yield col
+        }
+    }
+
+    def queryColumn(pred:String => Boolean):List[TableQuery[T]] = {
+        for {
+            col <- this.columnList
+            if pred(col.getHead.value)
+        } yield col.getTail
+    }
 }
 
 trait ExcelTableQuery[T <: ExcelTableQuery[T]] extends RectangleGrid {
