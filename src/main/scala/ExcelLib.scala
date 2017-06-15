@@ -1,11 +1,12 @@
 /* vim: set ts=4 et sw=4 sts=4 fileencoding=utf-8: */
-import scala.collection.JavaConverters._
+import scala.collection.convert.ImplicitConversionsToScala._
 import scala.language.implicitConversions
+import scala.math
 import scala.util.control.Exception._
 import scala.util.{Try, Success, Failure}
 
 import org.apache.poi.ss.usermodel._
-import org.apache.poi.xssf.usermodel._
+import org.apache.poi.ss.util._
 
 import java.io._
 import java.nio.file._
@@ -141,6 +142,9 @@ trait RowExtra {
 trait CellExtra {
     val cell:Cell
 
+    def doubleTo(d:Double):Any = 
+        if (d == math.rint(d)) math.round(d) else d
+
     def getValue_():Any = {
         cell.getCellTypeEnum match {
             case CellType.BLANK => cell.getStringCellValue
@@ -151,11 +155,12 @@ trait CellExtra {
                     case CellType.BLANK => cell.getStringCellValue
                     case CellType.BOOLEAN => cell.getBooleanCellValue
                     case CellType.ERROR => cell.getErrorCellValue
-                    case CellType.NUMERIC => cell.getNumericCellValue
+                    case CellType.NUMERIC =>
+                            doubleTo(cell.getNumericCellValue)
                     case CellType.STRING => cell.getStringCellValue
                     case _ => cell.getStringCellValue
                 }
-            case CellType.NUMERIC => cell.getNumericCellValue
+            case CellType.NUMERIC => doubleTo(cell.getNumericCellValue)
             case CellType.STRING => cell.getStringCellValue
             case _ => cell.getStringCellValue
         }
@@ -274,11 +279,21 @@ trait CellExtra {
             case Failure(e) => Stream.empty
         })
     }
+
+    ////////////////////////////////////////////////////////////////
+    // Merged Region
+    //
+    def getMergedRegion():Option[CellRangeAddress] = {
+        (for {
+            region <- cell.getSheet.getMergedRegions
+            if region.isInRange(cell)
+        } yield region).headOption
+    }
 }
 
 
 trait CellBorderExtra {
-    val cell:Cell
+    val cell:Cell 
 
     ////////////////////////////////////////////////////////////
     // setBorder
@@ -351,33 +366,56 @@ trait CellBorderExtra {
     // hasBorder
     //
     def hasBorderBottom():Boolean = {
-        (cell.getCellStyle.getBorderBottomEnum != BorderStyle.NONE) ||
-        (cell.getLowerCell
-            .map(_.getCellStyle.getBorderTopEnum != BorderStyle.NONE)
-            .getOrElse(false))
+        cell.getMergedRegion match {
+            case Some(region)
+                if cell.getRowIndex != region.getLastRow => false
+            case _ =>
+                (cell.getCellStyle.getBorderBottomEnum
+                    != BorderStyle.NONE) ||
+                (cell.getLowerCell.map(_.getCellStyle.getBorderTopEnum
+                    != BorderStyle.NONE).getOrElse(false))
+        }
     }
     
     def hasBorderTop():Boolean = {
-        (cell.getRowIndex == 0) ||
-        (cell.getCellStyle.getBorderTopEnum != BorderStyle.NONE) ||
-        (cell.getUpperCell
-            .map(_.getCellStyle.getBorderBottomEnum != BorderStyle.NONE)
-            .getOrElse(false))
+        cell.getMergedRegion match {
+            case Some(region)
+                if cell.getRowIndex != region.getFirstRow => false
+            case _ =>
+                (cell.getRowIndex == 0) ||
+                (cell.getCellStyle.getBorderTopEnum
+                    != BorderStyle.NONE) ||
+                (cell.getUpperCell.map(
+                    _.getCellStyle.getBorderBottomEnum != BorderStyle.NONE)
+                    .getOrElse(false))
+        }
     }
     
     def hasBorderRight():Boolean = {
-        (cell.getCellStyle.getBorderRightEnum != BorderStyle.NONE) ||
-        (cell.getRightCell
-            .map(_.getCellStyle.getBorderLeftEnum != BorderStyle.NONE)
-            .getOrElse(false))
+        cell.getMergedRegion match {
+            case Some(region)
+                if cell.getColumnIndex != region.getLastColumn => false
+            case _ =>
+                (cell.getCellStyle.getBorderRightEnum
+                    != BorderStyle.NONE) ||
+                (cell.getRightCell.map(
+                    _.getCellStyle.getBorderLeftEnum != BorderStyle.NONE)
+                    .getOrElse(false))
+        }
     }
     
     def hasBorderLeft():Boolean = {
-        (cell.getColumnIndex == 0) ||
-        (cell.getCellStyle.getBorderLeftEnum != BorderStyle.NONE) ||
-        (cell.getLeftCell
-            .map(_.getCellStyle.getBorderRightEnum != BorderStyle.NONE)
-            .getOrElse(false))
+        cell.getMergedRegion match {
+            case Some(region)
+                if cell.getColumnIndex != region.getFirstColumn => false
+            case _ =>
+                (cell.getColumnIndex == 0) ||
+                (cell.getCellStyle.getBorderLeftEnum
+                    != BorderStyle.NONE) ||
+                (cell.getLeftCell.map(
+                    _.getCellStyle.getBorderRightEnum != BorderStyle.NONE)
+                    .getOrElse(false))
+        }
     }
 
     ////////////////////////////////////////////////////////////
@@ -412,6 +450,7 @@ trait CellBorderExtra {
             .map(_.getCellStyle.getBorderRightEnum == BorderStyle.THICK)
             .getOrElse(false))
     }
+
 }
 
 trait CellOuterBorderExtra {

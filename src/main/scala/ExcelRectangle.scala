@@ -19,17 +19,23 @@ package ExcelLib.Rectangle {
 
 import ExcelLib.ImplicitConversions._
 
-abstract class ExcelRectangle {
+
+trait ExcelRectangle {
     val sheet:Sheet
     val topRow:Int
     val leftCol:Int
     val bottomRow:Int
     val rightCol:Int
+
+    override def toString():String =
+        getClass.getSimpleName + ":" + sheet.getSheetName + ":(" +
+            sheet.cell(topRow, leftCol).getAddress + "," +
+            sheet.cell(bottomRow, rightCol).getAddress + ")"
 }
 
-trait RectangleGrid[T <: ExcelRectangle] extends ExcelRectangle {
+trait RectangleGrid extends ExcelRectangle {
 
-    def getRowList()(implicit newInstance:(
+    def getRowList[T]()(implicit newInstance:(
             Sheet, Int, Int, Int, Int) => T):List[T] = {
         val rownumList = (topRow-1) :: (for {
             rownum <- (topRow until bottomRow).toList
@@ -38,11 +44,11 @@ trait RectangleGrid[T <: ExcelRectangle] extends ExcelRectangle {
         } yield rownum) ::: List(bottomRow)
 
         (rownumList, rownumList.drop(1)).zipped.toList.map(
-                tpl => newInstance(
-                    sheet, tpl._1 + 1, leftCol, tpl._2,  rightCol))
+                tpl => newInstance(sheet,
+                    tpl._1 + 1, leftCol, tpl._2,  rightCol))
     }
 
-    def getColumnList()(implicit newInstance:(
+    def getColumnList[T]()(implicit newInstance:(
             Sheet, Int, Int, Int, Int) => T):List[T] = {
         val colnumList = (leftCol-1) :: (for {
             colnum <- (leftCol until rightCol).toList
@@ -51,19 +57,14 @@ trait RectangleGrid[T <: ExcelRectangle] extends ExcelRectangle {
         } yield colnum) ::: List(rightCol)
 
         (colnumList, colnumList.drop(1)).zipped.toList.map(
-                tpl => newInstance(
-                    sheet, topRow, tpl._1 + 1, bottomRow, tpl._2))
+                tpl => newInstance(sheet,
+                    topRow, tpl._1 + 1, bottomRow, tpl._2))
     }
-
-    override def toString():String =
-        this.getClass.getSimpleName + ":" + sheet.getSheetName + ":(" +
-            sheet.cell(topRow, leftCol).getAddress + "," +
-            sheet.cell(bottomRow, rightCol).getAddress + ")"
 }
 
 
 
-trait RectangleBorderDraw extends ExcelRectangle {
+trait RectangleBorderDraw extends ExcelRectangle{
 
     def drawOuterBorderTop(borderStyle:BorderStyle):Unit = {
         for (colnum <- (leftCol to rightCol).toList)
@@ -77,12 +78,14 @@ trait RectangleBorderDraw extends ExcelRectangle {
 
     def drawOuterBorderBottom(borderStyle:BorderStyle):Unit = {
         for (colnum <- (leftCol to rightCol).toList)
-            sheet.cell(bottomRow, colnum).setBorderBottom(borderStyle)
+            sheet.cell(bottomRow, colnum)
+                .setBorderBottom(borderStyle)
     }
 
     def drawOuterBorderRight(borderStyle:BorderStyle):Unit = {
         for (rownum <- (topRow to bottomRow).toList)
-            sheet.cell(rownum, rightCol).setBorderRight(borderStyle)
+            sheet.cell(rownum, rightCol)
+                .setBorderRight(borderStyle)
     }
 
     def drawOuterBorder(borderStyle:BorderStyle):Unit = {
@@ -99,8 +102,8 @@ trait RectangleBorderDraw extends ExcelRectangle {
         }
         else if (0 < num && num <= bottomRow - topRow) {
             for (colnum <- (leftCol to rightCol).toList)
-                sheet.cell(topRow + num - 1, colnum
-                    ).setBorderBottom(borderStyle)
+                sheet.cell(topRow + num - 1, colnum)
+                    .setBorderBottom(borderStyle)
         }
     }
 
@@ -111,8 +114,8 @@ trait RectangleBorderDraw extends ExcelRectangle {
         }
         else if (0 < num && num <= rightCol - leftCol) {
             for (rownum <- (topRow to bottomRow).toList)
-                sheet.cell(rownum, leftCol + num - 1
-                    ).setBorderRight(borderStyle)
+                sheet.cell(rownum, leftCol + num - 1)
+                    .setBorderRight(borderStyle)
         }
     }
 }
@@ -123,7 +126,7 @@ trait ExcelRectangleSheetConversion {
 
     import ExcelRectangleSheetConversion.Helper
 
-    def getRectangleList[T <: RectangleGrid[T]]()
+    def getRectangleList[T]()
             (implicit newInstance:(
                 Sheet, Int, Int, Int, Int) => T):List[T] = {
         for {

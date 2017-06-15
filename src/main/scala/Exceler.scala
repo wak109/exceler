@@ -22,8 +22,8 @@ object Exceler {
             for {
                 sheet <- workbook.sheetIterator.asScala
                 rect <- sheet.getRectangleList[ExcelTable]
-                row <- rect.getRowList
-                cell <- row.getColumnList
+                row <- rect.getRowList[ExcelTable]
+                cell <- row.getColumnList[ExcelTable]
             } {
                 println(cell)
             }

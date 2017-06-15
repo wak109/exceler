@@ -299,13 +299,13 @@ class ExcelRectangleSuite extends FunSuite {
         rect.drawVerticalLine(5, BorderStyle.THIN)
         rect.drawVerticalLine(7, BorderStyle.THIN)
 
-        assert(rect.getRowList.length == 3)
-        assert(rect.getRowList.apply(0).getColumnList.length == 4)
-        assert(rect.getRowList.apply(1).getColumnList.length == 4)
+        assert(rect.getRowList[ExcelTable].length == 3)
+        assert(rect.getRowList[ExcelTable].apply(0).getColumnList[ExcelTable].length == 4)
+        assert(rect.getRowList[ExcelTable].apply(1).getColumnList[ExcelTable].length == 4)
 
-        val row1 = new ExcelTable(rect.getRowList.apply(1))
+        val row1 = new ExcelTable(rect.getRowList[ExcelTable].apply(1))
           with RectangleBorderDraw
         row1.drawVerticalLine(3, BorderStyle.THIN)
-        assert(rect.getRowList.apply(1).getColumnList.length == 5)
+        assert(rect.getRowList[ExcelTable].apply(1).getColumnList[ExcelTable].length == 5)
     }
 }

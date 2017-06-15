@@ -20,7 +20,28 @@ package ExcelLib.Table {
     object ImplicitConversions extends ImplicitConversions
 }
 
-trait ExcelTableQuery[T <: ExcelTableQuery[T]] extends RectangleGrid[T] {
+trait TableCell {
+    val value:String
+}
+
+trait TableCellList[T <: TableCell] {
+    def getHead():T
+    def getTail():Table[T]
+}
+
+trait Table[T <: TableCell] {
+    val rowList:List[TableCellList[T]]
+    val columnList:List[TableCellList[T]]
+}
+
+trait TableQuery[T <: TableCell] extends Table[T] {
+    def query(
+        rowpredList:List[String => Boolean],
+        colpredList:List[String => Boolean]
+    ):List[List[T]]
+}
+
+trait ExcelTableQuery[T <: ExcelTableQuery[T]] extends RectangleGrid {
     this:T =>
 
     val rowList:List[T]
@@ -45,24 +66,33 @@ trait ExcelTableQuery[T <: ExcelTableQuery[T]] extends RectangleGrid[T] {
         predList match {
             case Nil => List(this)
             case pred::predTail => for {
-                row <- this.queryRow(pred)
-                rtail = row.columnList.tail
-                rowNext <- newInstance(
+                rtail <- this.queryRow(pred)
+                rowNext <- rtail.queryRow(predTail)
+            } yield rowNext
+        }
+    }
+
+    def queryRow(pred:String => Boolean)(
+            implicit newInstance:(Sheet,Int,Int,Int,Int)=>T):List[T] = {
+        for {
+            rownum <- (0 until this.rowList.length).toList
+            row = this.rowList(rownum)
+            if pred(row.columnList.head.value.getOrElse(""))
+        } yield {
+            val rtail = if (row.columnList.length < 2) 
+                (rownum + 1 until this.rowList.length)
+                    .toList.map(this.rowList.apply(_))
+            else
+                row.columnList.tail
+
+            newInstance(
                     rtail.head.sheet,
                     rtail.head.topRow,
                     rtail.head.leftCol,
                     rtail.last.bottomRow,
                     rtail.last.rightCol
-                ).queryRow(predTail)
-            } yield rowNext
+            )
         }
-    }
-
-    def queryRow(pred:String => Boolean):List[T] = {
-        for {
-            row <- this.rowList
-            if pred(row.columnList.head.value.getOrElse(""))
-        } yield row
     }
 
     def queryColumn(predList:List[String => Boolean])(
@@ -117,12 +147,12 @@ case class ExcelTable (
     val bottomRow:Int,
     val rightCol:Int
     )
-    extends RectangleGrid[ExcelTable]
+    extends RectangleGrid
     with ExcelTableQuery[ExcelTable]
     with ExcelNameAndTable {
 
-    lazy val rowList = this.getRowList
-    lazy val columnList = this.getColumnList
+    lazy val rowList = this.getRowList[ExcelTable]
+    lazy val columnList = this.getColumnList[ExcelTable]
     lazy val value = this.getSingleValue()
 
     def this(t:ExcelTable) = this(
@@ -142,12 +172,6 @@ case class ExcelTable (
             value <- sheet.cell(rownum, colnum).getValueString.map(_.trim)
         } yield value
     ).headOption
-
-    override def toString():String =
-        "ExcelTable:" + sheet.getSheetName + ":(" + 
-            sheet.cell(topRow, leftCol).getAddress + "," +
-            sheet.cell(bottomRow, rightCol).getAddress + ")"
-
 }
 
 object ExcelTable {

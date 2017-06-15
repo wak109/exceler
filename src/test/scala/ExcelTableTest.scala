@@ -66,11 +66,11 @@ class ExcelTableSuite extends FunSuite with ExcelLibResource {
         sheet.cell(17,10).setCellValue("row3")
         sheet.cell(17,20).setCellValue("foo")
 
-        assert(table.queryRow(_ == "row1")(0).topRow == 10)
+        assert(table.queryRow(_ == "row1").apply(0).topRow == 10)
         assert(table.queryRow(
             List((x:String) => x == "row1")).apply(0).topRow == 10)
-        assert(table.queryRow(_ == "row2")(0).topRow == 12)
-        assert(table.queryRow(_ == "row3")(0).topRow == 17)
+        assert(table.queryRow(_ == "row2").apply(0).topRow == 12)
+        assert(table.queryRow(_ == "row3").apply(0).topRow == 17)
         assert(table.queryRow(_ == "foo").isEmpty)
 
         sheet.cell(10,14).setCellValue("col2")
