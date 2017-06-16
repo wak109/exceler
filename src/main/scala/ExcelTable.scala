@@ -24,50 +24,92 @@ trait TableCell {
     val value:String
 }
 
-trait TableCellList[T <: TableCell] {
-    def getHead():T
-    def getTail():TableQuery[T]
+trait HeadTail[T] {
+    def getRow(rect:T):(T,Option[T])
+    def getCol(rect:T):(T,Option[T])
 }
 
-trait Table[T <: TableCell] {
-    val rowList:List[TableCellList[T]]
-    val columnList:List[TableCellList[T]]
+trait Table[T] {
+    rect:T =>
+    val headTail:HeadTail[T]
+
+    val rowList:List[T]
+    val colList:List[T]
+
+    def getRowList(rect:Option[T]):List[T] = {
+        rect match {
+            case None => Nil
+            case Some(rect) => {
+                val (headRow, tailRow) = headTail.getRow(rect)
+                headRow :: getRowList(tailRow)
+            }
+        }
+    }
+
+    def getColList(rect:Option[T]):List[T] = {
+        rect match {
+            case None => Nil
+            case Some(rect) => {
+                val (headCol, tailCol) = headTail.getCol(rect)
+                headCol :: getColList(tailCol)
+            }
+        }
+    }
 }
 
-trait TableQuery[T <: TableCell] extends Table[T] {
+trait TableQuery[T,U] {
+    rect:T =>
+    val headTail:HeadTail[T]
+    val table:Table[T]
 
     def query(
         rowpredList:List[String => Boolean],
         colpredList:List[String => Boolean]
-        )(implicit newInstance:(TableQuery[T], TableQuery[T]) => T) = {
+    )(implicit
+            newQ:(T) => TableQuery[T,U],
+            newCell:(T) => TableCell,
+            newU:(T,T) => U) = {
         for {
             row <- this.queryRow(rowpredList)
         } yield for {
             col <- this.queryColumn(colpredList)
-        } yield newInstance(row, col)
+        } yield newU(row, col)
     }
 
-    def queryRow(predList:List[String => Boolean]):List[TableQuery[T]] = {
+    def queryRow(
+        predList:List[String => Boolean]
+    )(implicit
+            newQ:(T) => TableQuery[T,U],
+            newCell:(T) => TableCell):List[T] = {
         predList match {
-            case Nil => List[TableQuery[T]](this)
+            case Nil => List[T](rect)
             case pred::predTail => for {
                 row <- this.queryRow(pred)
-                row <- row.queryRow(predTail)
+                row <- newQ(row).queryRow(predTail)
             } yield row
         }
     }
 
-    def queryRow(pred:String => Boolean):List[TableQuery[T]] = {
+    def queryRow(
+        pred:String => Boolean
+    )(implicit
+            newQ:(T) => TableQuery[T,U],
+            newCell:(T) => TableCell):List[T] = {
         for {
-            row <- this.rowList
-            if pred(row.getHead.value)
-        } yield row.getTail
+            row <- table.rowList
+            (colHead, colTail) = headTail.getCol(row)
+            if pred(newCell(colHead).value)
+            col <- colTail
+        } yield col
     }
 
-    def queryColumn(predList:List[String => Boolean])
-            :List[TableQuery[T]] = {
+    def queryColumn(
+            predList:List[String => Boolean]
+    )(implicit
+            newQ:(T) => TableQuery[T,U],
+            newCell:(T) => TableCell):List[T] = {
         predList match {
-            case Nil => List[TableQuery[T]](this)
+            case Nil => List[T](rect)
             case pred::predTail => for {
                 col <- this.queryColumn(pred)
                 col <- col.queryColumn(predTail)
@@ -75,14 +117,111 @@ trait TableQuery[T <: TableCell] extends Table[T] {
         }
     }
 
-    def queryColumn(pred:String => Boolean):List[TableQuery[T]] = {
+    def queryColumn(
+        pred:String => Boolean
+    )(implicit newCell:(T) => TableCell):List[T] = {
         for {
-            col <- this.columnList
-            if pred(col.getHead.value)
-        } yield col.getTail
+            col <- table.colList
+            (rowHead, rowTail) = headTail.getRow(col)
+            if pred(newCell(rowHead).value)
+            row <- rowTail
+        } yield row
     }
 }
 
+trait StackedTableQuery[T,U] extends TableQuery[T,U] {
+    rect:T =>
+
+    val tableMap:Map[String, TableQuery[T,U]]
+
+    override def queryRow(
+        predList:List[String => Boolean]
+    )(implicit newQ:(T) => TableQuery[T,U],
+            newCell:(T) => TableCell):List[T] = {
+
+        predList match {
+            case Nil => List[T](this)
+            case pred::predTail => {
+                (for {
+                    (key, table) <- tableMap
+                    if pred(key)
+                    row <- table.queryRow(predTail) 
+                } yield row).toList match {
+                    case Nil => super.queryRow(predList)
+                    case x => x
+                }
+            }
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////
+// Impl
+//
+
+case class RectangleImpl(
+    val sheet:Sheet,
+    val topRow:Int,
+    val leftCol:Int,
+    val bottomRow:Int,
+    val rightCol:Int
+)
+
+case class TableCellImpl(
+    val sheet:Sheet,
+    val topRow:Int,
+    val leftCol:Int,
+    val bottomRow:Int,
+    val rightCol:Int
+) extends TableCell {
+
+    lazy val value = this.getSingleValue().getOrElse("")
+
+    def getSingleValue():Option[String] = (
+        for {
+            colnum <- (leftCol to rightCol).toStream
+            rownum <- (topRow to bottomRow).toStream
+            value <- sheet.cell(rownum, colnum).getValueString.map(_.trim)
+        } yield value
+    ).headOption
+}
+
+class HeadTailImpl extends HeadTail[RectangleImpl] {
+
+    override def getRow(rect:RectangleImpl) = {
+        (for {
+            rownum <- (rect.topRow until rect.bottomRow).toStream
+            cell <- rect.sheet.getCellOption(rownum, rect.leftCol)
+            if cell.hasBorderBottom
+        } yield rownum).headOption match {
+            case Some(num) => (
+                new RectangleImpl(rect.sheet, rect.topRow,
+                    rect.leftCol, num, rect.rightCol),
+                Some(new RectangleImpl(rect.sheet, num + 1,
+                    rect.leftCol, rect.bottomRow, rect.rightCol)))
+            case _ => (rect, None)
+        }
+    }
+
+    override def getCol(rect:RectangleImpl) = {
+        (for {
+            colnum <- (rect.leftCol until rect.rightCol).toStream
+            cell <- rect.sheet.getCellOption(rect.topRow, colnum)
+            if cell.hasBorderRight
+        } yield colnum).headOption match {
+            case Some(num) => (
+                new RectangleImpl(rect.sheet, rect.topRow,
+                    rect.leftCol, rect.bottomRow, num),
+                Some(new RectangleImpl(rect.sheet, rect.topRow,
+                    num + 1, rect.bottomRow, rect.rightCol)))
+            case _ => (rect, None)
+        }
+    }
+}
+
+
+////////////////////////////////////////////////////////////////////////
+//
 trait ExcelTableQuery[T <: ExcelTableQuery[T]] extends RectangleGrid {
     this:T =>
 
