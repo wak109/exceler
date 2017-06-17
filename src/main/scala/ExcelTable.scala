@@ -28,16 +28,8 @@ trait TableCell {
     val value:String
 }
 
-/*
-trait HeadTail[T] {
-    def getRow(rect:T):(T,Option[T])
-    def getCol(rect:T):(T,Option[T])
-}
-*/
-
 trait Table[T] {
     rect:T =>
-//    val headTail:HeadTail[T]
 
     lazy val rowList:List[T] = this.getRowList(Some(rect))
     lazy val colList:List[T] = this.getColList(Some(rect))
@@ -138,6 +130,11 @@ trait TableQuery[T <: Rectangle[T]] extends Table[T] {
             row <- rowTail
         } yield row
     }
+}
+
+trait TableName[T] {
+
+    def getTableName():(Option[String], T)
 }
 
 /*
@@ -244,6 +241,25 @@ trait TableImpl extends Table[RectangleImpl] {
                 Some(new RectangleImpl(rect.sheet, rect.topRow,
                     num + 1, rect.bottomRow, rect.rightCol)))
             case _ => (rect, None)
+        }
+    }
+}
+
+trait TableNameImpl[RectangleImpl] {
+    table:ExcelTable =>
+
+    def getNameAndTable():(Option[String], ExcelTable) = {
+        (topRow match {
+            case 0 => (None, table)
+            case _ => (sheet.cell(topRow - 1, leftCol).getValueString,
+                            table)
+        }) match {
+            case (Some(name), t) => (Some(name), t)
+            case (None, t) => t.rowList(0).columnList.length match {
+                case r if r <= 1 => (t.rowList(0).getSingleValue,
+                            new ExcelTable(t.rowList.tail))
+                case _ => (None, t)
+            }
         }
     }
 }
