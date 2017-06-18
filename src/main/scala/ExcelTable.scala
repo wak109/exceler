@@ -28,20 +28,23 @@ trait TableCell {
     val value:String
 }
 
+trait GridRectangle[T] {
+    def getRow(rect:T):(T,Option[T])
+    def getCol(rect:T):(T,Option[T])
+}
+
 trait Table[T] {
     rect:T =>
+    val grid:GridRectangle[T]
 
     lazy val rowList:List[T] = this.getRowList(Some(rect))
     lazy val colList:List[T] = this.getColList(Some(rect))
-
-    def getRow(rect:T):(T,Option[T])
-    def getCol(rect:T):(T,Option[T])
 
     def getRowList(rect:Option[T]):List[T] = {
         rect match {
             case None => Nil
             case Some(rect) => {
-                val (headRow, tailRow) = this.getRow(rect)
+                val (headRow, tailRow) = grid.getRow(rect)
                 headRow :: getRowList(tailRow)
             }
         }
@@ -51,7 +54,7 @@ trait Table[T] {
         rect match {
             case None => Nil
             case Some(rect) => {
-                val (headCol, tailCol) = this.getCol(rect)
+                val (headCol, tailCol) = grid.getCol(rect)
                 headCol :: getColList(tailCol)
             }
         }
@@ -60,6 +63,7 @@ trait Table[T] {
 
 trait TableQuery[T <: Rectangle[T]] extends Table[T] {
     rect:T =>
+    val grid:GridRectangle[T]
     val newQ:(T) => TableQuery[T]
     val newCell:(T) => TableCell
 
@@ -102,7 +106,7 @@ trait TableQuery[T <: Rectangle[T]] extends Table[T] {
     ):List[T] = {
         for {
             row <- this.rowList
-            (colHead, colTail) = this.getCol(row)
+            (colHead, colTail) = grid.getCol(row)
             if pred(newCell(colHead).value)
             col <- colTail
         } yield col
@@ -125,7 +129,7 @@ trait TableQuery[T <: Rectangle[T]] extends Table[T] {
     ) :List[T] = {
         for {
             col <- this.colList
-            (rowHead, rowTail) = this.getRow(col)
+            (rowHead, rowTail) = grid.getRow(col)
             if pred(newCell(rowHead).value)
             row <- rowTail
         } yield row
@@ -133,7 +137,6 @@ trait TableQuery[T <: Rectangle[T]] extends Table[T] {
 }
 
 trait TableName[T] {
-
     def getTableName():(Option[String], T)
 }
 
@@ -211,54 +214,65 @@ object TableCellImpl {
             new TableCellImpl(rect)
 }
 
-trait TableImpl extends Table[RectangleImpl] {
-    self:RectangleImpl =>
-    
-    override def getRow(rect:RectangleImpl) = {
-        (for {
-            rownum <- (rect.topRow until rect.bottomRow).toStream
-            cell <- rect.sheet.getCellOption(rownum, rect.leftCol)
-            if cell.hasBorderBottom
-        } yield rownum).headOption match {
-            case Some(num) => (
-                new RectangleImpl(rect.sheet, rect.topRow,
-                    rect.leftCol, num, rect.rightCol),
-                Some(new RectangleImpl(rect.sheet, num + 1,
-                    rect.leftCol, rect.bottomRow, rect.rightCol)))
-            case _ => (rect, None)
-        }
-    }
+object GridRectangleImpl extends GridRectangle[RectangleImpl] {
 
-    override def getCol(rect:RectangleImpl) = {
-        (for {
-            colnum <- (rect.leftCol until rect.rightCol).toStream
-            cell <- rect.sheet.getCellOption(rect.topRow, colnum)
-            if cell.hasBorderRight
-        } yield colnum).headOption match {
-            case Some(num) => (
-                new RectangleImpl(rect.sheet, rect.topRow,
-                    rect.leftCol, rect.bottomRow, num),
-                Some(new RectangleImpl(rect.sheet, rect.topRow,
-                    num + 1, rect.bottomRow, rect.rightCol)))
-            case _ => (rect, None)
+        override def getRow(rect: RectangleImpl) = {
+            (for {
+                rownum <- (rect.topRow until rect.bottomRow).toStream
+                cell <- rect.sheet.getCellOption(rownum, rect.leftCol)
+                if cell.hasBorderBottom
+            } yield rownum).headOption match {
+                case Some(num) => (
+                    new RectangleImpl(rect.sheet, rect.topRow,
+                        rect.leftCol, num, rect.rightCol),
+                    Some(new RectangleImpl(rect.sheet, num + 1,
+                        rect.leftCol, rect.bottomRow, rect.rightCol)))
+                case _ => (rect, None)
+            }
         }
-    }
+
+        override def getCol(rect: RectangleImpl) = {
+            (for {
+                colnum <- (rect.leftCol until rect.rightCol).toStream
+                cell <- rect.sheet.getCellOption(rect.topRow, colnum)
+                if cell.hasBorderRight
+            } yield colnum).headOption match {
+                case Some(num) => (
+                    new RectangleImpl(rect.sheet, rect.topRow,
+                        rect.leftCol, rect.bottomRow, num),
+                    Some(new RectangleImpl(rect.sheet, rect.topRow,
+                        num + 1, rect.bottomRow, rect.rightCol)))
+                case _ => (rect, None)
+            }
+        }
 }
 
-trait TableNameImpl[RectangleImpl] {
-    table:ExcelTable =>
+trait TableNameComponent {
+    val tableName:TableName[RectangleImpl]
+    val rect:RectangleImpl
+    val grid:GridRectangle[RectangleImpl]
 
-    def getNameAndTable():(Option[String], ExcelTable) = {
-        (topRow match {
-            case 0 => (None, table)
-            case _ => (sheet.cell(topRow - 1, leftCol).getValueString,
-                            table)
-        }) match {
-            case (Some(name), t) => (Some(name), t)
-            case (None, t) => t.rowList(0).columnList.length match {
-                case r if r <= 1 => (t.rowList(0).getSingleValue,
-                            new ExcelTable(t.rowList.tail))
-                case _ => (None, t)
+    class TableNameImpl[RectangleImpl] extends TableName[RectangleImpl] {
+
+        override def getTableName(): (Option[String], RectangleImpl) = {
+            // Table name outside of Rectangle
+            (rect.topRow match {
+                case 0 => (None, rect)
+                case _ => (rect.sheet.cell(rect.topRow - 1, rect.leftCol).getValueString, rect)
+            }) match {
+                case (Some(name), _) => (Some(name), rect)
+                case (None, _) => {
+                    // Table name at the top of Rectangle
+                    val (rowHead, rowTail) = grid.getRow(rect)
+                    val (rowHeadLeft, rowHeadRight) = grid.getCol(rowHead)
+                    rowHeadRight match {
+                        case Some(_) => (None, rect)
+                        case None => ((new TableCellImpl(rowHeadLeft)).getSingleValue(), rowTail) match {
+                            case (name, Some(tail)) => (name, tail)
+                            case (name, None) => (None, rect)
+                        }
+                    }
+                }
             }
         }
     }
@@ -278,11 +292,12 @@ class TableQueryImpl(
         rect.rightCol
     )
     with TableQuery[RectangleImpl]
-    with TableImpl
+    with Table[RectangleImpl]
     with RectangleBorderDraw {
 
     override val newQ = _newQ
     override val newCell = _newCell
+    override val grid = GridRectangleImpl
 }
 
 object TableQueryImpl {
