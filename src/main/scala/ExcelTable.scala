@@ -20,9 +20,20 @@ package ExcelLib.Table {
     object ImplicitConversions extends ImplicitConversions
 }
 
+trait RectangleType[T] {
+    def getCross(row:T, col:T):T
+    def getHeadRow(rect:T):(T,Option[T])
+    def getHeadCol(rect:T):(T,Option[T])
+    def getValue(rect:T):Option[String]
+//    def getTableName(rect:T):(Option[String], T)
+}
+
+/*
 trait Rectangle[T <: Rectangle[T]] {
     def getCross(col:T):T
 }
+
+trait RectangleApply[T] { def apply(rect:T):T }
 
 trait TableCell {
     val value:String
@@ -32,10 +43,12 @@ trait GridRectangle[T] {
     def getRow(rect:T):(T,Option[T])
     def getCol(rect:T):(T,Option[T])
 }
+*/
+
 
 trait Table[T] {
     rect:T =>
-    val grid:GridRectangle[T]
+    val rt:RectangleType[T]
 
     lazy val rowList:List[T] = this.getRowList(Some(rect))
     lazy val colList:List[T] = this.getColList(Some(rect))
@@ -44,7 +57,7 @@ trait Table[T] {
         rect match {
             case None => Nil
             case Some(rect) => {
-                val (headRow, tailRow) = grid.getRow(rect)
+                val (headRow, tailRow) = rt.getHeadRow(rect)
                 headRow :: getRowList(tailRow)
             }
         }
@@ -54,18 +67,17 @@ trait Table[T] {
         rect match {
             case None => Nil
             case Some(rect) => {
-                val (headCol, tailCol) = grid.getCol(rect)
+                val (headCol, tailCol) = rt.getHeadCol(rect)
                 headCol :: getColList(tailCol)
             }
         }
     }
 }
 
-trait TableQuery[T <: Rectangle[T]] extends Table[T] {
+trait TableQuery[T] extends Table[T] {
     rect:T =>
-    val grid:GridRectangle[T]
+    val rt:RectangleType[T]
     val newQ:(T) => TableQuery[T]
-    val newCell:(T) => TableCell
 
     def query(
         rowpredList:List[(String) => Boolean],
@@ -75,7 +87,7 @@ trait TableQuery[T <: Rectangle[T]] extends Table[T] {
             row <- this.queryRow(rowpredList)
         } yield for {
             col <- this.queryColumn(colpredList)
-        } yield row.getCross(col)
+        } yield rt.getCross(row, col)
     }
 
     def query(
@@ -86,7 +98,7 @@ trait TableQuery[T <: Rectangle[T]] extends Table[T] {
             row <- this.queryRow(rowpred)
         } yield for {
             col <- this.queryColumn(colpred)
-        } yield row.getCross(col)
+        } yield rt.getCross(row, col)
     }
 
     def queryRow(
@@ -106,8 +118,8 @@ trait TableQuery[T <: Rectangle[T]] extends Table[T] {
     ):List[T] = {
         for {
             row <- this.rowList
-            (colHead, colTail) = grid.getCol(row)
-            if pred(newCell(colHead).value)
+            (colHead, colTail) = rt.getHeadCol(row)
+            if pred(rt.getValue(colHead).getOrElse(""))
             col <- colTail
         } yield col
     }
@@ -129,18 +141,18 @@ trait TableQuery[T <: Rectangle[T]] extends Table[T] {
     ) :List[T] = {
         for {
             col <- this.colList
-            (rowHead, rowTail) = grid.getRow(col)
-            if pred(newCell(rowHead).value)
+            (rowHead, rowTail) = rt.getHeadRow(col)
+            if pred(rt.getValue(rowHead).getOrElse(""))
             row <- rowTail
         } yield row
     }
 }
 
+/*
 trait TableName[T] {
-    def getTableName():(Option[String], T)
+    def getTableName(rect:T):(Option[String], T)
 }
 
-/*
 trait StackedTableQuery[T <: Rectangle[T]] extends TableQuery[T] {
     rect:T =>
 
@@ -171,138 +183,181 @@ trait StackedTableQuery[T <: Rectangle[T]] extends TableQuery[T] {
 // Impl
 //
 
-class RectangleImpl (
+case class RectangleImpl (
     val sheet:Sheet,
-    val topRow:Int,
-    val leftCol:Int,
-    val bottomRow:Int,
-    val rightCol:Int
-) extends Rectangle[RectangleImpl] {
-
-    override def getCross(col:RectangleImpl) = {
-        new RectangleImpl(this.sheet, this.topRow, col.leftCol,
-                this.bottomRow, col.rightCol)
-    }
-}
-
+    val top:Int,
+    val left:Int,
+    val bottom:Int,
+    val right:Int
+    )
+    
 object RectangleImpl {
-    implicit def apply(
-        sheet:Sheet,
-        topRow:Int,
-        leftCol:Int,
-        bottomRow:Int,
-        rightCol:Int
-        ) = new RectangleImpl(sheet, topRow, leftCol, bottomRow, rightCol)
+    implicit object objRectangleImplTypeInst extends RectangleImplTypeInst
 }
 
-class TableCellImpl(val rect:RectangleImpl) extends TableCell {
+trait RectangleImplTypeInst
+        extends RectangleType[RectangleImpl] {
 
-    lazy val value = this.getSingleValue().getOrElse("")
+    override def getCross(row:RectangleImpl, col:RectangleImpl) = {
+        new RectangleImpl(
+                row.sheet, row.top, col.left, row.bottom, col.right)
+    }
 
-    def getSingleValue():Option[String] = (
-        for {
-            colnum <- (rect.leftCol to rect.rightCol).toStream
-            rownum <- (rect.topRow to rect.bottomRow).toStream
+    override def getHeadRow(rect:RectangleImpl):(
+        RectangleImpl, Option[RectangleImpl]) = {
+        (for {
+            rownum <- (rect.top until rect.bottom).toStream
+            cell <- rect.sheet.getCellOption(rownum, rect.left)
+            if cell.hasBorderBottom
+        } yield rownum).headOption match {
+            case Some(num) => (
+                new RectangleImpl(rect.sheet, rect.top,
+                    rect.left, num, rect.right),
+                Some(new RectangleImpl(rect.sheet, num + 1,
+                    rect.left, rect.bottom, rect.right)))
+            case _ => (rect, None)
+        }
+    }
+
+    override def getHeadCol(rect:RectangleImpl):(
+            RectangleImpl,Option[RectangleImpl]) = {
+        (for {
+            colnum <- (rect.left until rect.right).toStream
+            cell <- rect.sheet.getCellOption(rect.top, colnum)
+            if cell.hasBorderRight
+        } yield colnum).headOption match {
+            case Some(num) => (
+                new RectangleImpl(rect.sheet, rect.top,
+                    rect.left, rect.bottom, num),
+                Some(new RectangleImpl(rect.sheet, rect.top,
+                    num + 1, rect.bottom, rect.right)))
+            case _ => (rect, None)
+        }
+    }
+
+    override def getValue(rect:RectangleImpl):Option[String] =
+        (for {
+            colnum <- (rect.left to rect.right).toStream
+            rownum <- (rect.top to rect.bottom).toStream
             value <- rect.sheet.cell(rownum, colnum)
                         .getValueString.map(_.trim)
-        } yield value
-    ).headOption
+        } yield value).headOption
 }
 
-object TableCellImpl {
-    implicit def newTableCellImpl(rect:RectangleImpl) =
-            new TableCellImpl(rect)
-}
+/*
+object TableNameImpl extends TableName[RectangleImpl] {
 
-object GridRectangleImpl extends GridRectangle[RectangleImpl] {
+    val grid = GridRectangleImpl
 
-        override def getRow(rect: RectangleImpl) = {
-            (for {
-                rownum <- (rect.topRow until rect.bottomRow).toStream
-                cell <- rect.sheet.getCellOption(rownum, rect.leftCol)
-                if cell.hasBorderBottom
-            } yield rownum).headOption match {
-                case Some(num) => (
-                    new RectangleImpl(rect.sheet, rect.topRow,
-                        rect.leftCol, num, rect.rightCol),
-                    Some(new RectangleImpl(rect.sheet, num + 1,
-                        rect.leftCol, rect.bottomRow, rect.rightCol)))
-                case _ => (rect, None)
-            }
-        }
-
-        override def getCol(rect: RectangleImpl) = {
-            (for {
-                colnum <- (rect.leftCol until rect.rightCol).toStream
-                cell <- rect.sheet.getCellOption(rect.topRow, colnum)
-                if cell.hasBorderRight
-            } yield colnum).headOption match {
-                case Some(num) => (
-                    new RectangleImpl(rect.sheet, rect.topRow,
-                        rect.leftCol, rect.bottomRow, num),
-                    Some(new RectangleImpl(rect.sheet, rect.topRow,
-                        num + 1, rect.bottomRow, rect.rightCol)))
-                case _ => (rect, None)
-            }
-        }
-}
-
-trait TableNameComponent {
-    val tableName:TableName[RectangleImpl]
-    val rect:RectangleImpl
-    val grid:GridRectangle[RectangleImpl]
-
-    class TableNameImpl[RectangleImpl] extends TableName[RectangleImpl] {
-
-        override def getTableName(): (Option[String], RectangleImpl) = {
-            // Table name outside of Rectangle
-            (rect.topRow match {
-                case 0 => (None, rect)
-                case _ => (rect.sheet.cell(rect.topRow - 1, rect.leftCol).getValueString, rect)
-            }) match {
-                case (Some(name), _) => (Some(name), rect)
-                case (None, _) => {
-                    // Table name at the top of Rectangle
-                    val (rowHead, rowTail) = grid.getRow(rect)
-                    val (rowHeadLeft, rowHeadRight) = grid.getCol(rowHead)
-                    rowHeadRight match {
-                        case Some(_) => (None, rect)
-                        case None => ((new TableCellImpl(rowHeadLeft)).getSingleValue(), rowTail) match {
-                            case (name, Some(tail)) => (name, tail)
-                            case (name, None) => (None, rect)
-                        }
+    override def getTableName(rect:RectangleImpl)
+            : (Option[String], RectangleImpl) = {
+        // Table name outside of Rectangle
+        (rect.topRow match {
+            case 0 => (None, rect)
+            case _ => (rect.sheet.cell(rect.topRow - 1, rect.leftCol)
+                    .getValueString, rect)
+        }) match {
+            case (Some(name), _) => (Some(name), rect)
+            case (None, _) => {
+                // Table name at the top of Rectangle
+                val (rowHead, rowTail) = grid.getRow(rect)
+                val (rowHeadLeft, rowHeadRight) = grid.getCol(rowHead)
+                rowHeadRight match {
+                    case Some(_) => (None, rect)
+                    case None => ((new TableCellImpl(rowHeadLeft))
+                            .getSingleValue(), rowTail) match {
+                        case (name, Some(tail)) => (name, tail)
+                        case (name, None) => (None, rect)
                     }
                 }
             }
         }
     }
 }
-
+*/
 class TableQueryImpl(
         rect:RectangleImpl
     )(implicit
-        _newQ:(RectangleImpl) => TableQueryImpl,
-        _newCell:(RectangleImpl) => TableCellImpl
+        _rt:RectangleType[RectangleImpl],
+        _newQ:(RectangleImpl) => TableQueryImpl
     )
     extends RectangleImpl(
         rect.sheet,
-        rect.topRow,
-        rect.leftCol,
-        rect.bottomRow,
-        rect.rightCol
+        rect.top,
+        rect.left,
+        rect.bottom,
+        rect.right
     )
     with TableQuery[RectangleImpl]
     with Table[RectangleImpl]
-    with RectangleBorderDraw {
+    with RectangleLineDraw {
 
-    override val newQ = _newQ
-    override val newCell = _newCell
-    override val grid = GridRectangleImpl
+    val rt = _rt
+    val newQ = _newQ
 }
 
 object TableQueryImpl {
-    implicit def apply(t:RectangleImpl):TableQueryImpl =
-        new TableQueryImpl(t)
+    implicit def apply(rect:RectangleImpl):TableQueryImpl =
+        new TableQueryImpl(rect)
+}
+
+
+
+trait RectangleLineDraw {
+    rect:RectangleImpl =>
+
+    def drawOuterBorderTop(borderStyle:BorderStyle):Unit = {
+        for (colnum <- (rect.left to rect.right).toList)
+            rect.sheet.cell(rect.top, colnum).setBorderTop(borderStyle)
+    }
+
+    def drawOuterBorderLeft(borderStyle:BorderStyle):Unit = {
+        for (rownum <- (rect.top to rect.bottom).toList)
+            rect.sheet.cell(rownum, rect.left).setBorderLeft(borderStyle)
+    }
+
+    def drawOuterBorderBottom(borderStyle:BorderStyle):Unit = {
+        for (colnum <- (rect.left to rect.right).toList)
+            rect.sheet.cell(rect.bottom, colnum)
+                .setBorderBottom(borderStyle)
+    }
+
+    def drawOuterBorderRight(borderStyle:BorderStyle):Unit = {
+        for (rownum <- (rect.top to rect.bottom).toList)
+            rect.sheet.cell(rownum, rect.right)
+                .setBorderRight(borderStyle)
+    }
+
+    def drawOuterBorder(borderStyle:BorderStyle):Unit = {
+        drawOuterBorderTop(borderStyle)
+        drawOuterBorderLeft(borderStyle)
+        drawOuterBorderBottom(borderStyle)
+        drawOuterBorderRight(borderStyle)
+    }
+
+    def drawHorizontalLine(num:Int, borderStyle:BorderStyle):Unit = {
+        if (num == 0) {
+            for (colnum <- (rect.left to rect.right).toList)
+                rect.sheet.cell(0, colnum).setBorderTop(borderStyle)
+        }
+        else if (0 < num && num <= rect.bottom - rect.top) {
+            for (colnum <- (rect.left to rect.right).toList)
+                rect.sheet.cell(rect.top + num - 1, colnum)
+                    .setBorderBottom(borderStyle)
+        }
+    }
+
+    def drawVerticalLine(num:Int, borderStyle:BorderStyle):Unit = {
+        if (num == 0) {
+            for (rownum <- (rect.top to rect.bottom).toList)
+                rect.sheet.cell(rownum, 0).setBorderLeft(borderStyle)
+        }
+        else if (0 < num && num <= rect.right - rect.left) {
+            for (rownum <- (rect.top to rect.bottom).toList)
+                rect.sheet.cell(rownum, rect.left + num - 1)
+                    .setBorderRight(borderStyle)
+        }
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////
