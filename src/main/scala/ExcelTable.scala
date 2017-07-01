@@ -1,4 +1,5 @@
 /* vim: set ts=4 et sw=4 sts=4 fileencoding=utf-8: */
+import scala.collection._
 import scala.language.implicitConversions
 import scala.util.control.Exception._
 import scala.util.{Try, Success, Failure}
@@ -20,35 +21,18 @@ package ExcelLib.Table {
     object ImplicitConversions extends ImplicitConversions
 }
 
-trait RectangleType[T] {
+trait TableFunction[T] {
     def getCross(row:T, col:T):T
     def getHeadRow(rect:T):(T,Option[T])
     def getHeadCol(rect:T):(T,Option[T])
     def getValue(rect:T):Option[String]
-//    def getTableName(rect:T):(Option[String], T)
+    def getTableName(rect:T):(Option[String], T)
 }
-
-/*
-trait Rectangle[T <: Rectangle[T]] {
-    def getCross(col:T):T
-}
-
-trait RectangleApply[T] { def apply(rect:T):T }
-
-trait TableCell {
-    val value:String
-}
-
-trait GridRectangle[T] {
-    def getRow(rect:T):(T,Option[T])
-    def getCol(rect:T):(T,Option[T])
-}
-*/
 
 
 trait Table[T] {
     rect:T =>
-    val rt:RectangleType[T]
+    val tableFunc:TableFunction[T]
 
     lazy val rowList:List[T] = this.getRowList(Some(rect))
     lazy val colList:List[T] = this.getColList(Some(rect))
@@ -57,7 +41,7 @@ trait Table[T] {
         rect match {
             case None => Nil
             case Some(rect) => {
-                val (headRow, tailRow) = rt.getHeadRow(rect)
+                val (headRow, tailRow) = tableFunc.getHeadRow(rect)
                 headRow :: getRowList(tailRow)
             }
         }
@@ -67,7 +51,7 @@ trait Table[T] {
         rect match {
             case None => Nil
             case Some(rect) => {
-                val (headCol, tailCol) = rt.getHeadCol(rect)
+                val (headCol, tailCol) = tableFunc.getHeadCol(rect)
                 headCol :: getColList(tailCol)
             }
         }
@@ -76,8 +60,8 @@ trait Table[T] {
 
 trait TableQuery[T] extends Table[T] {
     rect:T =>
-    val rt:RectangleType[T]
-    val newQ:(T) => TableQuery[T]
+    val tableFunc:TableFunction[T]
+    val createTableQuery:(T) => TableQuery[T]
 
     def query(
         rowpredList:List[(String) => Boolean],
@@ -87,7 +71,7 @@ trait TableQuery[T] extends Table[T] {
             row <- this.queryRow(rowpredList)
         } yield for {
             col <- this.queryColumn(colpredList)
-        } yield rt.getCross(row, col)
+        } yield tableFunc.getCross(row, col)
     }
 
     def query(
@@ -98,7 +82,7 @@ trait TableQuery[T] extends Table[T] {
             row <- this.queryRow(rowpred)
         } yield for {
             col <- this.queryColumn(colpred)
-        } yield rt.getCross(row, col)
+        } yield tableFunc.getCross(row, col)
     }
 
     def queryRow(
@@ -108,7 +92,7 @@ trait TableQuery[T] extends Table[T] {
             case Nil => List[T](rect)
             case pred::predTail => for {
                 row <- this.queryRow(pred)
-                row <- newQ(row).queryRow(predTail)
+                row <- createTableQuery(row).queryRow(predTail)
             } yield row
         }
     }
@@ -118,8 +102,8 @@ trait TableQuery[T] extends Table[T] {
     ):List[T] = {
         for {
             row <- this.rowList
-            (colHead, colTail) = rt.getHeadCol(row)
-            if pred(rt.getValue(colHead).getOrElse(""))
+            (colHead, colTail) = tableFunc.getHeadCol(row)
+            if pred(tableFunc.getValue(colHead).getOrElse(""))
             col <- colTail
         } yield col
     }
@@ -131,7 +115,7 @@ trait TableQuery[T] extends Table[T] {
             case Nil => List[T](rect)
             case pred::predTail => for {
                 col <- this.queryColumn(pred)
-                col <- newQ(col).queryColumn(predTail)
+                col <- createTableQuery(col).queryColumn(predTail)
             } yield col
         }
     }
@@ -141,28 +125,21 @@ trait TableQuery[T] extends Table[T] {
     ) :List[T] = {
         for {
             col <- this.colList
-            (rowHead, rowTail) = rt.getHeadRow(col)
-            if pred(rt.getValue(rowHead).getOrElse(""))
+            (rowHead, rowTail) = tableFunc.getHeadRow(col)
+            if pred(tableFunc.getValue(rowHead).getOrElse(""))
             row <- rowTail
         } yield row
     }
 }
 
-/*
-trait TableName[T] {
-    def getTableName(rect:T):(Option[String], T)
-}
-
-trait StackedTableQuery[T <: Rectangle[T]] extends TableQuery[T] {
+trait StackedTableQuery[T] extends TableQuery[T] {
     rect:T =>
+    val tableFunc:TableFunction[T]
+    val createTableQuery:(T) => TableQuery[T]
+    val tableMap = getTableList(rect).map(
+        pair => (pair._1, createTableQuery(pair._2))).toMap
 
-    val tableMap:Map[String, TableQuery[T]]
-
-    override def queryRow(
-        predList:List[String => Boolean]
-    )(implicit newQ:(T) => TableQuery[T],
-            newCell:(T) => TableCell):List[T] = {
-
+    override def queryRow(predList:List[String => Boolean]):List[T] = {
         predList match {
             case Nil => List[T](this)
             case pred::predTail => {
@@ -177,26 +154,25 @@ trait StackedTableQuery[T <: Rectangle[T]] extends TableQuery[T] {
             }
         }
     }
+
+    def getTableList(rect:T):List[(String,T)] = {
+        Nil
+    }
 }
-*/
+
 ////////////////////////////////////////////////////////////////////////
 // Impl
 //
 
-case class RectangleImpl (
+case class RectangleImpl( 
     val sheet:Sheet,
     val top:Int,
     val left:Int,
     val bottom:Int,
     val right:Int
-    )
-    
-object RectangleImpl {
-    implicit object objRectangleImplTypeInst extends RectangleImplTypeInst
-}
+) 
 
-trait RectangleImplTypeInst
-        extends RectangleType[RectangleImpl] {
+object TableFunctionImpl extends TableFunction[RectangleImpl] {
 
     override def getCross(row:RectangleImpl, col:RectangleImpl) = {
         new RectangleImpl(
@@ -242,30 +218,24 @@ trait RectangleImplTypeInst
             value <- rect.sheet.cell(rownum, colnum)
                         .getValueString.map(_.trim)
         } yield value).headOption
-}
-
-/*
-object TableNameImpl extends TableName[RectangleImpl] {
-
-    val grid = GridRectangleImpl
 
     override def getTableName(rect:RectangleImpl)
             : (Option[String], RectangleImpl) = {
         // Table name outside of Rectangle
-        (rect.topRow match {
+        (rect.top match {
             case 0 => (None, rect)
-            case _ => (rect.sheet.cell(rect.topRow - 1, rect.leftCol)
+            case _ => (rect.sheet.cell(rect.top - 1, rect.left)
                     .getValueString, rect)
         }) match {
             case (Some(name), _) => (Some(name), rect)
             case (None, _) => {
                 // Table name at the top of Rectangle
-                val (rowHead, rowTail) = grid.getRow(rect)
-                val (rowHeadLeft, rowHeadRight) = grid.getCol(rowHead)
+                val (rowHead, rowTail) = this.getHeadRow(rect)
+                val (rowHeadLeft, rowHeadRight) = this.getHeadCol(rowHead)
                 rowHeadRight match {
                     case Some(_) => (None, rect)
-                    case None => ((new TableCellImpl(rowHeadLeft))
-                            .getSingleValue(), rowTail) match {
+                    case None => (this.getValue(rowHeadLeft),
+                            rowTail) match {
                         case (name, Some(tail)) => (name, tail)
                         case (name, None) => (None, rect)
                     }
@@ -274,33 +244,25 @@ object TableNameImpl extends TableName[RectangleImpl] {
         }
     }
 }
-*/
+
+
 class TableQueryImpl(
-        rect:RectangleImpl
-    )(implicit
-        _rt:RectangleType[RectangleImpl],
-        _newQ:(RectangleImpl) => TableQueryImpl
+        sheet:Sheet,
+        top:Int,
+        left:Int,
+        bottom:Int,
+        right:Int,
     )
-    extends RectangleImpl(
-        rect.sheet,
-        rect.top,
-        rect.left,
-        rect.bottom,
-        rect.right
-    )
-    with TableQuery[RectangleImpl]
+    extends RectangleImpl(sheet, top, left, bottom, right)
     with Table[RectangleImpl]
+    with TableQuery[RectangleImpl]
+    with StackedTableQuery[RectangleImpl]
     with RectangleLineDraw {
 
-    val rt = _rt
-    val newQ = _newQ
+    val tableFunc = TableFunctionImpl
+    val createTableQuery = (rect:RectangleImpl) => new TableQueryImpl(
+        rect.sheet, rect.top, rect.left, rect.bottom, rect.right)
 }
-
-object TableQueryImpl {
-    implicit def apply(rect:RectangleImpl):TableQueryImpl =
-        new TableQueryImpl(rect)
-}
-
 
 
 trait RectangleLineDraw {

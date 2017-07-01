@@ -19,7 +19,7 @@ class ExcelTableSuite2 extends FunSuite with ExcelLibResource {
     test("new TableQueryImpl") {
         val workbook = new XSSFWorkbook
         val sheet = workbook.sheet("test")
-        val table:TableQueryImpl = new TableQueryImpl(new RectangleImpl(sheet, 10, 10, 20, 20))
+        val table = new TableQueryImpl(sheet, 10, 10, 20, 20)
 
         assert(table.rowList.length == 1)
         assert(table.colList.length == 1)
@@ -30,11 +30,9 @@ class ExcelTableSuite2 extends FunSuite with ExcelLibResource {
         val sheet = workbook.sheet("test")
         val rect = new RectangleImpl(sheet, 5, 5, 5, 5)
 
-        object rt extends RectangleImplTypeInst
-
-        assert(rt.getValue(rect).isEmpty)
+        assert(TableFunctionImpl.getValue(rect).isEmpty)
         sheet.cell(5, 5).setCellValue("foo")
-        assert(rt.getValue(rect).isDefined)
+        assert(TableFunctionImpl.getValue(rect).isDefined)
 
         // assert(cell.value == "foo")
     }
@@ -44,11 +42,9 @@ class ExcelTableSuite2 extends FunSuite with ExcelLibResource {
         val sheet = workbook.sheet("test")
         val rect = new RectangleImpl(sheet, 5, 5, 9, 9)
 
-        object rt extends RectangleImplTypeInst
-
-        assert(rt.getValue(rect).isEmpty)
+        assert(TableFunctionImpl.getValue(rect).isEmpty)
         sheet.cell(7, 7).setCellValue("foo")
-        assert(rt.getValue(rect).isDefined)
+        assert(TableFunctionImpl.getValue(rect).isDefined)
 
         //assert(cell.value == "foo")
     }
@@ -56,8 +52,7 @@ class ExcelTableSuite2 extends FunSuite with ExcelLibResource {
     test("TableQueryImpl.queryRow") {
         val workbook = new XSSFWorkbook
         val sheet = workbook.sheet("test")
-        val table = new TableQueryImpl(
-                new RectangleImpl(sheet, 10, 10, 20, 20))
+        val table = new TableQueryImpl(sheet, 10, 10, 20, 20)
 
         table.drawOuterBorder(BorderStyle.THIN)
         table.drawHorizontalLine(2, BorderStyle.THIN)
@@ -100,24 +95,21 @@ class ExcelTableSuite2 extends FunSuite with ExcelLibResource {
         val file = new File(getClass.getResource(testWorkbook1).toURI)
         val workbook = WorkbookFactory.create(file)
         val sheet = workbook.sheet("table")
-        val rect = RectangleImpl(sheet, 2, 1, 17, 8)
-
-        val table = new TableQueryImpl(rect)
+        val table = new TableQueryImpl(sheet, 2, 1, 17, 8)
         val cell = table.query(
             List("row1", "lower").map(createStringEqual(_)),
             List("col2", "right").map(createStringEqual(_))
             )
-        object rt extends RectangleImplTypeInst
 
-        assert(rt.getValue(cell(0)(0)).get == "lr")
+        assert(TableFunctionImpl.getValue(cell(0)(0)).get == "lr")
 
         val cell2 = table.query(
             List("row1", "upper").map(createStringEqual(_)),
             List("col2", "left").map(createStringEqual(_))
             )
 
-        assert(rt.getValue(cell2(0)(0)).get == "ul")
+        assert(TableFunctionImpl.getValue(cell2(0)(0)).get == "ul")
 
-//        assert(TableNameImpl.getTableName(rect)._1.get == "test")
+        assert(TableFunctionImpl.getTableName(table)._1.get == "test")
     }
 }
