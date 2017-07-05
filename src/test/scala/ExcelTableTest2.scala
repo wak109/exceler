@@ -112,4 +112,17 @@ class ExcelTableSuite2 extends FunSuite with ExcelLibResource {
 
         assert(TableFunctionImpl.getTableName(table)._1.get == "test")
     }
+
+    test("StackedTable") {
+        val file = new File(getClass.getResource(testWorkbook1).toURI)
+        val workbook = WorkbookFactory.create(file)
+        val sheet = workbook.sheet("stack")
+        val table = new TableQueryImpl(sheet, 1, 1, 18, 12)
+
+        val cell1 = table.query(
+            List("separator1", "row1").map(createStringEqual(_)),
+            List("col2").map(createStringEqual(_))
+            )
+        //assert(TableFunctionImpl.getValue(cell1(0)(0)).get == "val12-1")
+    }
 }

@@ -27,6 +27,7 @@ trait TableFunction[T] {
     def getHeadCol(rect:T):(T,Option[T])
     def getValue(rect:T):Option[String]
     def getTableName(rect:T):(Option[String], T)
+    def mergeRect(rectL:List[T]):T
 }
 
 
@@ -36,6 +37,10 @@ trait Table[T] {
 
     lazy val rowList:List[T] = this.getRowList(Some(rect))
     lazy val colList:List[T] = this.getColList(Some(rect))
+    /*
+    val rowList:List[T] = this.getRowList(Some(rect))
+    val colList:List[T] = this.getColList(Some(rect))
+    */
 
     def getRowList(rect:Option[T]):List[T] = {
         rect match {
@@ -136,12 +141,12 @@ trait StackedTableQuery[T] extends TableQuery[T] {
     rect:T =>
     val tableFunc:TableFunction[T]
     val createTableQuery:(T) => TableQuery[T]
-    val tableMap = getTableList(rect).map(
+    lazy val tableMap = getTableList(this).map(
         pair => (pair._1, createTableQuery(pair._2))).toMap
 
     override def queryRow(predList:List[String => Boolean]):List[T] = {
         predList match {
-            case Nil => List[T](this)
+            case Nil => List[T](rect)
             case pred::predTail => {
                 (for {
                     (key, table) <- tableMap
@@ -155,8 +160,40 @@ trait StackedTableQuery[T] extends TableQuery[T] {
         }
     }
 
-    def getTableList(rect:T):List[(String,T)] = {
-        Nil
+    def getTableList(table:Table[T]):List[(String,T)] = {
+        val isSeparator:(T)=>Boolean = tableFunc.getHeadCol(_)._2 == None
+        val pairList = splitRowList(isSeparator, table.rowList)
+        pairList.head match {
+            case Nil => Nil
+            case head if isSeparator(tableFunc.mergeRect(head))
+                    => pairingList(pairList)
+            case _ => pairingList(pairList.tail)
+        }
+    }
+
+    def pairingList(pairList:List[List[T]]):List[(String,T)] = {
+        for { idx <- (0 until (pairList.length / 2)).toList }
+        yield {
+            (
+                tableFunc.getValue(
+                    tableFunc.mergeRect(pairList(idx * 2))).getOrElse(""),
+                tableFunc.mergeRect(pairList(idx * 2 + 1))
+            )
+        }
+    }
+
+    def splitRowList(pred:(T)=>Boolean, rowList:List[T]):List[List[T]] = {
+        rowList match {
+            case Nil => Nil
+            case _ => {
+                val (head, tail) = rowList.span(pred)
+                if (! head.isEmpty) {
+                    println(tableFunc.mergeRect(head))
+                }
+
+                head::splitRowList(!pred(_), tail)
+            }
+        }
     }
 }
 
@@ -242,6 +279,13 @@ object TableFunctionImpl extends TableFunction[RectangleImpl] {
                 }
             }
         }
+    }
+
+    override def mergeRect(rectL:List[RectangleImpl]):RectangleImpl = {
+        val head = rectL.head
+        val last = rectL.last
+        new RectangleImpl(
+            head.sheet, head.top, head.left, last.bottom, last.right)
     }
 }
 
