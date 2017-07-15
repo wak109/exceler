@@ -140,10 +140,19 @@ trait TableQuery[T] extends Table[T] {
 
 trait StackedTableQuery[T] extends TableQuery[T] {
     rect:T =>
+
     val tableFunc:TableFunction[T]
     val createTableQuery:(T) => TableQuery[T]
-    lazy val tableMap = getTableList(this).map(
-        pair => (pair._1, createTableQuery(pair._2))).toMap
+    val isSeparator:(T)=>Boolean = tableFunc.getHeadCol(_)._2 == None
+
+    lazy val tableMap = this.rowList
+        .splitBy(isSeparator)
+        .pairingBy(x=>isSeparator(tableFunc.mergeRect(x)))
+        .map(pair=>(tableFunc.getValue(
+            tableFunc.mergeRect(pair._1)).getOrElse(""),
+            tableFunc.mergeRect(pair._2)))
+        .map(pair => (pair._1, createTableQuery(pair._2)))
+        .toMap
 
     override def queryRow(predList:List[String => Boolean]):List[T] = {
         predList match {
@@ -158,28 +167,6 @@ trait StackedTableQuery[T] extends TableQuery[T] {
                     case x => x
                 }
             }
-        }
-    }
-
-    def getTableList(table:Table[T]):List[(String,T)] = {
-        val isSeparator:(T)=>Boolean = tableFunc.getHeadCol(_)._2 == None
-        val pairList = table.rowList.splitBy(isSeparator)
-        pairList.head match {
-            case Nil => Nil
-            case head if isSeparator(tableFunc.mergeRect(head))
-                    => getNameTablePair(pairList)
-            case _ => getNameTablePair(pairList.tail)
-        }
-    }
-
-    def getNameTablePair(pairList:List[List[T]]):List[(String,T)] = {
-        for { idx <- (0 until (pairList.length / 2)).toList }
-        yield {
-            (
-                tableFunc.getValue(
-                    tableFunc.mergeRect(pairList(idx * 2))).getOrElse(""),
-                tableFunc.mergeRect(pairList(idx * 2 + 1))
-            )
         }
     }
 }
