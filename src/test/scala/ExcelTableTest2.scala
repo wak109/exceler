@@ -127,10 +127,6 @@ class ExcelTableSuite2 extends FunSuite with ExcelLibResource {
         assert(TableFunctionImpl.getHeadCol(table.rowList(11))._2 == None)
         assert(TableFunctionImpl.getHeadCol(table.rowList(12))._2 != None)
 
-        val tables = table.splitRowList(
-            TableFunctionImpl.getHeadCol(_)._2 == None, table.rowList)
-        assert(tables.length == 5)
-
         val cell1 = table.query(
             List("separator1", "row1").map(createStringEqual(_)),
             List("col2").map(createStringEqual(_))

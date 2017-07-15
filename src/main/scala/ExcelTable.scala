@@ -10,6 +10,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import java.io._
 import java.nio.file._
 
+import CommonLib.ImplicitConversions._
 import ExcelLib.ImplicitConversions._
 import ExcelLib.Rectangle.ImplicitConversions._
 
@@ -162,16 +163,16 @@ trait StackedTableQuery[T] extends TableQuery[T] {
 
     def getTableList(table:Table[T]):List[(String,T)] = {
         val isSeparator:(T)=>Boolean = tableFunc.getHeadCol(_)._2 == None
-        val pairList = splitRowList(isSeparator, table.rowList)
+        val pairList = table.rowList.splitBy(isSeparator)
         pairList.head match {
             case Nil => Nil
             case head if isSeparator(tableFunc.mergeRect(head))
-                    => pairingList(pairList)
-            case _ => pairingList(pairList.tail)
+                    => getNameTablePair(pairList)
+            case _ => getNameTablePair(pairList.tail)
         }
     }
 
-    def pairingList(pairList:List[List[T]]):List[(String,T)] = {
+    def getNameTablePair(pairList:List[List[T]]):List[(String,T)] = {
         for { idx <- (0 until (pairList.length / 2)).toList }
         yield {
             (
@@ -179,19 +180,6 @@ trait StackedTableQuery[T] extends TableQuery[T] {
                     tableFunc.mergeRect(pairList(idx * 2))).getOrElse(""),
                 tableFunc.mergeRect(pairList(idx * 2 + 1))
             )
-        }
-    }
-
-    def splitRowList(pred:(T)=>Boolean, rowList:List[T]):List[List[T]] = {
-        rowList match {
-            case Nil => Nil
-            case _ => {
-                val (head, tail) = rowList.span(pred)
-                if (head.isEmpty)
-                    splitRowList(!pred(_), tail)
-                else
-                    head::splitRowList(!pred(_), tail)
-            }
         }
     }
 }
