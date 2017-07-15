@@ -187,11 +187,10 @@ trait StackedTableQuery[T] extends TableQuery[T] {
             case Nil => Nil
             case _ => {
                 val (head, tail) = rowList.span(pred)
-                if (! head.isEmpty) {
-                    println(tableFunc.mergeRect(head))
-                }
-
-                head::splitRowList(!pred(_), tail)
+                if (head.isEmpty)
+                    splitRowList(!pred(_), tail)
+                else
+                    head::splitRowList(!pred(_), tail)
             }
         }
     }
@@ -299,7 +298,6 @@ class TableQueryImpl(
     )
     extends RectangleImpl(sheet, top, left, bottom, right)
     with Table[RectangleImpl]
-    with TableQuery[RectangleImpl]
     with StackedTableQuery[RectangleImpl]
     with RectangleLineDraw {
 

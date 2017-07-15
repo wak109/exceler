@@ -119,10 +119,34 @@ class ExcelTableSuite2 extends FunSuite with ExcelLibResource {
         val sheet = workbook.sheet("stack")
         val table = new TableQueryImpl(sheet, 1, 1, 18, 12)
 
+        assert(table.rowList.length == 17)
+        assert(table.colList.length == 3)
+
+        assert(TableFunctionImpl.getHeadCol(table.rowList(0))._2 != None)
+        assert(TableFunctionImpl.getHeadCol(table.rowList(5))._2 == None)
+        assert(TableFunctionImpl.getHeadCol(table.rowList(11))._2 == None)
+        assert(TableFunctionImpl.getHeadCol(table.rowList(12))._2 != None)
+
+        val tables = table.splitRowList(
+            TableFunctionImpl.getHeadCol(_)._2 == None, table.rowList)
+        assert(tables.length == 5)
+
         val cell1 = table.query(
             List("separator1", "row1").map(createStringEqual(_)),
             List("col2").map(createStringEqual(_))
-            )
-        //assert(TableFunctionImpl.getValue(cell1(0)(0)).get == "val12-1")
+           )
+        assert(TableFunctionImpl.getValue(cell1(0)(0)).get == "val12-1")
+
+        val cell2 = table.query(
+            List("separator2", "row1").map(createStringEqual(_)),
+            List("col3").map(createStringEqual(_))
+           )
+        assert(TableFunctionImpl.getValue(cell2(0)(0)).get == "val13-2")
+
+        val cell3 = table.query(
+            List("row1").map(createStringEqual(_)),
+            List("col3").map(createStringEqual(_))
+           )
+        assert(TableFunctionImpl.getValue(cell3(0)(0)).get == "val13")
     }
 }
