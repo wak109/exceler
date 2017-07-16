@@ -38,10 +38,6 @@ trait Table[T] {
 
     lazy val rowList:List[T] = this.getRowList(Some(rect))
     lazy val colList:List[T] = this.getColList(Some(rect))
-    /*
-    val rowList:List[T] = this.getRowList(Some(rect))
-    val colList:List[T] = this.getColList(Some(rect))
-    */
 
     def getRowList(rect:Option[T]):List[T] = {
         rect match {
