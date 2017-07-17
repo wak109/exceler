@@ -14,22 +14,22 @@ import ExcelLib.Rectangle.ImplicitConversions._
 import ExcelLib.Table.ImplicitConversions._
 
 object Exceler {
-
+/*
     def convertExcelTableToXML(filename:String):Try[Unit] = {
         Try {
             val file = new File(filename)
             val workbook = WorkbookFactory.create(file, null ,true) 
             for {
                 sheet <- workbook.sheetIterator.asScala
-                rect <- sheet.getRectangleList[ExcelTable]
-                row <- rect.getRowList[ExcelTable]
-                cell <- row.getColumnList[ExcelTable]
+                rect <- sheet.getRectangleList[TableQueryImpl]
+                row <- rect.getRowList(rect)
+                cell <- row.getColumnList(row)
             } {
                 println(cell)
             }
         }
     }
-
+*/
     def readExcelTable(
         filename:String,
         sheetname:String,

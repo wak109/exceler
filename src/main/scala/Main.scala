@@ -70,12 +70,14 @@ object Main {
         ) match {
             case Success(cl) => {
                 cl.getArgs()(0) match {
+                    /*
                     case "xml" => convertExcelTableToXML(
                             cl.getArgs()(1)) match {
                         case Success(_) => None
                         case Failure(e) =>
                             println(e.getMessage); printUsage()
                     }
+                    */
                     case "query" => readExcelTable(
                             cl.getArgs()(1),
                             cl.getArgs()(2),
