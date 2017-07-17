@@ -277,6 +277,15 @@ class TableQueryImpl(
         rect.sheet, rect.top, rect.left, rect.bottom, rect.right)
 }
 
+object TableQueryImpl {
+    implicit def apply(
+        sheet:Sheet,top:Int,left:Int,bottom:Int,right:Int) =
+            new TableQueryImpl(sheet,top,left,bottom,right)
+    implicit def apply(rect:RectangleImpl) = 
+            new TableQueryImpl(
+                rect.sheet,rect.top,rect.left,rect.bottom,rect.right)
+}
+
 
 trait RectangleLineDraw {
     rect:RectangleImpl =>
@@ -485,13 +494,14 @@ object ExcelTable {
 trait ExcelTableSheetConversion {
     val sheet:Sheet
 
-    def getTableMap:Map[String,ExcelTable] = {
-        val tableList = sheet.getRectangleList[ExcelTable]
+    def getTableMap()(implicit newInstance:(RectangleImpl)=>TableQueryImpl)
+            :Map[String,TableQueryImpl] = {
+        val tableList = sheet.getRectangleList[TableQueryImpl]
 
-        tableList.map(_.getNameAndTable).zipWithIndex.map(
+        tableList.map(t=>t.tableFunc.getTableName(t)).zipWithIndex.map(
             _ match {
-                case ((Some(name), t), _) => (name, t)
-                case ((None, t), idx) => ("Table" + idx, t)
+                case ((Some(name), t), _) => (name, newInstance(t))
+                case ((None, t), idx) => ("Table" + idx, newInstance(t))
             }).toMap
     }
 }
