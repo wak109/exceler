@@ -34,7 +34,7 @@ trait TableFunction[T] {
 
 trait Table[T] {
     rect:T =>
-    val tableFunc:TableFunction[T]
+    val tableFunction:TableFunction[T]
 
     lazy val rowList:List[T] = this.getRowList(Some(rect))
     lazy val colList:List[T] = this.getColList(Some(rect))
@@ -43,7 +43,7 @@ trait Table[T] {
         rect match {
             case None => Nil
             case Some(rect) => {
-                val (headRow, tailRow) = tableFunc.getHeadRow(rect)
+                val (headRow, tailRow) = tableFunction.getHeadRow(rect)
                 headRow :: getRowList(tailRow)
             }
         }
@@ -53,7 +53,7 @@ trait Table[T] {
         rect match {
             case None => Nil
             case Some(rect) => {
-                val (headCol, tailCol) = tableFunc.getHeadCol(rect)
+                val (headCol, tailCol) = tableFunction.getHeadCol(rect)
                 headCol :: getColList(tailCol)
             }
         }
@@ -62,7 +62,7 @@ trait Table[T] {
 
 trait TableQuery[T] extends Table[T] {
     rect:T =>
-    val tableFunc:TableFunction[T]
+    val tableFunction:TableFunction[T]
     val createTableQuery:(T) => TableQuery[T]
 
     def query(
@@ -73,7 +73,7 @@ trait TableQuery[T] extends Table[T] {
             row <- this.queryRow(rowpredList)
         } yield for {
             col <- this.queryColumn(colpredList)
-        } yield tableFunc.getCross(row, col)
+        } yield tableFunction.getCross(row, col)
     }
 
     def query(
@@ -84,7 +84,7 @@ trait TableQuery[T] extends Table[T] {
             row <- this.queryRow(rowpred)
         } yield for {
             col <- this.queryColumn(colpred)
-        } yield tableFunc.getCross(row, col)
+        } yield tableFunction.getCross(row, col)
     }
 
     def queryRow(
@@ -104,8 +104,8 @@ trait TableQuery[T] extends Table[T] {
     ):List[T] = {
         for {
             row <- this.rowList
-            (colHead, colTail) = tableFunc.getHeadCol(row)
-            if pred(tableFunc.getValue(colHead).getOrElse(""))
+            (colHead, colTail) = tableFunction.getHeadCol(row)
+            if pred(tableFunction.getValue(colHead).getOrElse(""))
             col <- colTail
         } yield col
     }
@@ -127,8 +127,8 @@ trait TableQuery[T] extends Table[T] {
     ) :List[T] = {
         for {
             col <- this.colList
-            (rowHead, rowTail) = tableFunc.getHeadRow(col)
-            if pred(tableFunc.getValue(rowHead).getOrElse(""))
+            (rowHead, rowTail) = tableFunction.getHeadRow(col)
+            if pred(tableFunction.getValue(rowHead).getOrElse(""))
             row <- rowTail
         } yield row
     }
@@ -137,16 +137,16 @@ trait TableQuery[T] extends Table[T] {
 trait StackedTableQuery[T] extends TableQuery[T] {
     rect:T =>
 
-    val tableFunc:TableFunction[T]
+    val tableFunction:TableFunction[T]
     val createTableQuery:(T) => TableQuery[T]
-    val isSeparator:(T)=>Boolean = tableFunc.getHeadCol(_)._2 == None
+    val isSeparator:(T)=>Boolean = tableFunction.getHeadCol(_)._2 == None
 
     lazy val tableMap = this.rowList
         .splitBy(isSeparator)
-        .pairingBy(x=>isSeparator(tableFunc.mergeRect(x)))
-        .map(pair=>(tableFunc.getValue(
-            tableFunc.mergeRect(pair._1)).getOrElse(""),
-            tableFunc.mergeRect(pair._2)))
+        .pairingBy(x=>isSeparator(tableFunction.mergeRect(x)))
+        .map(pair=>(tableFunction.getValue(
+            tableFunction.mergeRect(pair._1)).getOrElse(""),
+            tableFunction.mergeRect(pair._2)))
         .map(pair => (pair._1, createTableQuery(pair._2)))
         .toMap
 
@@ -179,7 +179,7 @@ case class ExcelRectangle(
     val right:Int
 )
 
-object TableFunctionImpl extends TableFunction[ExcelRectangle] {
+object ExcelTableFunction extends TableFunction[ExcelRectangle] {
 
     override def getCross(row:ExcelRectangle, col:ExcelRectangle) = {
         new ExcelRectangle(
@@ -272,7 +272,7 @@ class TableQueryImpl(
     with StackedTableQuery[ExcelRectangle]
     with RectangleLineDraw {
 
-    val tableFunc = TableFunctionImpl
+    val tableFunction = ExcelTableFunction
     val createTableQuery = (rect:ExcelRectangle) => new TableQueryImpl(
         rect.sheet, rect.top, rect.left, rect.bottom, rect.right)
 }
@@ -352,7 +352,7 @@ trait ExcelTableSheetConversion {
             :Map[String,TableQueryImpl] = {
         val tableList = sheet.getRectangleList[TableQueryImpl]
 
-        tableList.map(t=>t.tableFunc.getTableName(t)).zipWithIndex.map(
+        tableList.map(t=>t.tableFunction.getTableName(t)).zipWithIndex.map(
             _ match {
                 case ((Some(name), t), _) => (name, newInstance(t))
                 case ((None, t), idx) => ("Table" + idx, newInstance(t))

@@ -30,9 +30,9 @@ class ExcelTableSuite2 extends FunSuite with ExcelLibResource {
         val sheet = workbook.sheet("test")
         val rect = new ExcelRectangle(sheet, 5, 5, 5, 5)
 
-        assert(TableFunctionImpl.getValue(rect).isEmpty)
+        assert(ExcelTableFunction.getValue(rect).isEmpty)
         sheet.cell(5, 5).setCellValue("foo")
-        assert(TableFunctionImpl.getValue(rect).isDefined)
+        assert(ExcelTableFunction.getValue(rect).isDefined)
 
         // assert(cell.value == "foo")
     }
@@ -42,9 +42,9 @@ class ExcelTableSuite2 extends FunSuite with ExcelLibResource {
         val sheet = workbook.sheet("test")
         val rect = new ExcelRectangle(sheet, 5, 5, 9, 9)
 
-        assert(TableFunctionImpl.getValue(rect).isEmpty)
+        assert(ExcelTableFunction.getValue(rect).isEmpty)
         sheet.cell(7, 7).setCellValue("foo")
-        assert(TableFunctionImpl.getValue(rect).isDefined)
+        assert(ExcelTableFunction.getValue(rect).isDefined)
 
         //assert(cell.value == "foo")
     }
@@ -101,16 +101,16 @@ class ExcelTableSuite2 extends FunSuite with ExcelLibResource {
             List("col2", "right").map(createStringEqual(_))
             )
 
-        assert(TableFunctionImpl.getValue(cell(0)(0)).get == "lr")
+        assert(ExcelTableFunction.getValue(cell(0)(0)).get == "lr")
 
         val cell2 = table.query(
             List("row1", "upper").map(createStringEqual(_)),
             List("col2", "left").map(createStringEqual(_))
             )
 
-        assert(TableFunctionImpl.getValue(cell2(0)(0)).get == "ul")
+        assert(ExcelTableFunction.getValue(cell2(0)(0)).get == "ul")
 
-        assert(TableFunctionImpl.getTableName(table)._1.get == "test")
+        assert(ExcelTableFunction.getTableName(table)._1.get == "test")
     }
 
     test("StackedTable") {
@@ -122,27 +122,27 @@ class ExcelTableSuite2 extends FunSuite with ExcelLibResource {
         assert(table.rowList.length == 17)
         assert(table.colList.length == 3)
 
-        assert(TableFunctionImpl.getHeadCol(table.rowList(0))._2 != None)
-        assert(TableFunctionImpl.getHeadCol(table.rowList(5))._2 == None)
-        assert(TableFunctionImpl.getHeadCol(table.rowList(11))._2 == None)
-        assert(TableFunctionImpl.getHeadCol(table.rowList(12))._2 != None)
+        assert(ExcelTableFunction.getHeadCol(table.rowList(0))._2 != None)
+        assert(ExcelTableFunction.getHeadCol(table.rowList(5))._2 == None)
+        assert(ExcelTableFunction.getHeadCol(table.rowList(11))._2 == None)
+        assert(ExcelTableFunction.getHeadCol(table.rowList(12))._2 != None)
 
         val cell1 = table.query(
             List("separator1", "row1").map(createStringEqual(_)),
             List("col2").map(createStringEqual(_))
            )
-        assert(TableFunctionImpl.getValue(cell1(0)(0)).get == "val12-1")
+        assert(ExcelTableFunction.getValue(cell1(0)(0)).get == "val12-1")
 
         val cell2 = table.query(
             List("separator2", "row1").map(createStringEqual(_)),
             List("col3").map(createStringEqual(_))
            )
-        assert(TableFunctionImpl.getValue(cell2(0)(0)).get == "val13-2")
+        assert(ExcelTableFunction.getValue(cell2(0)(0)).get == "val13-2")
 
         val cell3 = table.query(
             List("row1").map(createStringEqual(_)),
             List("col3").map(createStringEqual(_))
            )
-        assert(TableFunctionImpl.getValue(cell3(0)(0)).get == "val13")
+        assert(ExcelTableFunction.getValue(cell3(0)(0)).get == "val13")
     }
 }
