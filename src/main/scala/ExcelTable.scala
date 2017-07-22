@@ -171,54 +171,54 @@ trait StackedTableQuery[T] extends TableQuery[T] {
 // Impl
 //
 
-case class RectangleImpl( 
+case class ExcelRectangle(
     val sheet:Sheet,
     val top:Int,
     val left:Int,
     val bottom:Int,
     val right:Int
-) 
+)
 
-object TableFunctionImpl extends TableFunction[RectangleImpl] {
+object TableFunctionImpl extends TableFunction[ExcelRectangle] {
 
-    override def getCross(row:RectangleImpl, col:RectangleImpl) = {
-        new RectangleImpl(
+    override def getCross(row:ExcelRectangle, col:ExcelRectangle) = {
+        new ExcelRectangle(
                 row.sheet, row.top, col.left, row.bottom, col.right)
     }
 
-    override def getHeadRow(rect:RectangleImpl):(
-        RectangleImpl, Option[RectangleImpl]) = {
+    override def getHeadRow(rect:ExcelRectangle):(
+        ExcelRectangle, Option[ExcelRectangle]) = {
         (for {
             rownum <- (rect.top until rect.bottom).toStream
             cell <- rect.sheet.getCellOption(rownum, rect.left)
             if cell.hasBorderBottom
         } yield rownum).headOption match {
             case Some(num) => (
-                new RectangleImpl(rect.sheet, rect.top,
+                new ExcelRectangle(rect.sheet, rect.top,
                     rect.left, num, rect.right),
-                Some(new RectangleImpl(rect.sheet, num + 1,
+                Some(new ExcelRectangle(rect.sheet, num + 1,
                     rect.left, rect.bottom, rect.right)))
             case _ => (rect, None)
         }
     }
 
-    override def getHeadCol(rect:RectangleImpl):(
-            RectangleImpl,Option[RectangleImpl]) = {
+    override def getHeadCol(rect:ExcelRectangle):(
+            ExcelRectangle,Option[ExcelRectangle]) = {
         (for {
             colnum <- (rect.left until rect.right).toStream
             cell <- rect.sheet.getCellOption(rect.top, colnum)
             if cell.hasBorderRight
         } yield colnum).headOption match {
             case Some(num) => (
-                new RectangleImpl(rect.sheet, rect.top,
+                new ExcelRectangle(rect.sheet, rect.top,
                     rect.left, rect.bottom, num),
-                Some(new RectangleImpl(rect.sheet, rect.top,
+                Some(new ExcelRectangle(rect.sheet, rect.top,
                     num + 1, rect.bottom, rect.right)))
             case _ => (rect, None)
         }
     }
 
-    override def getValue(rect:RectangleImpl):Option[String] =
+    override def getValue(rect:ExcelRectangle):Option[String] =
         (for {
             colnum <- (rect.left to rect.right).toStream
             rownum <- (rect.top to rect.bottom).toStream
@@ -226,8 +226,8 @@ object TableFunctionImpl extends TableFunction[RectangleImpl] {
                         .getValueString.map(_.trim)
         } yield value).headOption
 
-    override def getTableName(rect:RectangleImpl)
-            : (Option[String], RectangleImpl) = {
+    override def getTableName(rect:ExcelRectangle)
+            : (Option[String], ExcelRectangle) = {
         // Table name outside of Rectangle
         (rect.top match {
             case 0 => (None, rect)
@@ -251,10 +251,10 @@ object TableFunctionImpl extends TableFunction[RectangleImpl] {
         }
     }
 
-    override def mergeRect(rectL:List[RectangleImpl]):RectangleImpl = {
+    override def mergeRect(rectL:List[ExcelRectangle]):ExcelRectangle = {
         val head = rectL.head
         val last = rectL.last
-        new RectangleImpl(
+        new ExcelRectangle(
             head.sheet, head.top, head.left, last.bottom, last.right)
     }
 }
@@ -267,13 +267,13 @@ class TableQueryImpl(
         bottom:Int,
         right:Int,
     )
-    extends RectangleImpl(sheet, top, left, bottom, right)
-    with Table[RectangleImpl]
-    with StackedTableQuery[RectangleImpl]
+    extends ExcelRectangle(sheet, top, left, bottom, right)
+    with Table[ExcelRectangle]
+    with StackedTableQuery[ExcelRectangle]
     with RectangleLineDraw {
 
     val tableFunc = TableFunctionImpl
-    val createTableQuery = (rect:RectangleImpl) => new TableQueryImpl(
+    val createTableQuery = (rect:ExcelRectangle) => new TableQueryImpl(
         rect.sheet, rect.top, rect.left, rect.bottom, rect.right)
 }
 
@@ -281,14 +281,14 @@ object TableQueryImpl {
     implicit def apply(
         sheet:Sheet,top:Int,left:Int,bottom:Int,right:Int) =
             new TableQueryImpl(sheet,top,left,bottom,right)
-    implicit def apply(rect:RectangleImpl) = 
+    implicit def apply(rect:ExcelRectangle) =
             new TableQueryImpl(
                 rect.sheet,rect.top,rect.left,rect.bottom,rect.right)
 }
 
 
 trait RectangleLineDraw {
-    rect:RectangleImpl =>
+    rect:ExcelRectangle =>
 
     def drawOuterBorderTop(borderStyle:BorderStyle):Unit = {
         for (colnum <- (rect.left to rect.right).toList)
@@ -348,7 +348,7 @@ trait RectangleLineDraw {
 trait ExcelTableSheetConversion {
     val sheet:Sheet
 
-    def getTableMap()(implicit newInstance:(RectangleImpl)=>TableQueryImpl)
+    def getTableMap()(implicit newInstance:(ExcelRectangle)=>TableQueryImpl)
             :Map[String,TableQueryImpl] = {
         val tableList = sheet.getRectangleList[TableQueryImpl]
 

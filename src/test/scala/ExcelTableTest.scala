@@ -28,7 +28,7 @@ class ExcelTableSuite2 extends FunSuite with ExcelLibResource {
     test("TableCellImpl (1x1)") {
         val workbook = new XSSFWorkbook
         val sheet = workbook.sheet("test")
-        val rect = new RectangleImpl(sheet, 5, 5, 5, 5)
+        val rect = new ExcelRectangle(sheet, 5, 5, 5, 5)
 
         assert(TableFunctionImpl.getValue(rect).isEmpty)
         sheet.cell(5, 5).setCellValue("foo")
@@ -40,7 +40,7 @@ class ExcelTableSuite2 extends FunSuite with ExcelLibResource {
     test("TableCellImpl (5x5)") {
         val workbook = new XSSFWorkbook
         val sheet = workbook.sheet("test")
-        val rect = new RectangleImpl(sheet, 5, 5, 9, 9)
+        val rect = new ExcelRectangle(sheet, 5, 5, 9, 9)
 
         assert(TableFunctionImpl.getValue(rect).isEmpty)
         sheet.cell(7, 7).setCellValue("foo")
