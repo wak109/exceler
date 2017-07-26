@@ -143,14 +143,6 @@ class TableQueryImpl(
 }
 
 object TableQueryImpl {
-    implicit def apply(
-        sheet:Sheet,top:Int,left:Int,bottom:Int,right:Int) =
-            new TableQueryImpl(sheet,top,left,bottom,right)
-    implicit def apply(rect:ExcelRectangle) =
-            new TableQueryImpl(
-                rect.sheet,rect.top,rect.left,rect.bottom,rect.right)
-
-
     implicit object factory extends Factory[TableQueryImpl] {
         override def create(
             sheet:Sheet,top:Int,left:Int,bottom:Int,right:Int) =
