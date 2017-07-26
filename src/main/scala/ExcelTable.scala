@@ -22,6 +22,11 @@ package ExcelLib.Table {
     object ImplicitConversions extends ImplicitConversions
 }
 
+trait Factory[T] {
+    def create(sheet:Sheet,top:Int,left:Int,bottom:Int,right:Int):T
+    def create(rect:ExcelRectangle):T = this.create(
+        rect.sheet, rect.top, rect.left, rect.bottom, rect.right)
+}
 
 case class ExcelRectangle(
     val sheet:Sheet,
@@ -30,6 +35,14 @@ case class ExcelRectangle(
     val bottom:Int,
     val right:Int
 )
+
+object ExcelRectangle {
+    implicit object factory extends Factory[ExcelRectangle] {
+        override def create(
+            sheet:Sheet,top:Int,left:Int,bottom:Int,right:Int) =
+                new ExcelRectangle(sheet,top,left,bottom,right)
+    }
+}
 
 object ExcelTableFunction extends TableFunction[ExcelRectangle] {
 
@@ -136,6 +149,13 @@ object TableQueryImpl {
     implicit def apply(rect:ExcelRectangle) =
             new TableQueryImpl(
                 rect.sheet,rect.top,rect.left,rect.bottom,rect.right)
+
+
+    implicit object factory extends Factory[TableQueryImpl] {
+        override def create(
+            sheet:Sheet,top:Int,left:Int,bottom:Int,right:Int) =
+                new TableQueryImpl(sheet,top,left,bottom,right)
+    }
 }
 
 
@@ -199,14 +219,14 @@ trait RectangleLineDraw {
 trait ExcelTableSheetConversion {
     val sheet:Sheet
 
-    def getTableMap()(implicit newInstance:(ExcelRectangle)=>TableQueryImpl)
-            :Map[String,TableQueryImpl] = {
-        val tableList = sheet.getRectangleList[TableQueryImpl]
+    def getTableMap[T:Factory]():Map[String,T] = {
+        val factory = implicitly[Factory[T]]
+        val tableList = sheet.getRectangleList
 
-        tableList.map(t=>t.tableFunction.getTableName(t)).zipWithIndex.map(
+        tableList.map(t=>ExcelTableFunction.getTableName(t)).zipWithIndex.map(
             _ match {
-                case ((Some(name), t), _) => (name, newInstance(t))
-                case ((None, t), idx) => ("Table" + idx, newInstance(t))
+                case ((Some(name), t), _) => (name, factory.create(t))
+                case ((None, t), idx) => ("Table" + idx, factory.create(t))
             }).toMap
     }
 }

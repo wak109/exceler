@@ -24,14 +24,12 @@ trait ExcelRectangleSheetConversion {
 
     import ExcelRectangleSheetConversion.Helper
 
-    def getRectangleList[T]()
-            (implicit newInstance:(
-                Sheet, Int, Int, Int, Int) => T):List[T] = {
+    def getRectangleList():List[ExcelRectangle] = {
         for {
             cell <- Helper.getCellList(sheet)
             if cell.isOuterBorderBottom && cell.isOuterBorderRight
             topLeft <- Helper.findTopLeftFromBottomRight(cell)
-        } yield newInstance(sheet,
+        } yield new ExcelRectangle(sheet,
             topLeft.getRowIndex, topLeft.getColumnIndex,
             cell.getRowIndex, cell.getColumnIndex)
     }

@@ -48,7 +48,7 @@ object Exceler {
 
             for {
                 sheet <- workbook.getSheetOption(sheetname)
-                tableMap = sheet.getTableMap
+                tableMap = sheet.getTableMap[TableQueryImpl]
                 table <- tableMap.get(tablename)
                 row <- table.query(
                     rowKeys.split(",").toList.map(isSameStr),
