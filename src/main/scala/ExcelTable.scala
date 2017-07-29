@@ -34,28 +34,39 @@ trait ExcelFactory[T] extends Factory[T] {
         rect.sheet, rect.top, rect.left, rect.bottom, rect.right)
 }
 
-case class ExcelRectangle(
-    val sheet:Sheet,
-    val top:Int,
-    val left:Int,
-    val bottom:Int,
+trait ExcelRectangle {
+    val sheet:Sheet
+    val top:Int
+    val left:Int
+    val bottom:Int
     val right:Int
-)
-
-object ExcelRectangle {
-    implicit object factory extends ExcelFactory[ExcelRectangle] {
-        override def create(
-            sheet:Sheet,top:Int,left:Int,bottom:Int,right:Int) =
-                new ExcelRectangle(sheet,top,left,bottom,right)
-    }
 }
 
 
-object ExcelTableFunction extends TableFunction[ExcelRectangle] {
+object ExcelRectangle {
+    implicit val function = new ExcelTableFunction{}
+
+    implicit def factory(rect:ExcelRectangle) = new TableQueryImpl(
+        rect.sheet, rect.top, rect.left, rect.bottom, rect.right)
+
+    def apply(sheet:Sheet, top:Int, left:Int, bottom:Int, right:Int) = {
+
+        class Impl (
+            val sheet:Sheet,
+            val top:Int,
+            val left:Int,
+            val bottom:Int,
+            val right:Int
+        ) extends ExcelRectangle
+
+        new Impl(sheet, top, left, bottom, right)
+    }
+}
+
+trait ExcelTableFunction extends TableFunction[ExcelRectangle] {
 
     override def getCross(row:ExcelRectangle, col:ExcelRectangle) = {
-        new ExcelRectangle(
-                row.sheet, row.top, col.left, row.bottom, col.right)
+        ExcelRectangle(row.sheet, row.top, col.left, row.bottom, col.right)
     }
 
     override def getHeadRow(rect:ExcelRectangle):(
@@ -66,9 +77,9 @@ object ExcelTableFunction extends TableFunction[ExcelRectangle] {
             if cell.hasBorderBottom
         } yield rownum).headOption match {
             case Some(num) => (
-                new ExcelRectangle(rect.sheet, rect.top,
+                ExcelRectangle(rect.sheet, rect.top,
                     rect.left, num, rect.right),
-                Some(new ExcelRectangle(rect.sheet, num + 1,
+                Some(ExcelRectangle(rect.sheet, num + 1,
                     rect.left, rect.bottom, rect.right)))
             case _ => (rect, None)
         }
@@ -82,9 +93,9 @@ object ExcelTableFunction extends TableFunction[ExcelRectangle] {
             if cell.hasBorderRight
         } yield colnum).headOption match {
             case Some(num) => (
-                new ExcelRectangle(rect.sheet, rect.top,
+                ExcelRectangle(rect.sheet, rect.top,
                     rect.left, rect.bottom, num),
-                Some(new ExcelRectangle(rect.sheet, rect.top,
+                Some(ExcelRectangle(rect.sheet, rect.top,
                     num + 1, rect.bottom, rect.right)))
             case _ => (rect, None)
         }
@@ -126,28 +137,24 @@ object ExcelTableFunction extends TableFunction[ExcelRectangle] {
     override def mergeRect(rectL:List[ExcelRectangle]):ExcelRectangle = {
         val head = rectL.head
         val last = rectL.last
-        new ExcelRectangle(
+        ExcelRectangle(
             head.sheet, head.top, head.left, last.bottom, last.right)
     }
 }
 
 
 class TableQueryImpl(
-        sheet:Sheet,
-        top:Int,
-        left:Int,
-        bottom:Int,
-        right:Int,
+        val sheet:Sheet,
+        val top:Int,
+        val left:Int,
+        val bottom:Int,
+        val right:Int
     )
-    extends ExcelRectangle(sheet, top, left, bottom, right)
+    extends TableComponent[ExcelRectangle]
+    with ExcelRectangle
     with Table[ExcelRectangle]
     with StackedTableQuery[ExcelRectangle]
-    with RectangleLineDraw {
-
-    val tableFunction = ExcelTableFunction
-    val createTableQuery = (rect:ExcelRectangle) => new TableQueryImpl(
-        rect.sheet, rect.top, rect.left, rect.bottom, rect.right)
-}
+    with RectangleLineDraw 
 
 
 object TableQueryImpl {
@@ -221,10 +228,11 @@ trait ExcelTableSheetConversion {
     val sheet:Sheet
 
     def getTableMap[T:ExcelFactory]():Map[String,T] = {
+        val function = new ExcelTableFunction{}
         val factory = implicitly[ExcelFactory[T]]
         val tableList = sheet.getRectangleList
 
-        tableList.map(t=>ExcelTableFunction.getTableName(t)).zipWithIndex.map(
+        tableList.map(t=>function.getTableName(t)).zipWithIndex.map(
             _ match {
                 case ((Some(name), t), _) => (name, factory.create(t))
                 case ((None, t), idx) => ("Table" + idx, factory.create(t))

@@ -54,7 +54,7 @@ object Exceler {
                     rowKeys.split(",").toList.map(isSameStr),
                     colKeys.split(",").toList.map(isSameStr))
                 cell <- row
-                value <- ExcelTableFunction.getValue(cell)
+                value <- ExcelRectangle.function.getValue(cell)
             } {
                 println(value)
             }

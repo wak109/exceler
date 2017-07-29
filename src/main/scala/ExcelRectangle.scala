@@ -29,7 +29,7 @@ trait ExcelRectangleSheetConversion {
             cell <- Helper.getCellList(sheet)
             if cell.isOuterBorderBottom && cell.isOuterBorderRight
             topLeft <- Helper.findTopLeftFromBottomRight(cell)
-        } yield new ExcelRectangle(sheet,
+        } yield ExcelRectangle(sheet,
             topLeft.getRowIndex, topLeft.getColumnIndex,
             cell.getRowIndex, cell.getColumnIndex)
     }
