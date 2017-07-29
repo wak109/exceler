@@ -9,7 +9,6 @@ import CommonLib.ImplicitConversions._
 
 trait TableQuery[T] extends Table[T] {
     rect:T =>
-    val tableFunction:TableFunction[T]
     val createTableQuery:(T) => TableQuery[T]
 
     def query(
@@ -85,7 +84,6 @@ trait TableQuery[T] extends Table[T] {
 trait StackedTableQuery[T] extends TableQuery[T] {
     rect:T =>
 
-    val tableFunction:TableFunction[T]
     val createTableQuery:(T) => TableQuery[T]
     val isSeparator:(T)=>Boolean = tableFunction.getHeadCol(_)._2 == None
 
@@ -116,7 +114,6 @@ trait StackedTableQuery[T] extends TableQuery[T] {
 }
 
 
-class TableComponent[T <% TableQuery[T] : TableFunction] {
-    val tableFunction = implicitly[TableFunction[T]]
+class TableComponent[T <% TableQuery[T]] {
     val createTableQuery = implicitly[T => TableQuery[T]]
 }

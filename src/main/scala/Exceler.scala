@@ -13,7 +13,7 @@ import ExcelLib.ImplicitConversions._
 import ExcelLib.Rectangle.ImplicitConversions._
 import ExcelLib.Table.ImplicitConversions._
 
-object Exceler {
+object Exceler extends ExcelTableFunction {
 /*
     def convertExcelTableToXML(filename:String):Try[Unit] = {
         Try {
@@ -54,7 +54,7 @@ object Exceler {
                     rowKeys.split(",").toList.map(isSameStr),
                     colKeys.split(",").toList.map(isSameStr))
                 cell <- row
-                value <- ExcelRectangle.function.getValue(cell)
+                value <- tableFunction.getValue(cell)
             } {
                 println(value)
             }

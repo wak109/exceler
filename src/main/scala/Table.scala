@@ -8,18 +8,21 @@ import CommonLib.ImplicitConversions._
 
 
 trait TableFunction[T] {
-    def getCross(row:T, col:T):T
-    def getHeadRow(rect:T):(T,Option[T])
-    def getHeadCol(rect:T):(T,Option[T])
-    def getValue(rect:T):Option[String]
-    def getTableName(rect:T):(Option[String], T)
-    def mergeRect(rectL:List[T]):T
+    val tableFunction:Function
+
+    trait Function {
+        def getCross(row:T, col:T):T
+        def getHeadRow(rect:T):(T,Option[T])
+        def getHeadCol(rect:T):(T,Option[T])
+        def getValue(rect:T):Option[String]
+        def getTableName(rect:T):(Option[String], T)
+        def mergeRect(rectL:List[T]):T
+    }
 }
 
 
-trait Table[T] {
+trait Table[T] extends TableFunction[T] {
     rect:T =>
-    val tableFunction:TableFunction[T]
 
     lazy val rowList:List[T] = this.getRowList(Some(rect))
     lazy val colList:List[T] = this.getColList(Some(rect))
