@@ -151,3 +151,8 @@ trait StackedTableQuery[T] extends TableQuery[T] {
         }
     }
 }
+
+class TableComponent[T <: TableQuery[T] : TableFunction] {
+    val tableFunction = implicitly[TableFunction[T]]
+    val createTableQuery = implicitly[T => TableQuery[T]]
+}

@@ -23,8 +23,14 @@ package ExcelLib.Table {
 }
 
 trait Factory[T] {
+    type Base
+    def create(rect:Base):T
+}
+
+trait ExcelFactory[T] extends Factory[T] {
+    type Base = ExcelRectangle
     def create(sheet:Sheet,top:Int,left:Int,bottom:Int,right:Int):T
-    def create(rect:ExcelRectangle):T = this.create(
+    def create(rect:Base):T = this.create(
         rect.sheet, rect.top, rect.left, rect.bottom, rect.right)
 }
 
@@ -37,12 +43,13 @@ case class ExcelRectangle(
 )
 
 object ExcelRectangle {
-    implicit object factory extends Factory[ExcelRectangle] {
+    implicit object factory extends ExcelFactory[ExcelRectangle] {
         override def create(
             sheet:Sheet,top:Int,left:Int,bottom:Int,right:Int) =
                 new ExcelRectangle(sheet,top,left,bottom,right)
     }
 }
+
 
 object ExcelTableFunction extends TableFunction[ExcelRectangle] {
 
@@ -142,8 +149,10 @@ class TableQueryImpl(
         rect.sheet, rect.top, rect.left, rect.bottom, rect.right)
 }
 
+
 object TableQueryImpl {
-    implicit object factory extends Factory[TableQueryImpl] {
+
+    implicit object factory extends ExcelFactory[TableQueryImpl] {
         override def create(
             sheet:Sheet,top:Int,left:Int,bottom:Int,right:Int) =
                 new TableQueryImpl(sheet,top,left,bottom,right)
@@ -211,8 +220,8 @@ trait RectangleLineDraw {
 trait ExcelTableSheetConversion {
     val sheet:Sheet
 
-    def getTableMap[T:Factory]():Map[String,T] = {
-        val factory = implicitly[Factory[T]]
+    def getTableMap[T:ExcelFactory]():Map[String,T] = {
+        val factory = implicitly[ExcelFactory[T]]
         val tableList = sheet.getRectangleList
 
         tableList.map(t=>ExcelTableFunction.getTableName(t)).zipWithIndex.map(
