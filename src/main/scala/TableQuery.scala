@@ -7,8 +7,12 @@ import scala.util.{Try, Success, Failure}
 import CommonLib.ImplicitConversions._
 
 
-trait TableQueryFunction[T] {
-    def createTableQuery(rect:T):TableQuery[T]
+trait TableQueryFunction[T] extends TableFunction[T] {
+    override val tableFunction:QueryFunction
+
+    trait QueryFunction extends Function {
+        def createTableQuery(rect:T):TableQuery[T]
+    }
 }
 
 
@@ -44,7 +48,7 @@ trait TableQuery[T] extends Table[T] with TableQueryFunction[T] {
             case Nil => List[T](rect)
             case pred::predTail => for {
                 row <- this.queryRow(pred)
-                row <- createTableQuery(row).queryRow(predTail)
+                row <- tableFunction.createTableQuery(row).queryRow(predTail)
             } yield row
         }
     }
@@ -67,7 +71,7 @@ trait TableQuery[T] extends Table[T] with TableQueryFunction[T] {
             case Nil => List[T](rect)
             case pred::predTail => for {
                 col <- this.queryColumn(pred)
-                col <- createTableQuery(col).queryColumn(predTail)
+                col <- tableFunction.createTableQuery(col).queryColumn(predTail)
             } yield col
         }
     }
@@ -96,7 +100,7 @@ trait StackedTableQuery[T] extends TableQuery[T] {
         .map(pair=>(tableFunction.getValue(
             tableFunction.mergeRect(pair._1)).getOrElse(""),
             tableFunction.mergeRect(pair._2)))
-        .map(pair => (pair._1, createTableQuery(pair._2)))
+        .map(pair => (pair._1, tableFunction.createTableQuery(pair._2)))
         .toMap
 
     override def queryRow(predList:List[String => Boolean]):List[T] = {
