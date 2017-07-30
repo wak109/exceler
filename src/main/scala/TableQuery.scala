@@ -7,9 +7,13 @@ import scala.util.{Try, Success, Failure}
 import CommonLib.ImplicitConversions._
 
 
-trait TableQuery[T] extends Table[T] {
-    rect:T =>
+trait TableQueryComponent[T] {
     val createTableQuery:(T) => TableQuery[T]
+}
+
+
+trait TableQuery[T] extends Table[T] with TableQueryComponent[T] {
+    rect:T =>
 
     def query(
         rowpredList:List[(String) => Boolean],
@@ -84,7 +88,6 @@ trait TableQuery[T] extends Table[T] {
 trait StackedTableQuery[T] extends TableQuery[T] {
     rect:T =>
 
-    val createTableQuery:(T) => TableQuery[T]
     val isSeparator:(T)=>Boolean = tableFunction.getHeadCol(_)._2 == None
 
     lazy val tableMap = this.rowList
@@ -113,7 +116,3 @@ trait StackedTableQuery[T] extends TableQuery[T] {
     }
 }
 
-
-class TableComponent[T <% TableQuery[T]] {
-    val createTableQuery = implicitly[T => TableQuery[T]]
-}

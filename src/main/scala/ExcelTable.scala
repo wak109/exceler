@@ -22,10 +22,12 @@ package ExcelLib.Table {
     object ImplicitConversions extends ImplicitConversions
 }
 
+
 trait Factory[T] {
     type Base
     def create(rect:Base):T
 }
+
 
 trait ExcelFactory[T] extends Factory[T] {
     type Base = ExcelRectangle
@@ -33,6 +35,7 @@ trait ExcelFactory[T] extends Factory[T] {
     def create(rect:Base):T = this.create(
         rect.sheet, rect.top, rect.left, rect.bottom, rect.right)
 }
+
 
 trait ExcelRectangle {
     val sheet:Sheet
@@ -62,6 +65,7 @@ object ExcelRectangle {
         new Impl(sheet, top, left, bottom, right)
     }
 }
+
 
 trait ExcelTableFunction extends TableFunction[ExcelRectangle] {
     val tableFunction = new FunctionImpl
@@ -149,6 +153,30 @@ trait ExcelTableFunction extends TableFunction[ExcelRectangle] {
 }
 
 
+trait ExcelTableQueryComponent
+        extends TableQueryComponent[ExcelRectangle] {
+    val createTableQuery = (rect:ExcelRectangle) =>
+        new ExcelTableQuery(
+            rect.sheet, rect.top, rect.left, rect.bottom, rect.right) 
+
+    class ExcelTableQuery (
+        val sheet:Sheet,
+        val top:Int,
+        val left:Int,
+        val bottom:Int,
+        val right:Int
+        ) extends TableQuery[ExcelRectangle]
+            with ExcelRectangle
+            with ExcelTableFunction
+            with TableQueryComponent[ExcelRectangle] {
+
+        val createTableQuery = (rect:ExcelRectangle) =>
+            new ExcelTableQuery(
+                rect.sheet, rect.top, rect.left, rect.bottom, rect.right) 
+
+    }
+}
+
 class TableQueryImpl(
         val sheet:Sheet,
         val top:Int,
@@ -156,10 +184,9 @@ class TableQueryImpl(
         val bottom:Int,
         val right:Int
     )
-    extends TableComponent[ExcelRectangle]
+    extends ExcelTableQueryComponent
     with ExcelRectangle
     with ExcelTableFunction
-    with Table[ExcelRectangle]
     with StackedTableQuery[ExcelRectangle]
     with RectangleLineDraw 
 
@@ -230,6 +257,7 @@ trait RectangleLineDraw {
         }
     }
 }
+
 
 trait ExcelTableSheetConversion extends ExcelTableFunction {
     val sheet:Sheet
