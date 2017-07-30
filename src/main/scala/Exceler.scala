@@ -13,6 +13,28 @@ import ExcelLib.ImplicitConversions._
 import ExcelLib.Rectangle.ImplicitConversions._
 import ExcelLib.Table.ImplicitConversions._
 
+class TableQueryImpl(
+        val sheet:Sheet,
+        val top:Int,
+        val left:Int,
+        val bottom:Int,
+        val right:Int
+    )
+    extends ExcelRectangle
+    with ExcelTableFunction
+    with ExcelTableQueryFunction
+    with StackedTableQuery[ExcelRectangle]
+    with RectangleLineDraw 
+
+
+object TableQueryImpl {
+    implicit object factory extends ExcelFactory[TableQueryImpl] {
+        override def create(
+            sheet:Sheet,top:Int,left:Int,bottom:Int,right:Int) =
+                new TableQueryImpl(sheet,top,left,bottom,right)
+    }
+}
+
 object Exceler extends ExcelTableFunction {
 /*
     def convertExcelTableToXML(filename:String):Try[Unit] = {

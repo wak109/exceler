@@ -23,16 +23,9 @@ package ExcelLib.Table {
 }
 
 
-trait Factory[T] {
-    type Base
-    def create(rect:Base):T
-}
-
-
-trait ExcelFactory[T] extends Factory[T] {
-    type Base = ExcelRectangle
+trait ExcelFactory[T] {
     def create(sheet:Sheet,top:Int,left:Int,bottom:Int,right:Int):T
-    def create(rect:Base):T = this.create(
+    def create(rect:ExcelRectangle):T = this.create(
         rect.sheet, rect.top, rect.left, rect.bottom, rect.right)
 }
 
@@ -47,10 +40,6 @@ trait ExcelRectangle {
 
 
 object ExcelRectangle {
-    implicit val function = new ExcelTableFunction{}
-
-    implicit def factory(rect:ExcelRectangle) = new TableQueryImpl(
-        rect.sheet, rect.top, rect.left, rect.bottom, rect.right)
 
     def apply(sheet:Sheet, top:Int, left:Int, bottom:Int, right:Int) = {
 
@@ -153,51 +142,28 @@ trait ExcelTableFunction extends TableFunction[ExcelRectangle] {
 }
 
 
-trait ExcelTableQueryComponent
-        extends TableQueryComponent[ExcelRectangle] {
-    val createTableQuery = (rect:ExcelRectangle) =>
-        new ExcelTableQuery(
-            rect.sheet, rect.top, rect.left, rect.bottom, rect.right) 
+class ExcelTableQuery (
+    val sheet:Sheet,
+    val top:Int,
+    val left:Int,
+    val bottom:Int,
+    val right:Int
+    ) extends TableQuery[ExcelRectangle]
+        with ExcelRectangle
+        with ExcelTableFunction
+        with TableQueryFunction[ExcelRectangle] {
 
-    class ExcelTableQuery (
-        val sheet:Sheet,
-        val top:Int,
-        val left:Int,
-        val bottom:Int,
-        val right:Int
-        ) extends TableQuery[ExcelRectangle]
-            with ExcelRectangle
-            with ExcelTableFunction
-            with TableQueryComponent[ExcelRectangle] {
-
-        val createTableQuery = (rect:ExcelRectangle) =>
-            new ExcelTableQuery(
-                rect.sheet, rect.top, rect.left, rect.bottom, rect.right) 
-
-    }
+    override def createTableQuery(rect:ExcelRectangle) =
+        new ExcelTableQuery(rect.sheet, rect.top,
+                rect.left, rect.bottom, rect.right) 
 }
 
-class TableQueryImpl(
-        val sheet:Sheet,
-        val top:Int,
-        val left:Int,
-        val bottom:Int,
-        val right:Int
-    )
-    extends ExcelTableQueryComponent
-    with ExcelRectangle
-    with ExcelTableFunction
-    with StackedTableQuery[ExcelRectangle]
-    with RectangleLineDraw 
+trait ExcelTableQueryFunction extends TableQueryFunction[ExcelRectangle] {
 
+    override def createTableQuery(rect:ExcelRectangle) =
+        new ExcelTableQuery(rect.sheet, rect.top,
+                rect.left, rect.bottom, rect.right)
 
-object TableQueryImpl {
-
-    implicit object factory extends ExcelFactory[TableQueryImpl] {
-        override def create(
-            sheet:Sheet,top:Int,left:Int,bottom:Int,right:Int) =
-                new TableQueryImpl(sheet,top,left,bottom,right)
-    }
 }
 
 
@@ -259,7 +225,10 @@ trait RectangleLineDraw {
 }
 
 
-trait ExcelTableSheetConversion extends ExcelTableFunction {
+trait ExcelTableSheetConversion
+    extends ExcelTableFunction
+    with ExcelTableQueryFunction {
+
     val sheet:Sheet
 
     def getTableMap[T:ExcelFactory]():Map[String,T] = {

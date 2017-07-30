@@ -7,12 +7,12 @@ import scala.util.{Try, Success, Failure}
 import CommonLib.ImplicitConversions._
 
 
-trait TableQueryComponent[T] {
-    val createTableQuery:(T) => TableQuery[T]
+trait TableQueryFunction[T] {
+    def createTableQuery(rect:T):TableQuery[T]
 }
 
 
-trait TableQuery[T] extends Table[T] with TableQueryComponent[T] {
+trait TableQuery[T] extends Table[T] with TableQueryFunction[T] {
     rect:T =>
 
     def query(
