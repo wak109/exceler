@@ -64,33 +64,6 @@ trait ExcelTableFunction extends TableFunction[ExcelRectangle] {
                             .getValueString.map(_.trim)
             } yield value).headOption
     
-        override def getTableName(rect:ExcelRectangle)
-                : (Option[String], ExcelRectangle) = {
-            // Table name outside of Rectangle
-            (rect.top match {
-                case 0 => (None, rect)
-                case _ => (rect.sheet.cell(rect.top - 1, rect.left)
-                        .getValueString, rect)
-            }) match {
-                case (Some(name), _) => (Some(name), rect)
-                case (None, _) => {
-                    // Table name at the top of Rectangle
-                    val (rowHead, rowTail) = this.getHeadRow(rect)
-                    val (rowHeadLeft, rowHeadRight) =
-                            this.getHeadCol(rowHead)
-
-                    rowHeadRight match {
-                        case Some(_) => (None, rect)
-                        case None => (this.getValue(rowHeadLeft),
-                                rowTail) match {
-                            case (name, Some(tail)) => (name, tail)
-                            case (name, None) => (None, rect)
-                        }
-                    }
-                }
-            }
-        }
-    
         override def mergeRect(rectL:List[ExcelRectangle]):ExcelRectangle = {
             val head = rectL.head
             val last = rectL.last

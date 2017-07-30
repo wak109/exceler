@@ -15,18 +15,12 @@ import ExcelLib.ImplicitConversions._
 import ExcelLib.Rectangle.ImplicitConversions._
 
 
-
-class ExcelTableQuery (
-    val sheet:Sheet,
-    val top:Int,
-    val left:Int,
-    val bottom:Int,
-    val right:Int
-    ) extends TableQuery[ExcelRectangle]
+class ExcelTableQuery (val sheet:Sheet, val top:Int, val left:Int,
+    val bottom:Int, val right:Int)
+        extends TableQuery[ExcelRectangle]
         with ExcelRectangle
         with ExcelTableQueryFunction {
-
-    override val tableFunction = new QueryFunctionImpl{}
+    override val tableQueryFunction = new QueryFunctionImpl{}
 }
 
 
@@ -34,11 +28,12 @@ trait ExcelTableQueryFunction
     extends ExcelTableFunction 
     with TableQueryFunction[ExcelRectangle] {
 
-    override val tableFunction = new QueryFunctionImpl{}
+    override val tableQueryFunction = new QueryFunctionImpl{}
 
-    trait QueryFunctionImpl extends FunctionImpl with QueryFunction {
-        override def createTableQuery(rect:ExcelRectangle) =
+    trait QueryFunctionImpl extends QueryFunction {
+
+        override def create(rect:ExcelRectangle) =
             new ExcelTableQuery(rect.sheet, rect.top,
-                rect.left, rect.bottom, rect.right)
+                    rect.left, rect.bottom, rect.right)
     }
 }

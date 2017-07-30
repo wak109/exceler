@@ -29,10 +29,43 @@ trait ExcelFactory[T] {
         rect.sheet, rect.top, rect.left, rect.bottom, rect.right)
 }
 
+trait ExcelTableSheetFunction extends ExcelTableFunction {
 
-trait ExcelTableSheetConversion
-    extends ExcelTableFunction
-    with ExcelTableQueryFunction {
+    override val tableFunction = new SheetFunctionImpl{}
+
+    trait SheetFunctionImpl extends FunctionImpl {
+
+        def getTableName(rect:ExcelRectangle)
+                : (Option[String], ExcelRectangle) = {
+            // Table name outside of Rectangle
+            (rect.top match {
+                case 0 => (None, rect)
+                case _ => (rect.sheet.cell(rect.top - 1, rect.left)
+                        .getValueString, rect)
+            }) match {
+                case (Some(name), _) => (Some(name), rect)
+                case (None, _) => {
+                    // Table name at the top of Rectangle
+                    val (rowHead, rowTail) = tableFunction.getHeadRow(rect)
+                    val (rowHeadLeft, rowHeadRight) =
+                            tableFunction.getHeadCol(rowHead)
+    
+                    rowHeadRight match {
+                        case Some(_) => (None, rect)
+                        case None => (tableFunction.getValue(rowHeadLeft),
+                                rowTail) match {
+                            case (name, Some(tail)) => (name, tail)
+                            case (name, None) => (None, rect)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+    
+
+trait ExcelTableSheetConversion extends ExcelTableSheetFunction {
 
     val sheet:Sheet
 

@@ -15,7 +15,6 @@ trait TableFunction[T] {
         def getHeadRow(rect:T):(T,Option[T])
         def getHeadCol(rect:T):(T,Option[T])
         def getValue(rect:T):Option[String]
-        def getTableName(rect:T):(Option[String], T)
         def mergeRect(rectL:List[T]):T
     }
 }

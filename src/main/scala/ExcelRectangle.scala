@@ -7,13 +7,6 @@ import scala.util.{Try, Success, Failure}
 import org.apache.poi.ss.usermodel._
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
 
-import java.io._
-import java.nio.file._
-
-import CommonLib.ImplicitConversions._
-import ExcelLib.ImplicitConversions._
-import ExcelLib.Rectangle.ImplicitConversions._
-
 
 trait ExcelRectangle {
     val sheet:Sheet
