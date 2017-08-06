@@ -8,8 +8,7 @@ import javax.servlet.ServletContext
 
 
 object JettyLauncher {
-  def main(args: Array[String]) {
-    val port = if(System.getenv("PORT") != null) System.getenv("PORT").toInt else 8080
+  def run(port:Int) {
 
     val server = new Server()
 

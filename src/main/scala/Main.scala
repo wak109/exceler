@@ -1,4 +1,4 @@
-/* vim: set ts=4 et sw=4 sts=4 fileencoding=utf-8: */
+/* vim: set ts=2 et sw=2 sts=2 fileencoding=utf-8: */
 import scala.util.control.Exception._
 import scala.util.{Try, Success, Failure}
 
@@ -15,84 +15,76 @@ import Exceler._
 
 object Main {
 
-    val description = """Scala CLI template"""
-    val site = """https://github.com/wak109/scala_template"""
+  val DEFAULT_PORT = 8080
+  val DEFAULT_EXCEL_DIR = "."
 
-    def stripClassName(clsname:String):String = {
-        val Pattern = """^(.*)\$$""".r
-        clsname match {
-          case Pattern(m) => m
-          case x => x
-        }
+  val description = """Scala Excel"""
+  val site = """https://github.com/wak109/exceler"""
+
+  def stripClassName(clsname:String):String = {
+    val Pattern = """^(.*)\$$""".r
+    clsname match {
+      case Pattern(m) => m
+      case x => x
+    }
+  }
+
+  def printUsage() : Unit = {
+    val formatter = new HelpFormatter()
+
+    formatter.printHelp(
+      stripClassName(this.getClass.getCanonicalName),
+      "\n" + this.description + "\n\noptions:\n",
+      makeOptions(),
+      "\nWeb: " + this.site,
+      true)
+  }
+
+  def makeOptions() : CmdOptions = {
+    val options = new CmdOptions()
+
+    options.addOption("h", false, "Show help")
+    options.addOption("p", true, "Listen port")
+    options.addOption("d", true, "Excel directory")
+
+    return options
+  }
+
+  /**
+   *
+   */
+  def parseCommandLine(args:Array[String])
+        :Try[(List[String], Boolean, Int, String)] =
+    Try {
+      val parser = new DefaultParser()
+      val cl = parser.parse(makeOptions(), args)
+      (
+        cl.getArgs.toList,
+        cl.hasOption('h'),
+        if (cl.hasOption('p')) cl.getOptionValue('p').toInt
+          else DEFAULT_PORT,
+        if (cl.hasOption('d')) cl.getOptionValue('d')
+          else DEFAULT_EXCEL_DIR
+      )
     }
 
-    def printUsage() : Unit = {
-        val formatter = new HelpFormatter()
-
-        formatter.printHelp(
-            stripClassName(this.getClass.getCanonicalName),
-            "\n" + this.description + "\n\noptions:\n",
-            makeOptions(),
-            "\nWeb: " + this.site,
-            true)
-    }
-
-    def makeOptions() : CmdOptions = {
-        val options = new CmdOptions()
-        options.addOption(CmdOption.builder("h").desc("Show help").build())
-
-        return options
-    }
-
-    def checkOptions(cl:CommandLine) : Either[String,CommandLine] = {
-        if (cl.hasOption('h')) {
-            return Left("help option")
-        } else if (cl.getArgs.isEmpty) {
-            return Left("No Command")
-        } else {
-            return Right(cl)
-        }
-    }
-
-    def parseCommandLine(args:Array[String]) : Try[CommandLine] = {
-        Try {
-            val parser = new DefaultParser()
-            parser.parse(makeOptions(), args)
-        }
-    }
-
-    def main(args:Array[String]) : Unit  = {
-        (
-            for {
-                cl <- parseCommandLine(args)
-                cl <- checkOptions(cl).left.map(new Exception(_)).toTry
-            } yield cl
-        ) match {
-            case Success(cl) => {
-                cl.getArgs()(0) match {
-                    /*
-                    case "xml" => convertExcelTableToXML(
-                            cl.getArgs()(1)) match {
-                        case Success(_) => None
-                        case Failure(e) =>
-                            println(e.getMessage); printUsage()
-                    }
-                    */
-                    case "query" => readExcelTable(
-                            cl.getArgs()(1),
-                            cl.getArgs()(2),
-                            cl.getArgs()(3),
-                            cl.getArgs()(4),
-                            cl.getArgs()(5)
-                            ) match {
-                        case Success(_) => None
-                        case Failure(e) =>
-                            println(e.getMessage); printUsage()
-                    }
-                    case _ => printUsage()
-                }
+  /**
+   *
+   */
+  def main(args:Array[String]) : Unit  = 
+    parseCommandLine(args) match {
+      case Success(a) => a match {
+        case (_,true,_,_) => printUsage() 
+        case (Nil,_,port,dir) => JettyLauncher.run(port)
+        case (args,_,port,dir) => args(0) match {
+          case "query" => readExcelTable(
+            args(1), args(2), args(3), args(4), args(5)) match {
+              case Success(_) => None
+              case Failure(e) => println(e.getMessage); printUsage()
             }
-            case Failure(e) => println(e.getMessage()); printUsage()
+          case _ => printUsage()
         }
+      }
+      case Failure(e) => println(e.getMessage); printUsage()
     }
 }

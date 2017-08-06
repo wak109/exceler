@@ -21,4 +21,4 @@ lazy val root = (project in file(".")).settings(
   )
 ).settings(jetty(): _*)
 
-mainClass in (Compile, packageBin) := Some("JettyLauncher")
+mainClass in (Compile, packageBin) := Some("Main")
