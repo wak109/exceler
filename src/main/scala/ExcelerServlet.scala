@@ -1,6 +1,49 @@
+import scala.util.control.Exception._
+import scala.util.{Try, Success, Failure}
+import scala.collection.JavaConverters._
+
+import org.apache.poi.ss.usermodel._
+import org.apache.poi.xssf.usermodel.XSSFWorkbook
+
 import org.scalatra._
 
-class ExcelerServlet extends ScalatraServlet {
+import java.io._
+import java.nio.file._
+
+import ExcelLib.ImplicitConversions._
+import ExcelLib.Rectangle.ImplicitConversions._
+import ExcelLib.Table.ImplicitConversions._
+
+
+class ExcelerServlet extends ScalatraServlet with ExcelTableFunction {
+
+  get("/query/:book/:sheet/:table") {
+    
+    def isSameStr(s:String): String => Boolean = {
+        s match {
+            case "" => (x:String) => true
+            case _  => (x:String) => x == s
+        }
+    }
+    val file = new File(params("book"))
+    val workbook = WorkbookFactory.create(file, null ,true) 
+    val result = for {
+        sheet <- workbook.getSheetOption(params("sheet")).toSeq
+        table <- sheet.getTableMap[TableQueryImpl].get(
+                  params("table")).toSeq
+        row <- table.query(
+            params("row").split(",").toList.map(isSameStr),
+            params("column").split(",").toList.map(isSameStr))
+        cell <- row
+        value <- tableFunction.getValue(cell)
+    } yield value
+
+    <html>
+      <body>
+        <p>Result: {result}</p>
+      </body>
+    </html>
+  }
 
   get("/") {
     <html>

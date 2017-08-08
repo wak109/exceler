@@ -36,22 +36,7 @@ object TableQueryImpl {
 }
 
 object Exceler extends ExcelTableFunction {
-/*
-    def convertExcelTableToXML(filename:String):Try[Unit] = {
-        Try {
-            val file = new File(filename)
-            val workbook = WorkbookFactory.create(file, null ,true) 
-            for {
-                sheet <- workbook.sheetIterator.asScala
-                rect <- sheet.getRectangleList[TableQueryImpl]
-                row <- rect.getRowList(rect)
-                cell <- row.getColumnList(row)
-            } {
-                println(cell)
-            }
-        }
-    }
-*/
+
     def readExcelTable(
         filename:String,
         sheetname:String,
@@ -68,18 +53,18 @@ object Exceler extends ExcelTableFunction {
             val file = new File(filename)
             val workbook = WorkbookFactory.create(file, null ,true) 
 
-            for {
-                sheet <- workbook.getSheetOption(sheetname)
-                tableMap = sheet.getTableMap[TableQueryImpl]
-                table <- tableMap.get(tablename)
+            val result = for {
+                sheet <- workbook.getSheetOption(sheetname).toSeq
+                table <- sheet.getTableMap[TableQueryImpl]
+                              .get(tablename).toSeq
                 row <- table.query(
                     rowKeys.split(",").toList.map(isSameStr),
                     colKeys.split(",").toList.map(isSameStr))
                 cell <- row
                 value <- tableFunction.getValue(cell)
-            } {
-                println(value)
-            }
+            } yield value
+
+            println(result)
         }
     }
 }
