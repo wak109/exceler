@@ -32,8 +32,8 @@ class ExcelerServlet extends ScalatraServlet with ExcelTableFunction {
         table <- sheet.getTableMap[TableQueryImpl].get(
                   params("table")).toSeq
         row <- table.query(
-            params("row").split(",").toList.map(isSameStr),
-            params("column").split(",").toList.map(isSameStr))
+            params.getOrElse("row","").split(",").toList.map(isSameStr),
+            params.getOrElse("column","").split(",").toList.map(isSameStr))
         cell <- row
         value <- tableFunction.getValue(cell)
     } yield value
