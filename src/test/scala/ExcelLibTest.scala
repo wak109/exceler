@@ -1,4 +1,4 @@
-/* vim: set ts=4 et sw=4 sts=4 fileencoding=utf-8: */
+/* vim: set ts=2 et sw=2 sts=2 fileencoding=utf-8: */
 import scala.util.{Try, Success, Failure}
 import scala.collection.JavaConverters._
 import org.scalatest.FunSuite
@@ -13,245 +13,245 @@ import ExcelLib.ImplicitConversions._
 
 class ExcelLibTest extends FunSuite with ExcelLibResource {
 
-    val testSheet = "test"
-    val testMessage = "Hello, world!!"
+  val testSheet = "test"
+  val testMessage = "Hello, world!!"
 
-    //////////////////////////////////////////////////////////////// 
-    // Workbook Tests
-    //
-    test("Workbook.saveAs") {
-        val testFile = "Test_Workbook_saveAs.xlsx"
+  //////////////////////////////////////////////////////////////// 
+  // Workbook Tests
+  //
+  test("Workbook.saveAs") {
+    val testFile = "Test_Workbook_saveAs.xlsx"
 
-        val workbook = new XSSFWorkbook()
-        workbook.saveAs(testFile)
-        assert(Files.exists(Paths.get(testFile)))
+    val workbook = new XSSFWorkbook()
+    workbook.saveAs(testFile)
+    assert(Files.exists(Paths.get(testFile)))
 
-        Files.deleteIfExists(Paths.get(testFile))
+    Files.deleteIfExists(Paths.get(testFile))
+  }
+
+  test("Workbook.getSheet_") {
+    val workbook = new XSSFWorkbook()
+
+    workbook.getSheetOption(testSheet) match {
+      case Some(_) => assert(false)
+      case None => assert(true)
     }
 
-    test("Workbook.getSheet_") {
-        val workbook = new XSSFWorkbook()
+    workbook.sheet(testSheet)
 
-        workbook.getSheetOption(testSheet) match {
-            case Some(_) => assert(false)
-            case None => assert(true)
-        }
+    workbook.getSheetOption(testSheet) match {
+      case Some(_) => assert(true)
+      case None => assert(false)
+    }
+  }
 
-        workbook.sheet(testSheet)
+  test("Workbook.sheet") {
+    val workbook = new XSSFWorkbook()
 
-        workbook.getSheetOption(testSheet) match {
-            case Some(_) => assert(true)
-            case None => assert(false)
-        }
+    Try(workbook.sheet(testSheet)) match {
+      case Success(s) => assert(s.getSheetName() == testSheet)
+      case Failure(e) => assert(false)
     }
 
-    test("Workbook.sheet") {
-        val workbook = new XSSFWorkbook()
+    Try(workbook.sheet(testSheet)) match {
+      case Success(s) => assert(s.getSheetName() == testSheet)
+      case Failure(e) => assert(false)
+    }
+    assert(workbook.sheet(testSheet) == workbook.getSheet(testSheet))
+  }
 
-        Try(workbook.sheet(testSheet)) match {
-            case Success(s) => assert(s.getSheetName() == testSheet)
-            case Failure(e) => assert(false)
-        }
+  test("Workbook.removeSheet") {
+    val workbook = new XSSFWorkbook()
 
-        Try(workbook.sheet(testSheet)) match {
-            case Success(s) => assert(s.getSheetName() == testSheet)
-            case Failure(e) => assert(false)
-        }
-        assert(workbook.sheet(testSheet) == workbook.getSheet(testSheet))
+    Try(workbook.sheet(testSheet)) match {
+      case Success(s) => assert(s.getSheetName() == testSheet)
+      case Failure(e) => assert(false)
     }
 
-    test("Workbook.removeSheet") {
-        val workbook = new XSSFWorkbook()
+    workbook.removeSheet(testSheet)
 
-        Try(workbook.sheet(testSheet)) match {
-            case Success(s) => assert(s.getSheetName() == testSheet)
-            case Failure(e) => assert(false)
-        }
+    workbook.getSheetOption(testSheet) match {
+      case Some(s) => assert(false)
+      case None => assert(true)
+    }
+  }
 
-        workbook.removeSheet(testSheet)
+  test("Workbook.findCellStyle") {
+    val workbook = new XSSFWorkbook()
 
-        workbook.getSheetOption(testSheet) match {
-            case Some(s) => assert(false)
-            case None => assert(true)
-        }
+    val cellStyle = workbook.sheet(testSheet).cell(5, 5).getCellStyle
+    assert(workbook.findCellStyle(cellStyle).nonEmpty)
+
+    val tuple = cellStyle.toTuple
+    assert(workbook.findCellStyle(tuple).nonEmpty)
+
+    assert(workbook.findCellStyle(
+      (tuple._1, tuple._2, tuple._3, BorderStyle.THIN, tuple._5,
+      tuple._6, tuple._7, tuple._8, tuple._9, tuple._10)
+      ).isEmpty)
+
+    var newStyle = workbook.createCellStyle
+    newStyle.cloneStyleFrom(cellStyle)
+    newStyle.setBorderRight(BorderStyle.THIN)
+
+    assert(workbook.findCellStyle(newStyle).nonEmpty)
+
+    assert(workbook.findCellStyle(
+      (tuple._1, tuple._2, tuple._3, BorderStyle.THIN, tuple._5,
+      tuple._6, tuple._7, tuple._8, tuple._9, tuple._10)
+      ).nonEmpty)
+  }
+
+
+  //////////////////////////////////////////////////////////////// 
+  // Sheet Tests
+  //
+  test("Sheet.getRow_,Sheet.row_") {
+    val workbook = new XSSFWorkbook()
+    val sheet = workbook.sheet(testSheet)
+
+    sheet.getRowOption(0) match {
+      case Some(r) => assert(false)
+      case None => assert(true)
     }
 
-    test("Workbook.findCellStyle") {
-        val workbook = new XSSFWorkbook()
+    val row = sheet.row(0)
 
-        val cellStyle = workbook.sheet(testSheet).cell(5, 5).getCellStyle
-        assert(workbook.findCellStyle(cellStyle).nonEmpty)
+    sheet.getRowOption(0) match {
+      case Some(r) => assert(true)
+      case None => assert(false)
+    }
+  }
 
-        val tuple = cellStyle.toTuple
-        assert(workbook.findCellStyle(tuple).nonEmpty)
+  test("Sheet.getCell_") {
+    val sheet = (new XSSFWorkbook()).sheet(testSheet)
 
-        assert(workbook.findCellStyle(
-            (tuple._1, tuple._2, tuple._3, BorderStyle.THIN, tuple._5,
-            tuple._6, tuple._7, tuple._8, tuple._9, tuple._10)
-            ).isEmpty)
-
-        var newStyle = workbook.createCellStyle
-        newStyle.cloneStyleFrom(cellStyle)
-        newStyle.setBorderRight(BorderStyle.THIN)
-
-        assert(workbook.findCellStyle(newStyle).nonEmpty)
-
-        assert(workbook.findCellStyle(
-            (tuple._1, tuple._2, tuple._3, BorderStyle.THIN, tuple._5,
-            tuple._6, tuple._7, tuple._8, tuple._9, tuple._10)
-            ).nonEmpty)
+    sheet.getCellOption(0, 0) match {
+      case Some(c) => assert(false)
+      case None => assert(true)
     }
 
+    val cell = sheet.cell(0, 0)
 
-    //////////////////////////////////////////////////////////////// 
-    // Sheet Tests
-    //
-    test("Sheet.getRow_,Sheet.row_") {
-        val workbook = new XSSFWorkbook()
-        val sheet = workbook.sheet(testSheet)
+    sheet.getCellOption(0, 0) match {
+      case Some(c) => assert(true)
+      case None => assert(false)
+    }
+  }
 
-        sheet.getRowOption(0) match {
-            case Some(r) => assert(false)
-            case None => assert(true)
-        }
-
-        val row = sheet.row(0)
-
-        sheet.getRowOption(0) match {
-            case Some(r) => assert(true)
-            case None => assert(false)
-        }
+  //////////////////////////////////////////////////////////////// 
+  // Row Tests
+  //
+  test("Row.getCell_") {
+    val row = (new XSSFWorkbook()).sheet(testSheet).row(100)
+    
+    row.getCellOption(100) match {
+      case Some(c) => assert(false)
+      case None => assert(true)
     }
 
-    test("Sheet.getCell_") {
-        val sheet = (new XSSFWorkbook()).sheet(testSheet)
+    val cell = row.cell(100)
 
-        sheet.getCellOption(0, 0) match {
-            case Some(c) => assert(false)
-            case None => assert(true)
-        }
+    row.getCellOption(100) match {
+      case Some(c) => assert(true)
+      case None => assert(false)
+    }
+  }
 
-        val cell = sheet.cell(0, 0)
+  //////////////////////////////////////////////////////////////// 
+  // Cell Tests
+  //
+  test("Cell.getValue_") {
 
-        sheet.getCellOption(0, 0) match {
-            case Some(c) => assert(true)
-            case None => assert(false)
-        }
+    val workbook = new XSSFWorkbook()
+    val sheet = workbook.sheet(testSheet)
+    val row = sheet.createRow(0)
+    val cell = row.createCell(0)
+
+    cell.setCellValue(testMessage)
+
+    (
+      for {
+        sheet <- workbook.getSheetOption(testSheet)
+        row = sheet.getRow(0)
+        cell = row.getCell(0)
+      } yield cell
+    ) match {
+      case Some(cell) => {
+        assert(cell.getValue_ == testMessage)
+      }
+      case None => assert(false)
+    }
+  }
+
+  test("Cell.getValueString") {
+
+    val workbook = new XSSFWorkbook()
+    val sheet = workbook.sheet(testSheet)
+    val row = sheet.createRow(0)
+    val cell = row.createCell(0)
+
+    cell.setCellValue(testMessage)
+    cell.getValueString match {
+      case Some(s) => assert(s == testMessage)
+      case None => assert(false)
     }
 
-    //////////////////////////////////////////////////////////////// 
-    // Row Tests
-    //
-    test("Row.getCell_") {
-        val row = (new XSSFWorkbook()).sheet(testSheet).row(100)
-        
-        row.getCellOption(100) match {
-            case Some(c) => assert(false)
-            case None => assert(true)
-        }
-
-        val cell = row.cell(100)
-
-        row.getCellOption(100) match {
-            case Some(c) => assert(true)
-            case None => assert(false)
-        }
+    cell.setCellType(CellType.BLANK)
+    cell.getValueString match {
+      case Some(s) => assert(false)
+      case None => assert(true)
     }
 
-    //////////////////////////////////////////////////////////////// 
-    // Cell Tests
-    //
-    test("Cell.getValue_") {
-
-        val workbook = new XSSFWorkbook()
-        val sheet = workbook.sheet(testSheet)
-        val row = sheet.createRow(0)
-        val cell = row.createCell(0)
-
-        cell.setCellValue(testMessage)
-
-        (
-            for {
-                sheet <- workbook.getSheetOption(testSheet)
-                row = sheet.getRow(0)
-                cell = row.getCell(0)
-            } yield cell
-        ) match {
-            case Some(cell) => {
-                assert(cell.getValue_ == testMessage)
-            }
-            case None => assert(false)
-        }
+    cell.setCellValue(12345)
+    cell.getValueString match {
+      case Some(s) => assert(s.toDouble == 12345)
+      case None => assert(false)
     }
 
-    test("Cell.getValueString") {
-
-        val workbook = new XSSFWorkbook()
-        val sheet = workbook.sheet(testSheet)
-        val row = sheet.createRow(0)
-        val cell = row.createCell(0)
-
-        cell.setCellValue(testMessage)
-        cell.getValueString match {
-            case Some(s) => assert(s == testMessage)
-            case None => assert(false)
-        }
-
-        cell.setCellType(CellType.BLANK)
-        cell.getValueString match {
-            case Some(s) => assert(false)
-            case None => assert(true)
-        }
-
-        cell.setCellValue(12345)
-        cell.getValueString match {
-            case Some(s) => assert(s.toDouble == 12345)
-            case None => assert(false)
-        }
-
-        cell.setCellValue("")
-        cell.getValueString match {
-            case Some(s) => assert(false)
-            case None => assert(true)
-        }
+    cell.setCellValue("")
+    cell.getValueString match {
+      case Some(s) => assert(false)
+      case None => assert(true)
     }
+  }
 
-    test("Cell.getUppper,Cell.upper_ etc") {
-        val cell = (new XSSFWorkbook()).sheet(testSheet).cell(100, 100)
+  test("Cell.getUppper,Cell.upper_ etc") {
+    val cell = (new XSSFWorkbook()).sheet(testSheet).cell(100, 100)
 
-        assert(cell.getUpperCell.isEmpty)
-        assert(cell.getLowerCell.isEmpty)
-        assert(cell.getLeftCell.isEmpty)
-        assert(cell.getRightCell.isEmpty)
+    assert(cell.getUpperCell.isEmpty)
+    assert(cell.getLowerCell.isEmpty)
+    assert(cell.getLeftCell.isEmpty)
+    assert(cell.getRightCell.isEmpty)
 
-        cell.upperCell
-        cell.lowerCell
-        cell.leftCell
-        cell.rightCell
+    cell.upperCell
+    cell.lowerCell
+    cell.leftCell
+    cell.rightCell
 
-        assert(!cell.getUpperCell.isEmpty)
-        assert(!cell.getLowerCell.isEmpty)
-        assert(!cell.getLeftCell.isEmpty)
-        assert(!cell.getRightCell.isEmpty)
+    assert(!cell.getUpperCell.isEmpty)
+    assert(!cell.getLowerCell.isEmpty)
+    assert(!cell.getLeftCell.isEmpty)
+    assert(!cell.getRightCell.isEmpty)
 
-    }
+  }
 
-    test("Cell.getUpperStream etc") {
-        val cell = (new XSSFWorkbook()).sheet(testSheet).cell(4, 4)
+  test("Cell.getUpperStream etc") {
+    val cell = (new XSSFWorkbook()).sheet(testSheet).cell(4, 4)
 
-        assert(cell.getUpperStream.take(10).toList.length == 5)
-        assert(cell.getLowerStream.take(10).toList.length == 10)
-        assert(cell.getLeftStream.take(10).toList.length == 5)
-        assert(cell.getRightStream.take(10).toList.length == 10)
+    assert(cell.getUpperStream.take(10).toList.length == 5)
+    assert(cell.getLowerStream.take(10).toList.length == 10)
+    assert(cell.getLeftStream.take(10).toList.length == 5)
+    assert(cell.getRightStream.take(10).toList.length == 10)
 
-        assert(cell.upperStream.take(10).toList.length == 5)
-        assert(cell.lowerStream.take(10).toList.length == 10)
-        assert(cell.leftStream.take(10).toList.length == 5)
-        assert(cell.rightStream.take(10).toList.length == 10)
+    assert(cell.upperStream.take(10).toList.length == 5)
+    assert(cell.lowerStream.take(10).toList.length == 10)
+    assert(cell.leftStream.take(10).toList.length == 5)
+    assert(cell.rightStream.take(10).toList.length == 10)
 
-        assert(cell.getUpperStream.take(10).toList.length == 5)
-        assert(cell.getLowerStream.take(10).toList.length == 10)
-        assert(cell.getLeftStream.take(10).toList.length == 5)
-        assert(cell.getRightStream.take(10).toList.length == 10)
-    }
+    assert(cell.getUpperStream.take(10).toList.length == 5)
+    assert(cell.getLowerStream.take(10).toList.length == 10)
+    assert(cell.getLeftStream.take(10).toList.length == 5)
+    assert(cell.getRightStream.take(10).toList.length == 10)
+  }
 }
