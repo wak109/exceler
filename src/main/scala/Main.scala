@@ -13,10 +13,27 @@ import org.apache.commons.cli.ParseException
 
 import Exceler._
 
+sealed trait Config {
+  val excelDir:String
+}
+
+object Config {
+  def apply():Config = Main.getConfig
+}
+
+
+object DEFAULT {
+  val EXCEL_DIR = "."
+  val PORT = 8080
+}
+
 object Main {
 
-  val DEFAULT_PORT = 8080
-  val DEFAULT_EXCEL_DIR = "."
+  private var config:Config = null
+
+  def getConfig() = config
+  class ConfigImpl(val excelDir:String) extends Config
+
 
   val description = """Scala Excel"""
   val site = """https://github.com/wak109/exceler"""
@@ -62,9 +79,9 @@ object Main {
         cl.getArgs.toList,
         cl.hasOption('h'),
         if (cl.hasOption('p')) cl.getOptionValue('p').toInt
-          else DEFAULT_PORT,
+          else DEFAULT.PORT,
         if (cl.hasOption('d')) cl.getOptionValue('d')
-          else DEFAULT_EXCEL_DIR
+          else DEFAULT.EXCEL_DIR
       )
     }
 
@@ -75,8 +92,11 @@ object Main {
     parseCommandLine(args) match {
       case Success(a) => a match {
         case (_,true,_,_) => printUsage() 
-        case (Nil,_,port,dir) => JettyLauncher.run(port)
-        case (args,_,port,dir) => args(0) match {
+        case (Nil,_,port,dir) => {
+          this.config = new ConfigImpl(dir)
+          JettyLauncher.run(port)
+        }
+        case (args,_,port,_) => args(0) match {
           case "query" => readExcelTable(
             args(1), args(2), args(3), args(4), args(5)) match {
               case Success(_) => None
