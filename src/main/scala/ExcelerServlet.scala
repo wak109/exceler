@@ -25,23 +25,9 @@ class ExcelerServlet extends ScalatraServlet with ExcelTableFunction {
             case _  => (x:String) => x == s
         }
     }
-    /*
-    val file = new File(params("book"))
-    val workbook = WorkbookFactory.create(file, null ,true) 
-    val result = for {
-        sheet <- workbook.getSheetOption(params("sheet")).toSeq
-        table <- sheet.getTableMap[TableQueryImpl].get(
-                  params("table")).toSeq
-        row <- table.query(
-            params.getOrElse("row","").split(",").toList.map(isSameStr),
-            params.getOrElse("column","").split(",").toList.map(isSameStr))
-        cell <- row
-        value <- tableFunction.getValue(cell)
-    } yield value
-    */
 
     val result = for {
-      book <- ExcelerBook(params("book")).toSeq
+      book <- ExcelerBook.getBook(params("book")).toSeq
       sheet <- book.getSheet(params("sheet")).toSeq
       table <- sheet.getTable(params("table")).toSeq
       row <- table.query(

@@ -53,25 +53,9 @@ object Exceler extends ExcelTableFunction {
           case _  => (x:String) => x == s
         }
       }
-      /*
-      val file = new File(filename)
-      val workbook = WorkbookFactory.create(file, null ,true) 
 
       val result = for {
-        sheet <- workbook.getSheetOption(sheetname).toSeq
-        table <- sheet.getTableMap[TableQueryImpl]
-                .get(tablename).toSeq
-        row <- table.query(
-          rowKeys.split(",").toList.map(isSameStr),
-          colKeys.split(",").toList.map(isSameStr))
-        cell <- row
-        value <- tableFunction.getValue(cell)
-      } yield value
-
-      println(result)
-      */
-      val result = for {
-        book <- ExcelerBook(filename).toSeq
+        book <- ExcelerBook.getBook(filename).toSeq
         sheet <- book.getSheet(sheetname).toSeq
         table <- sheet.getTable(tablename).toSeq
         row <- table.query(
@@ -116,6 +100,6 @@ object ExcelerBook {
         WorkbookFactory.create(f, null ,true))))
       .toMap
 
-  def apply(bookName:String) = bookMap.get(bookName)
+  def getBook(bookName:String) = bookMap.get(bookName)
 }
 
