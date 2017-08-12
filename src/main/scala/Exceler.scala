@@ -89,7 +89,7 @@ object Exceler extends ExcelTableFunction {
 
 class ExcelerSheet(_sheet:Sheet) {
   val sheet = _sheet
-  val tableMap = sheet.getTableMap[TableQueryImpl]
+  lazy private val tableMap = sheet.getTableMap[TableQueryImpl]
 
   def getTable(tableName:String) = tableMap.get(tableName)
 }
@@ -98,7 +98,7 @@ class ExcelerSheet(_sheet:Sheet) {
 class ExcelerBook(_workbook:Workbook) {
 
   val workbook = _workbook
-  val sheetMap = (for {
+  lazy private val sheetMap = (for {
       i <- Range(0, workbook.getNumberOfSheets)
     } yield (workbook.getSheetName(i), new ExcelerSheet(
         workbook.getSheetAt(i)))).toMap
