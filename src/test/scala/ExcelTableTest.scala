@@ -147,4 +147,31 @@ class ExcelTableTest
        )
     assert(tableFunction.getValue(cell3(0)(0)).get == "val13")
   }
+
+  test("getHorizontalLines") {
+    val file = new File(getClass.getResource(testWorkbook1).toURI)
+    val workbook = WorkbookFactory.create(file)
+    val sheet = workbook.sheet("border")
+    val rect = ExcelRectangle(sheet, 2, 1, 16, 9)
+
+    assert(ExcelTableBorder.getHorizontalLines(rect) == List(
+      (3,1,9),(6,2,9),(9,2,7),(13,2,7),(15,4,7),(16,1,9)))
+
+    assert(ExcelTableBorder.getVerticalLines(rect) == List(
+      (1,4,9),(1,14,16),(3,2,3),(3,10,15),(6,4,6),
+      (7,2,13),(7,16,16),(9,2,16)))
+  }
+
+  test("getRows") {
+    val file = new File(getClass.getResource(testWorkbook1).toURI)
+    val workbook = WorkbookFactory.create(file)
+    val sheet = workbook.sheet("border")
+    val rect = ExcelRectangle(sheet, 2, 1, 16, 9)
+
+    assert(ExcelTableBorder.getRows(rect) == List(
+      (2,3),(4,6),(7,9),(10,13),(14,15),(16,16)))
+
+    assert(ExcelTableBorder.getColumns(rect) == List(
+      (1,1),(2,6),(7,7),(8,9)))
+  }
 }

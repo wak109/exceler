@@ -70,3 +70,44 @@ trait ExcelTableFunction extends TableFunction[ExcelRectangle] {
     }
   }
 }
+
+object ExcelTableBorder {
+
+  def reGroup(group:Map[(Int,Int),List[(Int,Int,Int)]]) = {
+    for {
+      key <- group.keys
+    } yield (key, group.filterKeys(
+          (x)=>((key._1 >= x._1) && (key._2 <= x._2)))
+          .values.flatten.map(_._1).toList.sorted)
+  }
+
+  def getRows(rect:ExcelRectangle):List[(Int,Int)] = {
+    val groups = reGroup(
+        getHorizontalLines(rect).groupBy((t)=>(t._2, t._3)))
+    ((rect.top-1)::groups.map(_._2).maxBy(_.length))
+      .pairwise.map((tpl)=>(tpl._1+1,tpl._2))
+  }
+
+  def getColumns(rect:ExcelRectangle):List[(Int,Int)] = {
+    val groups = reGroup(
+        getVerticalLines(rect).groupBy((t)=>(t._2, t._3)))
+    ((rect.left-1)::groups.map(_._2).maxBy(_.length))
+      .pairwise.map((tpl)=>(tpl._1+1,tpl._2))
+  }
+
+  /**
+   */ 
+  def getHorizontalLines(rect:ExcelRectangle):List[(Int,Int,Int)] =
+    for {
+      rownum <- (rect.top to rect.bottom).toList
+      line <- rect.row(rownum).toList.blockingBy(_.hasBorderBottom)
+    } yield (rownum, line.head.getColumnIndex, line.last.getColumnIndex)
+
+  /**
+   */
+  def getVerticalLines(rect:ExcelRectangle):List[(Int,Int,Int)] =
+    for {
+      colnum <- (rect.left to rect.right).toList
+      line <- rect.column(colnum).toList.blockingBy(_.hasBorderRight)
+    } yield (colnum, line.head.getRowIndex, line.last.getRowIndex)
+}

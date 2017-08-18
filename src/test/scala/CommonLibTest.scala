@@ -20,6 +20,17 @@ class CommonLibTest extends FunSuite {
       List(List(1), List(2, 2), List(3, 3, 3), List(4)))
   }
 
+  test("List blockingBy") {
+    assert(List(1,2,2,4,3,1,2,4,2,1,2,4,3,4,4,3).blockingBy(_%2==0) ==
+      List(List(2,2,4), List(2,4,2), List(2,4), List(4,4)))
+    assert(List(2,2,4,3,1,2,4,2,1,2,4,3,4,4,3).blockingBy(_%2==0) ==
+      List(List(2,2,4), List(2,4,2), List(2,4), List(4,4)))
+    assert(List(1,2,2,4,3,1,2,4,2,1,2,4,3,4,4).blockingBy(_%2==0) ==
+      List(List(2,2,4), List(2,4,2), List(2,4), List(4,4)))
+    assert(List(2,2,4,3,1,2,4,2,1,2,4,3,4,4).blockingBy(_%2==0) ==
+      List(List(2,2,4), List(2,4,2), List(2,4), List(4,4)))
+  }
+
   test("getListOfFiles") {
     println(getListOfFiles("."))
   }

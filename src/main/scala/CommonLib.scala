@@ -8,6 +8,8 @@ object CommonLib {
     implicit class ImplicitListConversion[T](val lst:List[T]) {
       def splitBy(pred:T=>Boolean) = splitListBy(pred, lst)
       def pairingBy(pred:T=>Boolean) = pairingListBy(pred, lst)
+      def blockingBy(pred:T=>Boolean) = blockingListBy(pred, lst)
+      def pairwise() = pairwiseBy(lst)
     }
   }
 
@@ -47,6 +49,27 @@ object CommonLib {
       case x if x.length < 2 => Nil
       case head::tail if (!pred(head)) => pairingListBy(pred, tail)
       case h1::h2::tail => (h1,h2)::pairingListBy(pred, tail)
+    }
+  }
+
+  def blockingListBy[T](pred:T=>Boolean, lst:List[T]):List[List[T]] = {
+    lst match {
+      case Nil => Nil
+      case _ => {
+        val (head, tail) = lst.span(pred)
+        head match {
+          case Nil => blockingListBy[T](pred, tail.dropWhile(!pred(_)))
+          case _ => head::blockingListBy[T](pred, tail.dropWhile(!pred(_)))
+        }
+      }
+    }
+  }
+
+  def pairwiseBy[T](lst:List[T]):List[(T,T)] = {
+    lst match {
+      case Nil => Nil
+      case x if x.length < 2 => Nil
+      case head::tail => (head,tail.head)::pairwiseBy(tail)
     }
   }
 }

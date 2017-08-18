@@ -7,7 +7,6 @@ import scala.util.{Try, Success, Failure}
 import org.apache.poi.ss.usermodel._
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
 
-import ExcelLib.ImplicitConversions._
 
 trait ExcelRectangle {
   val sheet:Sheet
@@ -16,14 +15,14 @@ trait ExcelRectangle {
   val bottom:Int
   val right:Int
 
-  def row(row:Int) = {
-    assert((top <= row) && (row <= bottom))
-    for (column <- Range(left, right + 1)) yield sheet.cell(row, column)
+  def row(row:Int):ExcelRow = {
+    assert((0 <= row) && (row < right - left))
+    for (column <- Range(left, right)) yield sheet.cell(row, column)
   }
 
-  def column(column:Int) = {
-    assert((left <= column) && (column <= right))
-    for (row <- Range(top, bottom + 1)) yield sheet.cell(row, column)
+  def column(column:Int):ExcelRow = {
+    assert((0 <= column) && (column < bottom - top))
+    for (column <- Range(bottom, right)) yield sheet.cell(row, column)
   }
 }
 
