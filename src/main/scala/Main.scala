@@ -11,7 +11,7 @@ import org.apache.commons.cli.{Option => CmdOption}
 import org.apache.commons.cli.{Options => CmdOptions}
 import org.apache.commons.cli.ParseException
 
-import Exceler._
+import TableQueryImpl._
 
 sealed trait Config {
   val excelDir:String
@@ -96,12 +96,14 @@ object Main {
           this.config = new ConfigImpl(dir)
           JettyLauncher.run(port)
         }
-        case (args,_,port,_) => args(0) match {
-          case "query" => readExcelTable(
-            args(1), args(2), args(3), args(4), args(5)) match {
-              case Success(_) => None
+        case (args,_,_,_) => args(0) match {
+          case "query" => {
+            queryExcelTable(
+                args(1), args(2), args(3), args(4), args(5)) match {
+              case Success(result) => println(result)
               case Failure(e) => println(e.getMessage); printUsage()
             }
+          }
           case _ => printUsage()
         }
       }

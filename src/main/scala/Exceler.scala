@@ -30,65 +30,41 @@ class TableQueryImpl(
   with RectangleLineDraw 
 
 
-object TableQueryImpl {
+object TableQueryImpl extends ExcelTableFunction {
   implicit object factory extends ExcelFactory[TableQueryImpl] {
     override def create(
       sheet:Sheet,top:Int,left:Int,bottom:Int,right:Int) =
         new TableQueryImpl(sheet,top,left,bottom,right)
   }
-}
 
-object Exceler extends ExcelTableFunction {
-
-  def readExcelTable(
+  def queryExcelTable(
     filename:String,
     sheetname:String,
     tablename:String,
     rowKeys:String,
-    colKeys:String):Try[Unit] = {
-    Try {
-      def isSameStr(s:String): String => Boolean = {
-        s match {
-          case "" => (x:String) => true
-          case _  => (x:String) => x == s
-        }
+    colKeys:String) = {
+    def isSameStr(s:String): String => Boolean = {
+      s match {
+        case "" => (x:String) => true
+        case _  => (x:String) => x == s
       }
+    }
 
-      val result = for {
+    Try {
+      for {
         book <- ExcelerBook.getBook(filename).toSeq
-        sheet <- book.getSheet(sheetname).toSeq
-        table <- sheet.getTable(tablename).toSeq
+        sheet <- book.getSheetOption(sheetname).toSeq
+        table <- sheet.getTableMap[TableQueryImpl].get(tablename).toSeq
         row <- table.query(
           rowKeys.split(",").toList.map(isSameStr),
           colKeys.split(",").toList.map(isSameStr))
         cell <- row
         value <- tableFunction.getValue(cell)
       } yield value
-
-      println(result)
     }
   }
 }
 
-
-class ExcelerSheet(_sheet:Sheet) {
-  val sheet = _sheet
-  lazy private val tableMap = sheet.getTableMap[TableQueryImpl]
-
-  def getTable(tableName:String) = tableMap.get(tableName)
-}
-
-
-class ExcelerBook(_workbook:Workbook) {
-
-  val workbook = _workbook
-  lazy private val sheetMap = (for {
-      i <- Range(0, workbook.getNumberOfSheets)
-    } yield (workbook.getSheetName(i), new ExcelerSheet(
-        workbook.getSheetAt(i)))).toMap
-
-  def getSheet(sheetName:String) = sheetMap.get(sheetName)
-}
 
 object ExcelerBook {
 
@@ -96,8 +72,7 @@ object ExcelerBook {
     getListOfFiles(Config().excelDir)
       .filter(_.canRead)
       .filter(_.getName.endsWith(".xlsx"))
-      .map((f:File)=>(f.getName, new ExcelerBook(
-        WorkbookFactory.create(f, null ,true))))
+      .map((f:File)=>(f.getName, WorkbookFactory.create(f, null ,true)))
       .toMap
 
   def getBook(bookName:String) = bookMap.get(bookName)

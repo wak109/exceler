@@ -17,25 +17,15 @@ import ExcelLib.Table.ImplicitConversions._
 
 class ExcelerServlet extends ScalatraServlet with ExcelTableFunction {
 
-  get("/query/:book/:sheet/:table") {
-    
-    def isSameStr(s:String): String => Boolean = {
-        s match {
-            case "" => (x:String) => true
-            case _  => (x:String) => x == s
-        }
-    }
+  get("/:book/:sheet/:table") {
 
-    val result = for {
-      book <- ExcelerBook.getBook(params("book")).toSeq
-      sheet <- book.getSheet(params("sheet")).toSeq
-      table <- sheet.getTable(params("table")).toSeq
-      row <- table.query(
-        params.getOrElse("row","").split(",").toList.map(isSameStr),
-        params.getOrElse("column","").split(",").toList.map(isSameStr))
-      cell <- row
-      value <- tableFunction.getValue(cell)
-    } yield value
+    val result = TableQueryImpl.queryExcelTable(
+      params("book"),
+      params("sheet"),
+      params("table"),
+      params.getOrElse("row",""),
+      params.getOrElse("column","")
+    )
 
     <html>
       <body>

@@ -42,5 +42,11 @@ object ExcelRectangle {
 
     new Impl(sheet, top, left, bottom, right)
   }
+
+  implicit object factory extends ExcelFactory[ExcelRectangle] {
+    override def create(
+      sheet:Sheet,top:Int,left:Int,bottom:Int,right:Int) =
+        apply(sheet,top,left,bottom,right)
+  }
 }
 
