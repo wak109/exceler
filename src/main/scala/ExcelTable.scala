@@ -82,16 +82,16 @@ object ExcelTableBorder {
   }
 
   def getRows(rect:ExcelRectangle):List[(Int,Int)] = {
-    val groups = reGroup(
-        getHorizontalLines(rect).groupBy((t)=>(t._2, t._3)))
-    ((rect.top-1)::groups.map(_._2).maxBy(_.length))
+    val groups = reGroup(getHorizontalLines(rect).groupBy(
+          (t)=>(t._2, t._3)))
+    (((rect.top-1)::groups.map(_._2).maxBy(_.length)):+rect.bottom)
       .pairwise.map((tpl)=>(tpl._1+1,tpl._2))
   }
 
   def getColumns(rect:ExcelRectangle):List[(Int,Int)] = {
-    val groups = reGroup(
-        getVerticalLines(rect).groupBy((t)=>(t._2, t._3)))
-    ((rect.left-1)::groups.map(_._2).maxBy(_.length))
+    val groups = reGroup(getVerticalLines(rect).groupBy(
+          (t)=>(t._2, t._3)))
+    (((rect.left-1)::groups.map(_._2).maxBy(_.length)):+rect.right)
       .pairwise.map((tpl)=>(tpl._1+1,tpl._2))
   }
 
@@ -99,7 +99,7 @@ object ExcelTableBorder {
    */ 
   def getHorizontalLines(rect:ExcelRectangle):List[(Int,Int,Int)] =
     for {
-      rownum <- (rect.top to rect.bottom).toList
+      rownum <- (rect.top until rect.bottom).toList
       line <- rect.row(rownum).toList.blockingBy(_.hasBorderBottom)
     } yield (rownum, line.head.getColumnIndex, line.last.getColumnIndex)
 
@@ -107,7 +107,7 @@ object ExcelTableBorder {
    */
   def getVerticalLines(rect:ExcelRectangle):List[(Int,Int,Int)] =
     for {
-      colnum <- (rect.left to rect.right).toList
+      colnum <- (rect.left until rect.right).toList
       line <- rect.column(colnum).toList.blockingBy(_.hasBorderRight)
     } yield (colnum, line.head.getRowIndex, line.last.getRowIndex)
 }
