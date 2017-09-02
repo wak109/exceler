@@ -1,5 +1,3 @@
-lazy val scalatraVersion = "2.5.1"
-
 name := "exceler"
 version := "0.2.0"
 scalaVersion := "2.12.3"

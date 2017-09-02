@@ -121,3 +121,14 @@ trait StackedTableQuery[T] extends TableQuery[T] {
   }
 }
 
+////////////////
+
+trait TableQueryTrait[T] extends TableTrait[T] {
+  def getValue(rect:T):Option[String]
+}
+
+class TableQuery2[T:TableQueryTrait](val rect:T) {
+  val func = implicitly[TableQueryTrait[T]]
+  val rows = func.getRows(rect)
+  val columns = func.getColumns(rect)
+}

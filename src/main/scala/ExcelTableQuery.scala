@@ -37,3 +37,25 @@ trait ExcelTableQueryFunction
           rect.left, rect.bottom, rect.right)
   }
 }
+
+
+  /*
+trait TableQueryTraitImpl
+    extends TableQueryTrait[ExcelRectangle]
+    with ExcelTableTraitImpl {
+
+  override def getValue(rect:ExcelRectangle):Option[String] =
+    (for {
+      colnum <- (rect.left to rect.right).toStream
+      rownum <- (rect.top to rect.bottom).toStream
+      value <- rect.sheet.cell(rownum, colnum).getValueString.map(_.trim)
+    } yield value).headOption
+
+  def getLeftBorder(sheet:Sheet,row:Int,col:Int):(Int,Int) = {
+    (for {
+      cell <- (col to 0).toList if sheet.
+    } yield
+
+  }
+}
+    */

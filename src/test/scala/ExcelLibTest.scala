@@ -237,21 +237,32 @@ class ExcelLibTest extends FunSuite with ExcelLibResource {
   }
 
   test("Cell.getUpperStream etc") {
-    val cell = (new XSSFWorkbook()).sheet(testSheet).cell(4, 4)
+    val workbook = new XSSFWorkbook()
+    val sheet = workbook.sheet(testSheet)
+    val cell = sheet.cell(4, 4)
+    val _c1 = sheet.cell(4, 10)
+    val _c2 = sheet.cell(10, 4)
+    
 
-    assert(cell.getUpperStream.take(10).toList.length == 5)
-    assert(cell.getLowerStream.take(10).toList.length == 10)
-    assert(cell.getLeftStream.take(10).toList.length == 5)
-    assert(cell.getRightStream.take(10).toList.length == 10)
+    assert(cell.getUpperStream.toList.length == 5)
+    assert(cell.getLowerStream.toList.length == 7)
+    assert(cell.getLeftStream.toList.length == 5)
+    assert(cell.getRightStream.toList.length == 7)
+  }
 
-    assert(cell.upperStream.take(10).toList.length == 5)
+  test("Cell.upperStream etc") {
+    val workbook = new XSSFWorkbook()
+    val sheet = workbook.sheet(testSheet)
+    val cell = sheet.cell(4, 4)
+
+    assert(cell.upperStream.toList.length == 5)
     assert(cell.lowerStream.take(10).toList.length == 10)
-    assert(cell.leftStream.take(10).toList.length == 5)
+    assert(cell.leftStream.toList.length == 5)
     assert(cell.rightStream.take(10).toList.length == 10)
 
-    assert(cell.getUpperStream.take(10).toList.length == 5)
-    assert(cell.getLowerStream.take(10).toList.length == 10)
-    assert(cell.getLeftStream.take(10).toList.length == 5)
-    assert(cell.getRightStream.take(10).toList.length == 10)
+    assert(cell.getUpperStream.toList.length == 5)
+    assert(cell.getLowerStream.toList.length == 10)
+    assert(cell.getLeftStream.toList.length == 5)
+    assert(cell.getRightStream.toList.length == 10)
   }
 }

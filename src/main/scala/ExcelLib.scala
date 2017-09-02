@@ -228,7 +228,12 @@ trait CellExtra {
 
   def getLowerStream():Stream[Option[Cell]] = {
     def inner(sheet:Sheet, rownum:Int, colnum:Int):Stream[Option[Cell]] =
-      Stream.cons(sheet.getCellOption(rownum, colnum), inner(sheet, rownum + 1, colnum))
+      Stream.cons(sheet.getCellOption(rownum, colnum),
+        if (rownum < sheet.getLastRowNum)
+          inner(sheet, rownum + 1, colnum)
+        else
+          Stream.empty
+        )
     inner(cell.getSheet, cell.getRowIndex, cell.getColumnIndex)
   }
 
@@ -245,7 +250,12 @@ trait CellExtra {
 
   def getRightStream():Stream[Option[Cell]] = {
     def inner(sheet:Sheet, rownum:Int, colnum:Int):Stream[Option[Cell]] =
-      Stream.cons(sheet.getCellOption(rownum, colnum), inner(sheet, rownum, colnum + 1))
+      Stream.cons(sheet.getCellOption(rownum, colnum),
+        if (colnum < sheet.getRow(rownum).getLastCellNum - 1)
+          inner(sheet, rownum, colnum + 1)
+        else
+          Stream.empty
+        )
     inner(cell.getSheet, cell.getRowIndex, cell.getColumnIndex)
   }
 

@@ -111,3 +111,27 @@ object ExcelTableBorder {
       line <- rect.column(colnum).toList.blockingBy(_.hasBorderRight)
     } yield (colnum, line.head.getRowIndex, line.last.getRowIndex)
 }
+
+trait ExcelTableTraitImpl extends TableTrait[ExcelRectangle] {
+
+  override def getRows(rect:ExcelRectangle):List[ExcelRectangle] =
+    ExcelTableBorder.getRows(rect).map(tpl => ExcelRectangle(
+      rect.sheet, tpl._1, rect.right, tpl._2, rect.right))
+
+  override def getColumns(rect:ExcelRectangle):List[ExcelRectangle] =
+    ExcelTableBorder.getColumns(rect).map(tpl => ExcelRectangle(
+      rect.sheet, rect.top, tpl._1, rect.bottom, tpl._2))
+
+  override def getCross(
+      row:ExcelRectangle, column:ExcelRectangle):ExcelRectangle =
+    ExcelRectangle(row.sheet,
+      row.top, column.right, row.bottom, column.left)
+
+  override def merge(rectList:List[ExcelRectangle]):ExcelRectangle =
+    ExcelRectangle(
+        rectList.head.sheet,
+        rectList.head.top,
+        rectList.head.left,
+        rectList.last.bottom,
+        rectList.last.right)
+}
