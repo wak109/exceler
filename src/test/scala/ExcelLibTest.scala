@@ -139,6 +139,20 @@ class ExcelLibTest extends FunSuite with ExcelLibResource {
     }
   }
 
+  test("Sheet.getUsedRange") {
+    val sheet = (new XSSFWorkbook()).sheet(testSheet)
+
+    assert(sheet.getUsedRange.isEmpty)
+
+    sheet.cell(1,2)
+
+    assert(sheet.getUsedRange.get == (1,2,1,2))
+
+    sheet.cell(100,200)
+
+    assert(sheet.getUsedRange.get == (1,2,100,200))
+  }
+
   //////////////////////////////////////////////////////////////// 
   // Row Tests
   //

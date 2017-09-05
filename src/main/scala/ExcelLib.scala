@@ -125,6 +125,17 @@ trait SheetExtra {
 
   def cell(rownum:Int, colnum:Int):Cell =
       this.row(rownum).cell(colnum)
+
+  def getUsedRange():Option[(Int,Int,Int,Int)] = Try { (
+    sheet.getFirstRowNum,
+    (sheet.getFirstRowNum to sheet.getLastRowNum).toList.map(
+      sheet.getRowOption(_)).filter(_.isDefined).map(
+        _.get.getFirstCellNum).min.toInt,
+    sheet.getLastRowNum,
+    (sheet.getFirstRowNum to sheet.getLastRowNum).toList.map(
+      sheet.getRowOption(_)).filter(_.isDefined).map(
+        _.get.getLastCellNum).max.toInt - 1
+  ) }.toOption
 }
 
 

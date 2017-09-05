@@ -39,7 +39,6 @@ trait ExcelTableQueryFunction
 }
 
 
-  /*
 trait TableQueryTraitImpl
     extends TableQueryTrait[ExcelRectangle]
     with ExcelTableTraitImpl {
@@ -51,11 +50,16 @@ trait TableQueryTraitImpl
       value <- rect.sheet.cell(rownum, colnum).getValueString.map(_.trim)
     } yield value).headOption
 
+  /*
   def getLeftBorder(sheet:Sheet,row:Int,col:Int):(Int,Int) = {
-    (for {
-      cell <- (col to 0).toList if sheet.
-    } yield
-
+    for {
+      cellOpt <- sheet.getCell(row,col).getLeftStream
+    } yield {
+      cellOpt match {
+        case Some(cell) if cell.hasLeftBorder => cell
+        case _ => None
+      }
+    }
   }
+  */
 }
-    */
