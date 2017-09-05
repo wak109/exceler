@@ -253,14 +253,21 @@ class ExcelLibTest extends FunSuite with ExcelLibResource {
   test("Cell.getUpperStream etc") {
     val workbook = new XSSFWorkbook()
     val sheet = workbook.sheet(testSheet)
+
     val cell = sheet.cell(4, 4)
-    val _c1 = sheet.cell(4, 10)
-    val _c2 = sheet.cell(10, 4)
+
+    assert(cell.getUpperStream.toList.length == 1)
+    assert(cell.getLowerStream.toList.length == 1)
+    assert(cell.getLeftStream.toList.length == 1)
+    assert(cell.getRightStream.toList.length == 1)
+
+    val _c1 = sheet.cell(1, 1)
+    val _c2 = sheet.cell(10, 10)
     
 
-    assert(cell.getUpperStream.toList.length == 5)
+    assert(cell.getUpperStream.toList.length == 4)
     assert(cell.getLowerStream.toList.length == 7)
-    assert(cell.getLeftStream.toList.length == 5)
+    assert(cell.getLeftStream.toList.length == 4)
     assert(cell.getRightStream.toList.length == 7)
   }
 

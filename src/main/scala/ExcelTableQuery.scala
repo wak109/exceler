@@ -43,23 +43,35 @@ trait TableQueryTraitImpl
     extends TableQueryTrait[ExcelRectangle]
     with ExcelTableTraitImpl {
 
-  override def getValue(rect:ExcelRectangle):Option[String] =
-    (for {
-      colnum <- (rect.left to rect.right).toStream
-      rownum <- (rect.top to rect.bottom).toStream
-      value <- rect.sheet.cell(rownum, colnum).getValueString.map(_.trim)
-    } yield value).headOption
+  def getValue(sheet:Sheet,row:Int,col:Int):Option[String] = 
+    this.getValue(sheet, row, col, row, col)
 
-  /*
-  def getLeftBorder(sheet:Sheet,row:Int,col:Int):(Int,Int) = {
-    for {
-      cellOpt <- sheet.getCell(row,col).getLeftStream
-    } yield {
-      cellOpt match {
-        case Some(cell) if cell.hasLeftBorder => cell
-        case _ => None
-      }
-    }
+  override def getValue(rect:ExcelRectangle):Option[String] = 
+    this.getValue(rect.sheet,rect.top,rect.left,rect.bottom,rect.right)
+    
+  def getValue(
+    sheet:Sheet,top:Int,left:Int,bottom:Int,right:Int):Option[String] = {
+    val topLeft = this.getTopLeft(
+      sheet,top,left).getOrElse((top, left))
+    val bottomRight = this.getBottomRight(
+      sheet,bottom,right).getOrElse((bottom, right))
+
+    (for {
+      col <- (topLeft._2 to bottomRight._2).toStream
+      row <- (topLeft._1 to bottomRight._1).toStream
+      value <- sheet.cell(row, col).getValueString.map(_.trim)
+    } yield value).headOption
   }
-  */
+
+  def getTopLeft(sheet:Sheet,row:Int,col:Int):Option[(Int,Int)] =
+    (for {
+      cell <- sheet.cell(row,col).getLeftStream if cell.hasBorderLeft
+      cell <- cell.getUpperStream if cell.hasBorderTop
+    } yield (cell.getRowIndex, cell.getColumnIndex)).headOption
+
+  def getBottomRight(sheet:Sheet,row:Int,col:Int):Option[(Int,Int)] = 
+    (for {
+      cell <- sheet.cell(row,col).getRightStream if cell.hasBorderRight
+      cell <- cell.getLowerStream if cell.hasBorderBottom
+    } yield (cell.getRowIndex, cell.getColumnIndex)).headOption
 }

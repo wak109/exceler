@@ -41,16 +41,14 @@ object ExcelRectangleSheetConversion {
   
     def findTopRightFromBottomRight(cell:Cell):Option[Cell] = (
       for {
-        cOpt <- cell.getUpperStream
-        c <- cOpt
+        c <- cell.getUpperStream
         if c.isOuterBorderTop && c.isOuterBorderRight
       } yield c
     ).headOption
   
     def findBottomLeftFromBottomRight(cell:Cell):Option[Cell] = (
       for {
-        cOpt <- cell.getLeftStream
-        c <- cOpt
+        c <- cell.getLeftStream
         if c.isOuterBorderBottom && c.isOuterBorderLeft
       } yield c
     ).headOption

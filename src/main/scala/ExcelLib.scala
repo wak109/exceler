@@ -153,6 +153,8 @@ trait RowExtra {
 trait CellExtra {
   val cell:Cell
 
+  lazy val usedRange = cell.getSheet.getUsedRange
+
   def doubleTo(d:Double):Any = 
     if (d == math.rint(d)) math.round(d) else d
 
@@ -226,10 +228,10 @@ trait CellExtra {
   ////////////////////////////////////////////////////////////////
   // Cell Stream (Reader)
   //
-  def getUpperStream():Stream[Option[Cell]] = {
-    def inner(sheet:Sheet, rownum:Int, colnum:Int):Stream[Option[Cell]] =
-      Stream.cons(sheet.getCellOption(rownum, colnum),
-        if (rownum > 0)
+  def getUpperStream():Stream[Cell] = {
+    def inner(sheet:Sheet, rownum:Int, colnum:Int):Stream[Cell] =
+      Stream.cons(sheet.cell(rownum, colnum),
+        if (rownum > usedRange.fold(0)(_._1))
           inner(sheet, rownum - 1, colnum)
         else
           Stream.empty
@@ -237,10 +239,10 @@ trait CellExtra {
     inner(cell.getSheet, cell.getRowIndex, cell.getColumnIndex)
   }
 
-  def getLowerStream():Stream[Option[Cell]] = {
-    def inner(sheet:Sheet, rownum:Int, colnum:Int):Stream[Option[Cell]] =
-      Stream.cons(sheet.getCellOption(rownum, colnum),
-        if (rownum < sheet.getLastRowNum)
+  def getLowerStream():Stream[Cell] = {
+    def inner(sheet:Sheet, rownum:Int, colnum:Int):Stream[Cell] =
+      Stream.cons(sheet.cell(rownum, colnum),
+        if (rownum < usedRange.fold(-1)(_._3))
           inner(sheet, rownum + 1, colnum)
         else
           Stream.empty
@@ -248,10 +250,10 @@ trait CellExtra {
     inner(cell.getSheet, cell.getRowIndex, cell.getColumnIndex)
   }
 
-  def getLeftStream():Stream[Option[Cell]] = {
-    def inner(sheet:Sheet, rownum:Int, colnum:Int):Stream[Option[Cell]] =
-      Stream.cons(sheet.getCellOption(rownum, colnum),
-        if (colnum > 0)
+  def getLeftStream():Stream[Cell] = {
+    def inner(sheet:Sheet, rownum:Int, colnum:Int):Stream[Cell] =
+      Stream.cons(sheet.cell(rownum, colnum),
+        if (colnum > usedRange.fold(0)(_._2))
           inner(sheet, rownum, colnum - 1)
         else
           Stream.empty
@@ -259,10 +261,10 @@ trait CellExtra {
     inner(cell.getSheet, cell.getRowIndex, cell.getColumnIndex)
   }
 
-  def getRightStream():Stream[Option[Cell]] = {
-    def inner(sheet:Sheet, rownum:Int, colnum:Int):Stream[Option[Cell]] =
-      Stream.cons(sheet.getCellOption(rownum, colnum),
-        if (colnum < sheet.getRow(rownum).getLastCellNum - 1)
+  def getRightStream():Stream[Cell] = {
+    def inner(sheet:Sheet, rownum:Int, colnum:Int):Stream[Cell] =
+      Stream.cons(sheet.cell(rownum, colnum),
+        if (colnum < usedRange.fold(-1)(_._4))
           inner(sheet, rownum, colnum + 1)
         else
           Stream.empty
