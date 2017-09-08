@@ -12,7 +12,7 @@ import java.nio.file.{Paths, Files}
 import ExcelLib.ImplicitConversions._
 
 
-class ExcelTableQueryTest
+class ExcelTableLibTest
   extends FunSuite with ExcelLibResource
   with ExcelTableSheetFunction {
 
