@@ -1,6 +1,7 @@
 /* vim: set ts=2 et sw=2 sts=2 fileencoding=utf-8: */
 import scala.collection._
 import scala.language.implicitConversions
+import scala.reflect.ClassTag
 import scala.util.control.Exception._
 import scala.util.{Try, Success, Failure}
 
@@ -13,6 +14,14 @@ import java.nio.file._
 import CommonLib.ImplicitConversions._
 import ExcelLib.ImplicitConversions._
 import ExcelLib.Rectangle.ImplicitConversions._
+
+abstract trait TableLib[T] {
+  def getRows(rect:T):List[T]
+  def getColumns(rect:T):List[T]
+  def getCross(row:T,column:T):T
+  def merge(rectList:List[T]):T
+}
+
 
 object ExcelTableBorder {
 
@@ -38,16 +47,12 @@ object ExcelTableBorder {
       .pairwise.map((tpl)=>(tpl._1+1,tpl._2))
   }
 
-  /**
-   */ 
   def getHorizontalLines(rect:ExcelRectangle):List[(Int,Int,Int)] =
     for {
       rownum <- (rect.top until rect.bottom).toList
       line <- rect.row(rownum).toList.blockingBy(_.hasBorderBottom)
     } yield (rownum, line.head.getColumnIndex, line.last.getColumnIndex)
 
-  /**
-   */
   def getVerticalLines(rect:ExcelRectangle):List[(Int,Int,Int)] =
     for {
       colnum <- (rect.left until rect.right).toList
@@ -56,16 +61,7 @@ object ExcelTableBorder {
 }
 
 
-
-abstract trait TableTrait[T] {
-  def getRows(rect:T):List[T]
-  def getColumns(rect:T):List[T]
-  def getCross(row:T,column:T):T
-  def merge(rectList:List[T]):T
-}
-
-
-trait ExcelTableTraitImpl extends TableTrait[ExcelRectangle] {
+trait ExcelTableLibImpl extends TableLib[ExcelRectangle] {
 
   override def getRows(rect:ExcelRectangle):List[ExcelRectangle] = 
     ExcelTableBorder.getRows(rect).map(tpl => ExcelRectangle(
@@ -100,8 +96,8 @@ class Rect(
 }
 
 object Rect {
-  implicit object rectTableTrait extends TableTrait[Rect] {
-    val func = new ExcelTableTraitImpl {}
+  implicit object rectTableLib extends TableLib[Rect] {
+    val func = new ExcelTableLibImpl {}
     def conv(rect:ExcelRectangle) = new Rect(rect.sheet,rect.top,rect.left,rect.bottom,rect.right)
 
     override def getRows(rect:Rect):List[Rect] = func.getRows(rect).map(conv)
@@ -109,4 +105,62 @@ object Rect {
     override def getCross(row:Rect,column:Rect):Rect = conv(func.getCross(row,column))
     override def merge(rectList:List[Rect]):Rect = conv(func.merge(rectList))
   }
+}
+
+class TableQuery2[
+    T<:{def getValue():Option[String]}:TableLib:ClassTag](val rect:T)
+{
+  val tlib = implicitly[TableLib[T]]
+
+  val rows = tlib.getRows(rect)
+  val columns = tlib.getColumns(rect)
+  val cells = List.tabulate(rows.length, columns.length)(
+    (row, col)=>tlib.getCross(rows(row), columns(col)))
+}
+
+
+
+object ExcelTableLib {
+
+  def collectTopLeft(
+      sheet:Sheet, top:Int, left:Int, bottom:Int, right:Int) =
+    for {
+      rownum <- (top to bottom).toList
+      colnum <- (left to right).toList
+      cell = sheet.cell(rownum, colnum)
+        if (cell.hasBorderTop || rownum == top) &&
+           (cell.hasBorderLeft || colnum == left)
+    } yield (rownum, colnum)
+
+  def getBottomRow(sheet:Sheet, top:Int, colnum:Int, limit:Int) =
+    (for {
+      rownum <- (top to limit).toList
+      cell = sheet.cell(rownum, colnum) if cell.hasBorderBottom
+    } yield rownum).headOption.getOrElse(limit)
+
+  def getRightColumn(sheet:Sheet, rownum:Int, left:Int, limit:Int) =
+    (for {
+      colnum <- (left to limit).toList
+      cell = sheet.cell(rownum, colnum) if cell.hasBorderRight
+    } yield colnum).headOption.getOrElse(limit)
+
+  def getBottomRight(sheet:Sheet, top:Int, left:Int,
+      bottomLimit:Int, rightLimit:Int) = (
+      getBottomRow(sheet, top, left, bottomLimit),
+      getRightColumn(sheet, top, left, rightLimit)
+    )
+
+  def getRowList(topLeftList:List[(Int,Int)]) =
+    topLeftList.map(_._1).toSet.toList.sorted
+
+  def getColumnList(topLeftList:List[(Int,Int)]) =
+    topLeftList.map(_._2).toSet.toList.sorted
+
+  def getRowSpan(top:Int, bottom:Int, rowList:List[Int]) =
+    rowList.zipWithIndex.dropWhile(_._1 < top)
+      .takeWhile(_._1 <= bottom).map(_._2)
+
+  def getColumnSpan(left:Int, right:Int, columnList:List[Int]) =
+    columnList.zipWithIndex.dropWhile(_._1 < left)
+      .takeWhile(_._1 <= right).map(_._2)
 }

@@ -3,7 +3,6 @@ import scala.collection._
 import scala.language.implicitConversions
 import scala.util.control.Exception._
 import scala.util.{Try, Success, Failure}
-import scala.reflect.ClassTag
 
 import CommonLib.ImplicitConversions._
 
@@ -120,17 +119,4 @@ trait StackedTableQuery[T] extends TableQuery[T] {
       }
     }
   }
-}
-
-////////////////
-
-class TableQuery2[
-    T<:{def getValue():Option[String]}:TableTrait:ClassTag](val rect:T)
-{
-  val func = implicitly[TableTrait[T]]
-
-  val rows = func.getRows(rect)
-  val columns = func.getColumns(rect)
-  val cells = List.tabulate(rows.length, columns.length)(
-    (row, col)=>func.getCross(rows(row), columns(col)))
 }
