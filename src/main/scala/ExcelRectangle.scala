@@ -48,5 +48,7 @@ object ExcelRectangle {
       sheet:Sheet,top:Int,left:Int,bottom:Int,right:Int) =
         apply(sheet,top,left,bottom,right)
   }
+
+  implicit object tableTrait extends ExcelTableTraitImpl {}
 }
 

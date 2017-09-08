@@ -46,11 +46,3 @@ trait Table[T] extends TableFunction[T] {
     }
   }
 }
-
-
-trait TableTrait[T] {
-  def getRows(rect:T):List[T]
-  def getColumns(rect:T):List[T]
-  def getCross(row:T,column:T):T
-  def merge(rectList:List[T]):T
-}

@@ -112,9 +112,19 @@ object ExcelTableBorder {
     } yield (colnum, line.head.getRowIndex, line.last.getRowIndex)
 }
 
+
+
+abstract trait TableTrait[T] {
+  def getRows(rect:T):List[T]
+  def getColumns(rect:T):List[T]
+  def getCross(row:T,column:T):T
+  def merge(rectList:List[T]):T
+}
+
+
 trait ExcelTableTraitImpl extends TableTrait[ExcelRectangle] {
 
-  override def getRows(rect:ExcelRectangle):List[ExcelRectangle] =
+  override def getRows(rect:ExcelRectangle):List[ExcelRectangle] = 
     ExcelTableBorder.getRows(rect).map(tpl => ExcelRectangle(
       rect.sheet, tpl._1, rect.right, tpl._2, rect.right))
 
@@ -134,4 +144,26 @@ trait ExcelTableTraitImpl extends TableTrait[ExcelRectangle] {
         rectList.head.left,
         rectList.last.bottom,
         rectList.last.right)
+}
+
+
+class Rect(
+    val sheet:Sheet, val top:Int, val left:Int,
+    val bottom:Int, val right:Int)
+      extends ExcelRectangle with TableQueryTraitImpl {
+
+  def getValue():Option[String] =
+    this.getValue(this.sheet, this.top, this.left, this.bottom, this.right)
+}
+
+object Rect {
+  implicit object rectTableTrait extends TableTrait[Rect] {
+    val func = new ExcelTableTraitImpl {}
+    def conv(rect:ExcelRectangle) = new Rect(rect.sheet,rect.top,rect.left,rect.bottom,rect.right)
+
+    override def getRows(rect:Rect):List[Rect] = func.getRows(rect).map(conv)
+    override def getColumns(rect:Rect):List[Rect] = func.getColumns(rect).map(conv)
+    override def getCross(row:Rect,column:Rect):Rect = conv(func.getCross(row,column))
+    override def merge(rectList:List[Rect]):Rect = conv(func.merge(rectList))
+  }
 }

@@ -474,6 +474,21 @@ trait CellBorderExtra {
       .getOrElse(false))
   }
 
+  ////////////////////////////////////////////////////////////////
+  // Enclosed Area
+  ////////////////////////////////////////////////////////////////
+
+  def getTopLeftCorner():Option[Cell] =
+    (for {
+      cell <- cell.getLeftStream if cell.hasBorderLeft
+      cell <- cell.getUpperStream if cell.hasBorderTop
+    } yield cell).headOption
+
+  def getBottomRightCorner():Option[Cell] = 
+    (for {
+      cell <- cell.getRightStream if cell.hasBorderRight
+      cell <- cell.getLowerStream if cell.hasBorderBottom
+    } yield cell).headOption
 }
 
 trait CellOuterBorderExtra {

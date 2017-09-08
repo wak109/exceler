@@ -28,4 +28,11 @@ class ExcelTableQueryTest
 
   }
 
+  test("TableQuery2") {
+    val file = new File(getClass.getResource(testWorkbook1).toURI)
+    val workbook = WorkbookFactory.create(file)
+    val sheet = workbook.getSheet("table2")
+
+    val tableQuery = new TableQuery2[Rect](new Rect(sheet,2,1,18,8))
+  }
 }
