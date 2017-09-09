@@ -41,7 +41,7 @@ class ExcelShapeTest extends FunSuite with ExcelLibResource {
   }
 
   test("Shapes") {
-    val file = new File(getClass.getClassLoader.getResource(testWorkbook1).toURI)
+    val file = new File(getURI(testWorkbook1))
     val workbook = WorkbookFactory.create(file)
     val relations = workbook.getSheet("shapes").asInstanceOf[POIXMLDocumentPart].getRelations.asScala
     val drawing = (
@@ -57,14 +57,14 @@ class ExcelShapeTest extends FunSuite with ExcelLibResource {
   }
 
   test("getShapes") {
-    val file = new File(getClass.getClassLoader.getResource(testWorkbook1).toURI)
+    val file = new File(getURI(testWorkbook1))
     val workbook = WorkbookFactory.create(file)
     val sheet = workbook.getSheet("shapes")
     assert(sheet.getXSSFShapes.length == 8)
   }
 
   test("print Xml of Shape") {
-    val file = new File(getClass.getClassLoader.getResource(testWorkbook1).toURI)
+    val file = new File(getURI(testWorkbook1))
     val workbook = WorkbookFactory.create(file)
     val sheet = workbook.getSheet("shapes")
     for (shape <- sheet.getXSSFShapes) {
@@ -74,7 +74,7 @@ class ExcelShapeTest extends FunSuite with ExcelLibResource {
 
   test("copy shape") {
     
-    val file = new File(getClass.getClassLoader.getResource(testWorkbook1).toURI)
+    val file = new File(getURI(testWorkbook1))
     val workbook = WorkbookFactory.create(file)
     val sheet = workbook.getSheet("shapes")
 

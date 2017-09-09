@@ -2,5 +2,9 @@
 package exceler.test
 
 trait ExcelLibResource {
+
   val testWorkbook1 = "test1.xlsx"
+
+  def getURI(resource:String) =
+    this.getClass.getClassLoader.getResource(resource).toURI
 }

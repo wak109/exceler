@@ -21,7 +21,7 @@ class ExcelTableLibTest
   with ExcelTableSheetFunction {
 
   test("TableQueryTraitImpl.getValue") {
-    val file = new File(getClass.getClassLoader.getResource(testWorkbook1).toURI)
+    val file = new File(getURI(testWorkbook1))
     val workbook = WorkbookFactory.create(file)
     val sheet = workbook.getSheet("table2")
 
@@ -33,7 +33,7 @@ class ExcelTableLibTest
   }
 
   test("TableQuery2") {
-    val file = new File(getClass.getClassLoader.getResource(testWorkbook1).toURI)
+    val file = new File(getURI(testWorkbook1))
     val workbook = WorkbookFactory.create(file)
     val sheet = workbook.getSheet("table2")
 

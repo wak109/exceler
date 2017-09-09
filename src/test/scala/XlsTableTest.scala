@@ -14,20 +14,17 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import java.io.File
 import java.nio.file.{Paths, Files}
 
+import exceler.excel.excellib.ImplicitConversions._
 import exceler.xls._
-import exceler.excel._
-import excellib.ImplicitConversions._
+import exceler.xls.XlsTable._ 
 
 
 @RunWith(classOf[JUnitRunner])
 class XlsTableTest
-  extends FunSuite with ExcelLibResource
-  with ExcelTableSheetFunction {
-
-  import XlsTable._ 
+  extends FunSuite with ExcelLibResource {
 
   test("XlsTable.getTopLeftList") {
-    val file = new File(getClass.getClassLoader.getResource(testWorkbook1).toURI)
+    val file = new File(getURI(testWorkbook1))
     val workbook = WorkbookFactory.create(file)
     val sheet = workbook.getSheet("table2")
 
@@ -35,7 +32,7 @@ class XlsTableTest
   }
 
   test("getXlsHeight") {
-    val file = new File(getClass.getClassLoader.getResource(testWorkbook1).toURI)
+    val file = new File(getURI(testWorkbook1))
     val workbook = WorkbookFactory.create(file)
     val sheet = workbook.getSheet("table2")
 
@@ -47,7 +44,7 @@ class XlsTableTest
   }
 
   test("getXlsWidth") {
-    val file = new File(getClass.getClassLoader.getResource(testWorkbook1).toURI)
+    val file = new File(getURI(testWorkbook1))
     val workbook = WorkbookFactory.create(file)
     val sheet = workbook.getSheet("table2")
 
@@ -56,7 +53,7 @@ class XlsTableTest
   }
 
   test("getXlsRowLineList") {
-    val file = new File(getClass.getClassLoader.getResource(testWorkbook1).toURI)
+    val file = new File(getURI(testWorkbook1))
     val workbook = WorkbookFactory.create(file)
     val sheet = workbook.getSheet("table2")
 
@@ -65,7 +62,7 @@ class XlsTableTest
   }
 
   test("getXlsColumnLineList") {
-    val file = new File(getClass.getClassLoader.getResource(testWorkbook1).toURI)
+    val file = new File(getURI(testWorkbook1))
     val workbook = WorkbookFactory.create(file)
     val sheet = workbook.getSheet("table2")
 
@@ -74,7 +71,7 @@ class XlsTableTest
   }
 
   test("getXmlRowSpan,getXmlColumnSpan") {
-    val file = new File(getClass.getClassLoader.getResource(testWorkbook1).toURI)
+    val file = new File(getURI(testWorkbook1))
     val workbook = WorkbookFactory.create(file)
     val sheet = workbook.getSheet("table2")
     val rowList = getXlsRowLineList(getTopLeftList(sheet,2,1,17,8))
@@ -86,11 +83,36 @@ class XlsTableTest
     assert(getXmlColumnSpan(1,4,columnList) == (0,4))
   }
 
-  test("getExcelTableCellList") {
-    val file = new File(getClass.getClassLoader.getResource(testWorkbook1).toURI)
+  test("XlsTalbe apply") {
+    val file = new File(getURI(testWorkbook1))
     val workbook = WorkbookFactory.create(file)
     val sheet = workbook.getSheet("table2")
 
-    println(XlsTable(sheet,2,1,18,8))
+    val xlsTable = XlsTable(sheet,2,1,18,8)
+
+    assert(xlsTable(0).length == 1)
+    assert(xlsTable(0)(0).toXml.text == "test3")
+
+    assert(xlsTable(1).length == 4)
+    assert(xlsTable(1)(2).toXml.text == "col2")
+    assert(xlsTable(1)(3).toXml.text == "k")
+
+    assert(xlsTable(2).length == 4)
+    assert(xlsTable(2)(2).toXml.text == "left")
+    assert(xlsTable(2)(3).toXml.text == "right")
+
+    assert(xlsTable(3).length == 8)
+    assert(xlsTable(3)(0).toXml.text == "row1")
+    assert(xlsTable(3)(1).toXml.text == "upper")
+    assert(xlsTable(3)(4).toXml.text == "ul")
+    assert(xlsTable(3)(5).toXml.text == "ur")
+
+    assert(xlsTable(4).length == 6)
+    assert(xlsTable(4)(0).toXml.text == "lower")
+    assert(xlsTable(4)(2).toXml.text == "what is it?")
+    assert(xlsTable(4)(3).toXml.text == "lr")
+
+    assert(xlsTable(8).length == 7)
+    assert(xlsTable(8)(6).toXml.text == "bottomRight")
   }
 }
