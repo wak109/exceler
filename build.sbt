@@ -1,5 +1,5 @@
 name := "exceler"
-version := "0.2.0"
+version := "0.3.0"
 scalaVersion := "2.12.3"
 scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature")
 libraryDependencies ++= Seq(
@@ -13,9 +13,10 @@ libraryDependencies ++= Seq(
   "org.scalatra" %% "scalatra-specs2" % "2.5.1"  % "test",
   "ch.qos.logback" % "logback-classic" % "1.1.3" % "runtime",
   "org.eclipse.jetty" %  "jetty-webapp" % "9.4.7.RC0" % "compile;container",
-  "javax.servlet" % "javax.servlet-api" % "3.1.0" % "provided"
+  "javax.servlet" % "javax.servlet-api" % "3.1.0" % "provided",
+  "junit" % "junit" % "4.12" % "test"
 )
 
 enablePlugins(JettyPlugin)
 
-mainClass in (Compile, packageBin) := Some("Main")
+mainClass in (Compile, packageBin) := Some("exceler.Main")

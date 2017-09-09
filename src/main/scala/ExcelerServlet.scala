@@ -10,9 +10,11 @@ import org.scalatra._
 import java.io._
 import java.nio.file._
 
-import ExcelLib.ImplicitConversions._
-import ExcelLib.Rectangle.ImplicitConversions._
-import ExcelLib.Table.ImplicitConversions._
+import exceler.excel._
+
+import excellib.ImplicitConversions._
+import excellib.Rectangle.ImplicitConversions._
+import excellib.Table.ImplicitConversions._
 
 
 class ExcelerServlet extends ScalatraServlet with ExcelTableFunction {

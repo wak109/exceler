@@ -1,4 +1,7 @@
 /* vim: set ts=2 et sw=2 sts=2 fileencoding=utf-8: */
+
+package exceler.excel
+
 import scala.collection._
 import scala.language.implicitConversions
 import scala.reflect.ClassTag
@@ -11,9 +14,11 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import java.io._
 import java.nio.file._
 
+import exceler.common._
+import exceler.table._
 import CommonLib.ImplicitConversions._
-import ExcelLib.ImplicitConversions._
-import ExcelLib.Rectangle.ImplicitConversions._
+import excellib.ImplicitConversions._
+import excellib.Rectangle.ImplicitConversions._
 
 abstract trait TableLib[T] {
   def getRows(rect:T):List[T]
@@ -86,7 +91,7 @@ trait ExcelTableLibImpl extends TableLib[ExcelRectangle] {
 }
 
 
-class Rect(
+class Rect2(
     val sheet:Sheet, val top:Int, val left:Int,
     val bottom:Int, val right:Int)
       extends ExcelRectangle with TableQueryTraitImpl {
@@ -95,15 +100,15 @@ class Rect(
     this.getValue(this.sheet, this.top, this.left, this.bottom, this.right)
 }
 
-object Rect {
-  implicit object rectTableLib extends TableLib[Rect] {
+object Rect2 {
+  implicit object rectTableLib extends TableLib[Rect2] {
     val func = new ExcelTableLibImpl {}
-    def conv(rect:ExcelRectangle) = new Rect(rect.sheet,rect.top,rect.left,rect.bottom,rect.right)
+    def conv(rect:ExcelRectangle) = new Rect2(rect.sheet,rect.top,rect.left,rect.bottom,rect.right)
 
-    override def getRows(rect:Rect):List[Rect] = func.getRows(rect).map(conv)
-    override def getColumns(rect:Rect):List[Rect] = func.getColumns(rect).map(conv)
-    override def getCross(row:Rect,column:Rect):Rect = conv(func.getCross(row,column))
-    override def merge(rectList:List[Rect]):Rect = conv(func.merge(rectList))
+    override def getRows(rect:Rect2):List[Rect2] = func.getRows(rect).map(conv)
+    override def getColumns(rect:Rect2):List[Rect2] = func.getColumns(rect).map(conv)
+    override def getCross(row:Rect2,column:Rect2):Rect2 = conv(func.getCross(row,column))
+    override def merge(rectList:List[Rect2]):Rect2 = conv(func.merge(rectList))
   }
 }
 
@@ -116,51 +121,4 @@ class TableQuery2[
   val columns = tlib.getColumns(rect)
   val cells = List.tabulate(rows.length, columns.length)(
     (row, col)=>tlib.getCross(rows(row), columns(col)))
-}
-
-
-
-object ExcelTableLib {
-
-  def collectTopLeft(
-      sheet:Sheet, top:Int, left:Int, bottom:Int, right:Int) =
-    for {
-      rownum <- (top to bottom).toList
-      colnum <- (left to right).toList
-      cell = sheet.cell(rownum, colnum)
-        if (cell.hasBorderTop || rownum == top) &&
-           (cell.hasBorderLeft || colnum == left)
-    } yield (rownum, colnum)
-
-  def getBottomRow(sheet:Sheet, top:Int, colnum:Int, limit:Int) =
-    (for {
-      rownum <- (top to limit).toList
-      cell = sheet.cell(rownum, colnum) if cell.hasBorderBottom
-    } yield rownum).headOption.getOrElse(limit)
-
-  def getRightColumn(sheet:Sheet, rownum:Int, left:Int, limit:Int) =
-    (for {
-      colnum <- (left to limit).toList
-      cell = sheet.cell(rownum, colnum) if cell.hasBorderRight
-    } yield colnum).headOption.getOrElse(limit)
-
-  def getBottomRight(sheet:Sheet, top:Int, left:Int,
-      bottomLimit:Int, rightLimit:Int) = (
-      getBottomRow(sheet, top, left, bottomLimit),
-      getRightColumn(sheet, top, left, rightLimit)
-    )
-
-  def getRowList(topLeftList:List[(Int,Int)]) =
-    topLeftList.map(_._1).toSet.toList.sorted
-
-  def getColumnList(topLeftList:List[(Int,Int)]) =
-    topLeftList.map(_._2).toSet.toList.sorted
-
-  def getRowSpan(top:Int, bottom:Int, rowList:List[Int]) =
-    rowList.zipWithIndex.dropWhile(_._1 < top)
-      .takeWhile(_._1 <= bottom).map(_._2)
-
-  def getColumnSpan(left:Int, right:Int, columnList:List[Int]) =
-    columnList.zipWithIndex.dropWhile(_._1 < left)
-      .takeWhile(_._1 <= right).map(_._2)
 }

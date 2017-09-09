@@ -1,4 +1,6 @@
 /* vim: set ts=2 et sw=2 sts=2 fileencoding=utf-8: */
+package exceler
+
 import scala.util.control.Exception._
 import scala.util.{Try, Success, Failure}
 
@@ -10,6 +12,10 @@ import org.apache.commons.cli.HelpFormatter
 import org.apache.commons.cli.{Option => CmdOption}
 import org.apache.commons.cli.{Options => CmdOptions}
 import org.apache.commons.cli.ParseException
+
+import exceler.table._
+import exceler.excel._
+import exceler.server._
 
 import TableQueryImpl._
 

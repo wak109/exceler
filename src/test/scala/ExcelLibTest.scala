@@ -1,4 +1,6 @@
 /* vim: set ts=2 et sw=2 sts=2 fileencoding=utf-8: */
+package exceler.test
+
 import scala.util.{Try, Success, Failure}
 import scala.collection.JavaConverters._
 import org.scalatest.FunSuite
@@ -9,7 +11,8 @@ import org.apache.poi.xssf.usermodel._
 import java.io.File
 import java.nio.file.{Paths, Files}
 
-import ExcelLib.ImplicitConversions._
+import exceler.excel._
+import excellib.ImplicitConversions._
 
 class ExcelLibTest extends FunSuite with ExcelLibResource {
 

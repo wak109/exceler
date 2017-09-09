@@ -1,4 +1,6 @@
 /* vim: set ts=2 et sw=2 sts=2 fileencoding=utf-8: */
+package exceler.test
+
 import scala.util.{Try, Success, Failure}
 import org.scalatest._
 
@@ -9,7 +11,8 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import java.io.File
 import java.nio.file.{Paths, Files}
 
-import ExcelLib.ImplicitConversions._
+import exceler.excel._
+import excellib.ImplicitConversions._
 
 
 class ExcelTableTest
@@ -94,7 +97,7 @@ class ExcelTableTest
 
   test("getTableName") {
 
-    val file = new File(getClass.getResource(testWorkbook1).toURI)
+    val file = new File(getClass.getClassLoader.getResource(testWorkbook1).toURI)
     val workbook = WorkbookFactory.create(file)
     val sheet = workbook.sheet("table")
     val table = new TableQueryImpl(sheet, 2, 1, 17, 8)
@@ -116,7 +119,7 @@ class ExcelTableTest
   }
 
   test("StackedTable") {
-    val file = new File(getClass.getResource(testWorkbook1).toURI)
+    val file = new File(getClass.getClassLoader.getResource(testWorkbook1).toURI)
     val workbook = WorkbookFactory.create(file)
     val sheet = workbook.sheet("stack")
     val table = new TableQueryImpl(sheet, 1, 1, 18, 12)
@@ -149,7 +152,7 @@ class ExcelTableTest
   }
 
   test("getHorizontalLines") {
-    val file = new File(getClass.getResource(testWorkbook1).toURI)
+    val file = new File(getClass.getClassLoader.getResource(testWorkbook1).toURI)
     val workbook = WorkbookFactory.create(file)
     val sheet = workbook.sheet("border")
     val rect = ExcelRectangle(sheet, 2, 1, 16, 9)
@@ -163,7 +166,7 @@ class ExcelTableTest
   }
 
   test("getRows") {
-    val file = new File(getClass.getResource(testWorkbook1).toURI)
+    val file = new File(getClass.getClassLoader.getResource(testWorkbook1).toURI)
     val workbook = WorkbookFactory.create(file)
     val sheet = workbook.sheet("border")
     val rect = ExcelRectangle(sheet, 2, 1, 16, 9)

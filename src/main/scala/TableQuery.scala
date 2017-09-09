@@ -1,9 +1,12 @@
 /* vim: set ts=2 et sw=2 sts=2 fileencoding=utf-8: */
+package exceler.table
+
 import scala.collection._
 import scala.language.implicitConversions
 import scala.util.control.Exception._
 import scala.util.{Try, Success, Failure}
 
+import exceler.common._
 import CommonLib.ImplicitConversions._
 
 

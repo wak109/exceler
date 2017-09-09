@@ -1,4 +1,6 @@
 /* vim: set ts=2 et sw=2 sts=2 fileencoding=utf-8: */
+package exceler.test
+
 import scala.collection.JavaConverters._
 import scala.language.implicitConversions
 import org.scalatest.FunSuite
@@ -13,8 +15,9 @@ import org.openxmlformats.schemas.drawingml.x2006.spreadsheetDrawing.CTShape
 import java.io.File
 import java.nio.file.{Paths, Files}
 
-import ExcelLib.ImplicitConversions._
-import ExcelLib.Shape.ImplicitConversions._
+import exceler.excel._
+import excellib.ImplicitConversions._
+import excellib.Shape.ImplicitConversions._
 
 class ExcelShapeTest extends FunSuite with ExcelLibResource {
 
@@ -38,7 +41,7 @@ class ExcelShapeTest extends FunSuite with ExcelLibResource {
   }
 
   test("Shapes") {
-    val file = new File(getClass.getResource(testWorkbook1).toURI)
+    val file = new File(getClass.getClassLoader.getResource(testWorkbook1).toURI)
     val workbook = WorkbookFactory.create(file)
     val relations = workbook.getSheet("shapes").asInstanceOf[POIXMLDocumentPart].getRelations.asScala
     val drawing = (
@@ -54,14 +57,14 @@ class ExcelShapeTest extends FunSuite with ExcelLibResource {
   }
 
   test("getShapes") {
-    val file = new File(getClass.getResource(testWorkbook1).toURI)
+    val file = new File(getClass.getClassLoader.getResource(testWorkbook1).toURI)
     val workbook = WorkbookFactory.create(file)
     val sheet = workbook.getSheet("shapes")
     assert(sheet.getXSSFShapes.length == 8)
   }
 
   test("print Xml of Shape") {
-    val file = new File(getClass.getResource(testWorkbook1).toURI)
+    val file = new File(getClass.getClassLoader.getResource(testWorkbook1).toURI)
     val workbook = WorkbookFactory.create(file)
     val sheet = workbook.getSheet("shapes")
     for (shape <- sheet.getXSSFShapes) {
@@ -71,7 +74,7 @@ class ExcelShapeTest extends FunSuite with ExcelLibResource {
 
   test("copy shape") {
     
-    val file = new File(getClass.getResource(testWorkbook1).toURI)
+    val file = new File(getClass.getClassLoader.getResource(testWorkbook1).toURI)
     val workbook = WorkbookFactory.create(file)
     val sheet = workbook.getSheet("shapes")
 

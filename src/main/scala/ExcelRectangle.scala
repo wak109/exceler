@@ -1,4 +1,6 @@
 /* vim: set ts=2 et sw=2 sts=2 fileencoding=utf-8: */
+package exceler.excel
+
 import scala.collection._
 import scala.language.implicitConversions
 import scala.util.control.Exception._
@@ -7,7 +9,7 @@ import scala.util.{Try, Success, Failure}
 import org.apache.poi.ss.usermodel._
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
 
-import ExcelLib.ImplicitConversions._
+import excellib.ImplicitConversions._
 
 trait ExcelRectangle {
   val sheet:Sheet

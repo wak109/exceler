@@ -1,4 +1,6 @@
 /* vim: set ts=2 et sw=2 sts=2 fileencoding=utf-8: */
+package exceler.excel
+
 import scala.collection._
 import scala.language.implicitConversions
 import scala.util.control.Exception._
@@ -10,9 +12,11 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import java.io._
 import java.nio.file._
 
+import exceler.common._
+import exceler.table._
 import CommonLib.ImplicitConversions._
-import ExcelLib.ImplicitConversions._
-import ExcelLib.Rectangle.ImplicitConversions._
+import excellib.ImplicitConversions._
+import excellib.Rectangle.ImplicitConversions._
 
 
 trait ExcelTableFunction extends TableFunction[ExcelRectangle] {

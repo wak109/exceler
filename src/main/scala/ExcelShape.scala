@@ -1,4 +1,6 @@
 /* vim: set ts=2 et sw=2 sts=2 fileencoding=utf-8: */
+package exceler.excel
+
 import scala.collection.JavaConverters._
 import scala.language.implicitConversions
 import scala.util.control.Exception._
@@ -16,7 +18,7 @@ import org.openxmlformats.schemas.drawingml.x2006.main.{
 }
 
 
-package ExcelLib.Shape {
+package excellib.Shape {
   trait ImplicitConversions {
     implicit class ToExcelShapeSheet(val sheet: Sheet)
       extends ExcelShapeSheetExtra
@@ -29,7 +31,7 @@ package ExcelLib.Shape {
 
 }
 
-import ExcelLib.Shape.ImplicitConversions._
+import excellib.Shape.ImplicitConversions._
 
 class ExcelSimpleShape(
   drawing:XSSFDrawing,
