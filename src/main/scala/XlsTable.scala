@@ -10,6 +10,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import exceler.common._
 import exceler.xml._
 import exceler.excel._
+import exceler.rect.Table
 
 import CommonLib.ImplicitConversions._
 import excellib.ImplicitConversions._
@@ -30,9 +31,10 @@ object XlsTable {
     val xmlRectList = xlsRectList.map(t => getXmlRect( 
         t.top, t.left, t.height, t.width,
         xlsRowLineList, xlsColumnLineList))
+    val xlsCellList = xlsRectList.zip(xmlRectList).map(
+        t => new XlsCell(t._1, t._2))
 
-    XmlTable(xlsRectList.zip(xmlRectList).map(
-      t => new XlsCell(t._1, t._2)))
+    Table(xlsCellList)
   }
 
   def getTopLeftList(

@@ -22,7 +22,7 @@ case class XlsRect(
     this(sheet, rect.top, rect.left, rect.height, rect.width)
 
   // TODO: XML 
-  def getString():String = (for {
+  lazy val text = (for {
     col <- (left until left + width).toStream
     row <- (top until top + height).toStream
     value <- sheet.cell(row, col).getValueString.map(_.trim)
@@ -41,6 +41,6 @@ case class XlsCell(
     this(xlsRect, rect.top, rect.left, rect.height, rect.width)
 
   // TODO: tag <p> is OK??
-  def toXml():Elem = <p>{xlsRect.getString}</p>
+  def toXml():Elem = <p>{xlsRect.text}</p>
 }
 
