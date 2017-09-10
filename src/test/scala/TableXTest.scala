@@ -42,10 +42,10 @@ class TableXTest extends FunSuite with TestResource {
     assert(rect.cellList.length == 12)
   }
 
-  test("TableX.toStruct") {
+  test("TableX.toCompact") {
     val rect = new RectTest(0,0,3,4,"Rect")
 
-    val table = TableX.toXmlFormat(TableX(rect.cellList))
+    val table = TableX.toCompact(TableX(rect.cellList))
 
     assert(table.length == 1)
     assert(table(0).length == 1)
@@ -55,8 +55,8 @@ class TableXTest extends FunSuite with TestResource {
   test("TableX.toArray") {
     val rect = new RectTest(0,0,3,4,"Rect")
 
-    val table = TableX.toArrayFormat(
-      TableX.toXmlFormat(TableX(rect.cellList)))
+    val table = TableX.toArray(
+      TableX.toCompact(TableX(rect.cellList)))
 
     assert(table.length == 3)
     assert(table(0).length == 4)

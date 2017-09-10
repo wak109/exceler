@@ -114,25 +114,25 @@ class XlsTableTest extends FunSuite with TestResource {
     assert(xlsTable(8)(6).getValue.text == "bottomRight")
   }
 
-  test("XlsTable toArrayFormat") {
+  test("XlsTable toArray") {
     val file = new File(getURI(testWorkbook1))
     val workbook = WorkbookFactory.create(file)
     val sheet = workbook.getSheet("table2")
 
-    val xlsTable = TableX.toArrayFormat(XlsTable(sheet,2,1,18,8))
+    val xlsTable = TableX.toArray(XlsTable(sheet,2,1,18,8))
 
     assert(xlsTable(0)(0).getValue.text == "test3")
     assert(xlsTable(3)(1).getValue.text == "upper")
     assert(xlsTable(8)(7).getValue.text == "bottomRight")
   }
 
-  test("XlsTable toXmlFormat") {
+  test("XlsTable toCompact") {
     val file = new File(getURI(testWorkbook1))
     val workbook = WorkbookFactory.create(file)
     val sheet = workbook.getSheet("table2")
 
-    val xlsTable = TableX.toXmlFormat(
-      TableX.toArrayFormat(XlsTable(sheet,2,1,18,8)))
+    val xlsTable = TableX.toCompact(
+      TableX.toArray(XlsTable(sheet,2,1,18,8)))
 
     assert(xlsTable(0).length == 1)
     assert(xlsTable(0)(0).getValue.text == "test3")

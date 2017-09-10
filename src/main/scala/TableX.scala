@@ -52,14 +52,14 @@ object TableX {
   def apply[T<:CellX[_]](cellList:Seq[T]) = cellList.groupBy(_.row)
     .toList.sortBy(_._1).map(_._2).map(_.sortBy(_.col))
 
-  def toXmlFormat[T](table:Seq[Seq[MixedCell[T]]]):Seq[Seq[Rect[T]]] =
+  def toCompact[T](table:Seq[Seq[MixedCell[T]]]):Seq[Seq[Rect[T]]] =
     this.apply(for {
       row <- table
       cell <- row
       rect <- cell.value.fold(_ => None, Some(_))
     } yield rect)
 
-  def toArrayFormat[T](table:Seq[Seq[Rect[T]]]):Seq[Seq[MixedCell[T]]] = 
+  def toArray[T](table:Seq[Seq[Rect[T]]]):Seq[Seq[MixedCell[T]]] = 
     this.apply((for {
       row <- table
       cell <- row
