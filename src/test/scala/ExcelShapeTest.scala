@@ -19,7 +19,7 @@ import exceler.excel._
 import excellib.ImplicitConversions._
 import excellib.Shape.ImplicitConversions._
 
-class ExcelShapeTest extends FunSuite with ExcelLibResource {
+class ExcelShapeTest extends FunSuite with TestResource {
 
   test("Sheet.getDrawingPatriarch") {
     val sheet = (new XSSFWorkbook()).sheet("test")

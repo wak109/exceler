@@ -16,7 +16,7 @@ import excellib.ImplicitConversions._
 
 
 class ExcelTableTest
-    extends FunSuite with ExcelLibResource
+    extends FunSuite with TestResource
     with ExcelTableSheetFunction {
   
   def createStringEqual(s:String) = (x:String) => x == s

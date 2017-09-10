@@ -17,7 +17,7 @@ import excellib.ImplicitConversions._
 
 
 class ExcelTableLibTest
-  extends FunSuite with ExcelLibResource
+  extends FunSuite with TestResource
   with ExcelTableSheetFunction {
 
   test("TableQueryTraitImpl.getValue") {

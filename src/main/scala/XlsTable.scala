@@ -1,5 +1,5 @@
 /* vim: set ts=2 et sw=2 sts=2 fileencoding=utf-8: */
-package exceler.xls
+package exceler.cell
 
 import scala.collection._
 import scala.language.implicitConversions
@@ -8,15 +8,11 @@ import org.apache.poi.ss.usermodel._
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
 
 import exceler.common._
-import exceler.xml._
 import exceler.excel._
-import exceler.rect.Table
 
 import CommonLib.ImplicitConversions._
 import excellib.ImplicitConversions._
 import excellib.Rectangle.ImplicitConversions._
-
-import exceler.xml._
 
 object XlsTable {
 
@@ -29,12 +25,12 @@ object XlsTable {
         getXlsHeight(sheet, t._1, t._2, top + height),
         getXlsWidth(sheet, t._1, t._2, left + width)))
     val xmlRectList = xlsRectList.map(t => getXmlRect( 
-        t.top, t.left, t.height, t.width,
+        t.row, t.col, t.height, t.width,
         xlsRowLineList, xlsColumnLineList))
     val xlsCellList = xlsRectList.zip(xmlRectList).map(
-        t => new XlsCell(t._1, t._2))
+        t => new XlsCell(t._1, t._2._1, t._2._2, t._2._3, t._2._4))
 
-    Table(xlsCellList)
+    TableX(xlsCellList)
   }
 
   def getTopLeftList(

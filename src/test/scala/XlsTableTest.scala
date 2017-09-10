@@ -15,13 +15,11 @@ import java.io.File
 import java.nio.file.{Paths, Files}
 
 import exceler.excel.excellib.ImplicitConversions._
-import exceler.xls._
-import exceler.xls.XlsTable._ 
-
+import exceler.cell._
+import exceler.cell.XlsTable._
 
 @RunWith(classOf[JUnitRunner])
-class XlsTableTest
-  extends FunSuite with ExcelLibResource {
+class XlsTableTest extends FunSuite with TestResource {
 
   test("XlsTable.getTopLeftList") {
     val file = new File(getURI(testWorkbook1))
@@ -83,7 +81,7 @@ class XlsTableTest
     assert(getXmlColumnSpan(1,4,columnList) == (0,4))
   }
 
-  test("XlsTalbe apply") {
+  test("XlsTable apply") {
     val file = new File(getURI(testWorkbook1))
     val workbook = WorkbookFactory.create(file)
     val sheet = workbook.getSheet("table2")
@@ -91,28 +89,74 @@ class XlsTableTest
     val xlsTable = XlsTable(sheet,2,1,18,8)
 
     assert(xlsTable(0).length == 1)
-    assert(xlsTable(0)(0).toXml.text == "test3")
+    assert(xlsTable(0)(0).getValue.text == "test3")
 
     assert(xlsTable(1).length == 4)
-    assert(xlsTable(1)(2).toXml.text == "col2")
-    assert(xlsTable(1)(3).toXml.text == "k")
+    assert(xlsTable(1)(2).getValue.text == "col2")
+    assert(xlsTable(1)(3).getValue.text == "k")
 
     assert(xlsTable(2).length == 4)
-    assert(xlsTable(2)(2).toXml.text == "left")
-    assert(xlsTable(2)(3).toXml.text == "right")
+    assert(xlsTable(2)(2).getValue.text == "left")
+    assert(xlsTable(2)(3).getValue.text == "right")
 
     assert(xlsTable(3).length == 8)
-    assert(xlsTable(3)(0).toXml.text == "row1")
-    assert(xlsTable(3)(1).toXml.text == "upper")
-    assert(xlsTable(3)(4).toXml.text == "ul")
-    assert(xlsTable(3)(5).toXml.text == "ur")
+    assert(xlsTable(3)(0).getValue.text == "row1")
+    assert(xlsTable(3)(1).getValue.text == "upper")
+    assert(xlsTable(3)(4).getValue.text == "ul")
+    assert(xlsTable(3)(5).getValue.text == "ur")
 
     assert(xlsTable(4).length == 6)
-    assert(xlsTable(4)(0).toXml.text == "lower")
-    assert(xlsTable(4)(2).toXml.text == "what is it?")
-    assert(xlsTable(4)(3).toXml.text == "lr")
+    assert(xlsTable(4)(0).getValue.text == "lower")
+    assert(xlsTable(4)(2).getValue.text == "what is it?")
+    assert(xlsTable(4)(3).getValue.text == "lr")
 
     assert(xlsTable(8).length == 7)
-    assert(xlsTable(8)(6).toXml.text == "bottomRight")
+    assert(xlsTable(8)(6).getValue.text == "bottomRight")
+  }
+
+  test("XlsTable toArrayFormat") {
+    val file = new File(getURI(testWorkbook1))
+    val workbook = WorkbookFactory.create(file)
+    val sheet = workbook.getSheet("table2")
+
+    val xlsTable = TableX.toArrayFormat(XlsTable(sheet,2,1,18,8))
+
+    assert(xlsTable(0)(0).getValue.text == "test3")
+    assert(xlsTable(3)(1).getValue.text == "upper")
+    assert(xlsTable(8)(7).getValue.text == "bottomRight")
+  }
+
+  test("XlsTable toXmlFormat") {
+    val file = new File(getURI(testWorkbook1))
+    val workbook = WorkbookFactory.create(file)
+    val sheet = workbook.getSheet("table2")
+
+    val xlsTable = TableX.toXmlFormat(
+      TableX.toArrayFormat(XlsTable(sheet,2,1,18,8)))
+
+    assert(xlsTable(0).length == 1)
+    assert(xlsTable(0)(0).getValue.text == "test3")
+
+    assert(xlsTable(1).length == 4)
+    assert(xlsTable(1)(2).getValue.text == "col2")
+    assert(xlsTable(1)(3).getValue.text == "k")
+
+    assert(xlsTable(2).length == 4)
+    assert(xlsTable(2)(2).getValue.text == "left")
+    assert(xlsTable(2)(3).getValue.text == "right")
+
+    assert(xlsTable(3).length == 8)
+    assert(xlsTable(3)(0).getValue.text == "row1")
+    assert(xlsTable(3)(1).getValue.text == "upper")
+    assert(xlsTable(3)(4).getValue.text == "ul")
+    assert(xlsTable(3)(5).getValue.text == "ur")
+
+    assert(xlsTable(4).length == 6)
+    assert(xlsTable(4)(0).getValue.text == "lower")
+    assert(xlsTable(4)(2).getValue.text == "what is it?")
+    assert(xlsTable(4)(3).getValue.text == "lr")
+
+    assert(xlsTable(8).length == 7)
+    assert(xlsTable(8)(6).getValue.text == "bottomRight")
   }
 }

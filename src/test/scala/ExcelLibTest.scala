@@ -14,7 +14,7 @@ import java.nio.file.{Paths, Files}
 import exceler.excel._
 import excellib.ImplicitConversions._
 
-class ExcelLibTest extends FunSuite with ExcelLibResource {
+class ExcelLibTest extends FunSuite with TestResource {
 
   val testSheet = "test"
   val testMessage = "Hello, world!!"
