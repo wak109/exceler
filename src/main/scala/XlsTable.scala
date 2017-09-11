@@ -1,8 +1,9 @@
 /* vim: set ts=2 et sw=2 sts=2 fileencoding=utf-8: */
-package exceler.cell
+package exceler.tablex
 
 import scala.collection._
 import scala.language.implicitConversions
+import scala.xml.Elem
 
 import org.apache.poi.ss.usermodel._
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
@@ -16,7 +17,9 @@ import excellib.Rectangle.ImplicitConversions._
 
 object XlsTable {
 
-  def apply(sheet:Sheet, top:Int, left:Int, height:Int, width:Int) = {
+
+  def apply[T](sheet:Sheet, top:Int, left:Int, height:Int, width:Int)(implicit convert:(XlsRect => T)) = {
+  
     val topLeftList = getTopLeftList(sheet,top,left,height,width)
     val xlsRowLineList = getXlsRowLineList(topLeftList)
     val xlsColumnLineList = getXlsColumnLineList(topLeftList)
@@ -28,7 +31,7 @@ object XlsTable {
         t.row, t.col, t.height, t.width,
         xlsRowLineList, xlsColumnLineList))
     val xlsCellList = xlsRectList.zip(xmlRectList).map(
-        t => new XlsCell(t._1, t._2._1, t._2._2, t._2._3, t._2._4))
+        t => new XlsCell[T](t._1, t._2._1, t._2._2, t._2._3, t._2._4))
 
     TableX(xlsCellList)
   }

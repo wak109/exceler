@@ -2,7 +2,7 @@
 package exceler.test
 
 import org.scalatest.FunSuite
-import exceler.cell._
+import exceler.tablex._
 
 class TableXTest extends FunSuite with TestResource {
 
@@ -20,7 +20,7 @@ class TableXTest extends FunSuite with TestResource {
     override val height:Int,
     override val width:Int,
     override val value:String
-  ) extends CellTest(row,col,value) with Rect[String]
+  ) extends CellTest(row,col,value) with RangeX[String]
 
   test("TableX.apply") {
     val table = TableX(Seq(
@@ -36,7 +36,7 @@ class TableXTest extends FunSuite with TestResource {
     assert(table(2)(0).getValue == "Cell34")
   }
 
-  test("Rect") {
+  test("RangeX") {
     val rect = new RectTest(0,0,3,4,"Rect")
 
     assert(rect.cellList.length == 12)

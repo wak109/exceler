@@ -40,7 +40,7 @@ object CommonLib {
         if (head.isEmpty)
           splitListBy[T](!pred(_), tail)
         else
-          head::splitListBy[T](!pred(_), tail)
+          head :: splitListBy[T](!pred(_), tail)
       }
     }
   }
@@ -49,8 +49,8 @@ object CommonLib {
     lst match {
       case Nil => Nil
       case x if x.length < 2 => Nil
-      case head::tail if (!pred(head)) => pairingListBy(pred, tail)
-      case h1::h2::tail => (h1,h2)::pairingListBy(pred, tail)
+      case head :: tail if (!pred(head)) => pairingListBy(pred, tail)
+      case h1 :: h2 :: tail => (h1,h2) :: pairingListBy(pred, tail)
     }
   }
 
@@ -61,7 +61,7 @@ object CommonLib {
         val (head, tail) = lst.span(pred)
         head match {
           case Nil => blockingListBy[T](pred, tail.dropWhile(!pred(_)))
-          case _ => head::blockingListBy[T](pred, tail.dropWhile(!pred(_)))
+          case _ => head :: blockingListBy[T](pred, tail.dropWhile(!pred(_)))
         }
       }
     }
@@ -71,7 +71,7 @@ object CommonLib {
     lst match {
       case Nil => Nil
       case x if x.length < 2 => Nil
-      case head::tail => (head,tail.head)::pairwiseBy(tail)
+      case head :: tail => (head,tail.head) :: pairwiseBy(tail)
     }
   }
 }

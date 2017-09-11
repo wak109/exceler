@@ -1,6 +1,7 @@
 /* vim: set ts=2 et sw=2 sts=2 fileencoding=utf-8: */
-package exceler.cell
+package exceler.tablex
 
+import scala.language.implicitConversions
 import scala.xml.Elem
 
 import org.apache.poi.ss.usermodel._
@@ -14,27 +15,30 @@ case class XlsRect(
   override val col:Int,
   override val height:Int,
   override val width:Int
-) extends Rect[XlsRect] {
+) extends RangeX[XlsRect] {
 
   def getValue() = this
 
-  // TODO: XML 
-  lazy val text = (for {
-    cnum <- (col until col + width).toStream
-    rnum <- (row until row + height).toStream
-    value <- sheet.cell(rnum, cnum).getValueString.map(_.trim)
-  } yield value).headOption.getOrElse("")
+  // TODO
+  lazy val xml:Elem = <p>{(for {
+      cnum <- (col until col + width).toStream
+      rnum <- (row until row + height).toStream
+      value <- sheet.cell(rnum, cnum).getValueString.map(_.trim)
+  } yield value).headOption.getOrElse("")}</p>
 }
 
-case class XlsCell(
+object XlsRect {
+  implicit def convToElem(rect:XlsRect):Elem = rect.xml
+}
+
+case class XlsCell[T](
   val xlsRect:XlsRect,
   override val row:Int,
   override val col:Int,
   override val height:Int,
   override val width:Int
-) extends XmlCell {
+  )(implicit conv:(XlsRect=>T)) extends RangeX[T] {
 
-  // TODO: tag <p> is OK??
-  def getValue():Elem = <p>{xlsRect.text}</p>
+  def getValue():T = xlsRect
 }
 

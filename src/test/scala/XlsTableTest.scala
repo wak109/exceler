@@ -2,6 +2,7 @@
 package exceler.test
 
 import scala.util.{Try, Success, Failure}
+import scala.xml.Elem
 import org.scalatest._
 import org.scalatest.junit.JUnitRunner
 
@@ -15,8 +16,8 @@ import java.io.File
 import java.nio.file.{Paths, Files}
 
 import exceler.excel.excellib.ImplicitConversions._
-import exceler.cell._
-import exceler.cell.XlsTable._
+import exceler.tablex._
+import exceler.tablex.XlsTable._
 
 @RunWith(classOf[JUnitRunner])
 class XlsTableTest extends FunSuite with TestResource {
@@ -86,7 +87,7 @@ class XlsTableTest extends FunSuite with TestResource {
     val workbook = WorkbookFactory.create(file)
     val sheet = workbook.getSheet("table2")
 
-    val xlsTable = XlsTable(sheet,2,1,18,8)
+    val xlsTable = XlsTable[Elem](sheet,2,1,18,8)
 
     assert(xlsTable(0).length == 1)
     assert(xlsTable(0)(0).getValue.text == "test3")
@@ -119,7 +120,7 @@ class XlsTableTest extends FunSuite with TestResource {
     val workbook = WorkbookFactory.create(file)
     val sheet = workbook.getSheet("table2")
 
-    val xlsTable = TableX.toArray(XlsTable(sheet,2,1,18,8))
+    val xlsTable = TableX.toArray(XlsTable[Elem](sheet,2,1,18,8))
 
     assert(xlsTable(0)(0).getValue.text == "test3")
     assert(xlsTable(3)(1).getValue.text == "upper")
@@ -132,7 +133,7 @@ class XlsTableTest extends FunSuite with TestResource {
     val sheet = workbook.getSheet("table2")
 
     val xlsTable = TableX.toCompact(
-      TableX.toArray(XlsTable(sheet,2,1,18,8)))
+      TableX.toArray(XlsTable[Elem](sheet,2,1,18,8)))
 
     assert(xlsTable(0).length == 1)
     assert(xlsTable(0)(0).getValue.text == "test3")
