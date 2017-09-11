@@ -18,7 +18,8 @@ import excellib.Rectangle.ImplicitConversions._
 object XlsTable {
 
 
-  def apply[T](sheet:Sheet, top:Int, left:Int, height:Int, width:Int)(implicit convert:(XlsRect => T)) = {
+  def apply[T](sheet:Sheet, top:Int, left:Int, height:Int, width:Int)(
+      implicit convert:XlsRect=>T) = {
   
     val topLeftList = getTopLeftList(sheet,top,left,height,width)
     val xlsRowLineList = getXlsRowLineList(topLeftList)
