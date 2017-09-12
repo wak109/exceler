@@ -56,5 +56,13 @@ class QueryTableXTest extends FunSuite with TestResource {
     assert(qTable.query(rowKeys = List((_ == "row1")),
       colKeys = List((_ == "col2"))).map(_.text) ==
         List("val12", "val12-1", "val12-2"))
+    assert(qTable.query(rowKeys = List((_ == "row1")),
+      colKeys = List((_ == "col2")),
+      blockKey = Some(_ == "separator1")).map(_.text) ==
+        List("val12-1"))
+    assert(qTable.query(rowKeys = List((_ == "row1")),
+      colKeys = List((_ == "col2")),
+      blockKey = Some(_ == "separator2")).map(_.text) ==
+        List("val12-2"))
   }
 }
