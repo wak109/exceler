@@ -18,11 +18,16 @@ import exceler.common.CommonLib.ImplicitConversions._
 
 class QueryTableXTest extends FunSuite with TestResource {
 
+  implicit def elemToString(elem:Elem):String = elem.text
+
   val file = new File(getURI(testWorkbook1))
   val workbook = WorkbookFactory.create(file)
   val sheet = workbook.getSheet("stack")
   val compactTable = XlsTable[Elem](sheet,1,1,18,12)
-  val qTable = new QueryTableX(XlsTable[Elem](sheet,1,1,18,12))
+  val qTable = new QueryTableX[Elem](XlsTable[Elem](sheet,1,1,18,12))
+
+  val compactTable2 = XlsTable[XlsRect](sheet,1,1,18,12)
+  val qTable2 = new QueryTableX[XlsRect](XlsTable[XlsRect](sheet,1,1,18,12))
 
   test("blockMap") {
     assert(qTable.blockMap("separator1") == Range(6,11).toList)
@@ -52,7 +57,7 @@ class QueryTableXTest extends FunSuite with TestResource {
       == Nil)
   }
 
-  test("query") {
+  test("query(Elem)") {
     assert(qTable.query(rowKeys = List((_ == "row1")),
       colKeys = List((_ == "col2"))).map(_.text) ==
         List("val12", "val12-1", "val12-2"))
@@ -64,5 +69,22 @@ class QueryTableXTest extends FunSuite with TestResource {
       colKeys = List((_ == "col2")),
       blockKey = Some(_ == "separator2")).map(_.text) ==
         List("val12-2"))
+  }
+
+  test("query(XlsRect)") {
+    assert(qTable2.query(rowKeys = List((_ == "row1")),
+      colKeys = List((_ == "col2"))).map(_.text) ==
+        List("val12", "val12-1", "val12-2"))
+    assert(qTable2.query(rowKeys = List((_ == "row1")),
+      colKeys = List((_ == "col2")),
+      blockKey = Some(_ == "separator1")).map(_.text) ==
+        List("val12-1"))
+
+    val xlsRect = qTable2.query(rowKeys = List((_ == "row1")),
+      colKeys = List((_ == "col2")),
+      blockKey = Some(_ == "separator2"))(0)
+
+    assert(xlsRect.row == 14 && xlsRect.col == 5 &&
+           xlsRect.height == 1 && xlsRect.width == 4)
   }
 }

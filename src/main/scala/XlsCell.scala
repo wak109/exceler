@@ -29,6 +29,7 @@ case class XlsRect(
 
 object XlsRect {
   implicit def convToElem(rect:XlsRect):Elem = rect.xml
+  implicit def convToString(rect:XlsRect):String = rect.xml.text
 }
 
 case class XlsCell[T](
