@@ -17,9 +17,8 @@ import excellib.Rectangle.ImplicitConversions._
 
 object XlsTable {
 
-
   def apply[T](sheet:Sheet, top:Int, left:Int, height:Int, width:Int)(
-      implicit convert:XlsRect=>T) = {
+      implicit convert:XlsRect=>T):Seq[Seq[XlsCell[T]]] = {
   
     val topLeftList = getTopLeftList(sheet,top,left,height,width)
     val xlsRowLineList = getXlsRowLineList(topLeftList)
@@ -85,5 +84,39 @@ object XlsTable {
     val xmlColumnSpan = getXmlColumnSpan(left, width, vLineList)
 
     (xmlRowSpan._1, xmlColumnSpan._1, xmlRowSpan._2, xmlColumnSpan._2)
+  }
+  
+  /**
+   */
+  def getRectList(sheet:Sheet, row:Int, col:Int,
+      height:Int, width:Int):List[(Int,Int,Int,Int)] = {
+    for {
+      bottom <- (row until row + height).toList
+      right <- (col until col + width).toList
+      cell = sheet.cell(bottom, right)
+        if cell.isOuterBorderBottom && cell.isOuterBorderRight
+    } yield {
+      val top = (for {
+        row0 <- (bottom to row by -1).toList
+        cell = sheet.cell(row0, right)
+          if cell.isOuterBorderTop && cell.isOuterBorderRight
+      } yield row0).headOption.getOrElse(row)
+      val left = (for {
+        col0 <- (right to col by -1).toList
+        cell = sheet.cell(bottom, col0)
+          if cell.isOuterBorderBottom && cell.isOuterBorderLeft
+      } yield col0).headOption.getOrElse(col)
+
+      (top, left, bottom - row + 1, right - col + 1)
+    }
+  }
+
+  def apply[T](sheet:Sheet)(implicit convert:XlsRect=>T):List[Seq[Seq[XlsCell[T]]]] = {
+    sheet.getUsedRange match {
+      case Some((top, left, bottom, right)) => getRectList(
+        sheet, top, left, bottom - top + 1, right - left +1).map(
+          t=>apply[T](sheet, t._1, t._2, t._3, t._4))
+      case None => Nil
+    }
   }
 }

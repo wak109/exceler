@@ -160,4 +160,29 @@ class XlsTableTest extends FunSuite with TestResource {
     assert(xlsTable(8).length == 7)
     assert(xlsTable(8)(6).getValue.text == "bottomRight")
   }
+
+  test("getRectList") {
+    val file = new File(getURI(testWorkbook1))
+    val workbook = WorkbookFactory.create(file)
+    val sheet = workbook.getSheet("table")
+
+    val (top, left, bottom, right) = sheet.getUsedRange.get
+
+    assert(XlsTable.getRectList(
+      sheet, top, left, bottom - top + 1, right - left +1)
+        == List((2,1,17,8), (20,1,36,8)))
+  }
+
+  test("apply#2") {
+    val file = new File(getURI(testWorkbook1))
+    val workbook = WorkbookFactory.create(file)
+    val sheet = workbook.getSheet("table")
+    val tableList = XlsTable[XlsRect](sheet)
+          .map(new QueryTableX[XlsRect](_))
+
+    assert(tableList(0).query(
+      rowKeys = List((_ == "row1"),(_ == "upper")),
+      colKeys = List((_ == "col2"),(_ == "right")))
+        .map(XlsRect.convToString(_)) == List("ur"))
+  }
 }
