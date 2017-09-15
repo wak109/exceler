@@ -33,7 +33,7 @@ case class QueryTableX[T](compactTable:Seq[Seq[RangeX[T]]]) {
     for {
       row <- rowList
       col <- colList
-    } yield arrayTable(row)(col).getValue
+    } yield arrayTable(row)(col).value
   }
 
   def queryByString(
@@ -50,7 +50,7 @@ case class QueryTableX[T](compactTable:Seq[Seq[RangeX[T]]]) {
       case None => Range(0, arrayTable.length).toList
       case Some(key) => {
         
-        blockList.filter((t=>key(t._1.getValue))).map(_._2).toList.flatten
+        blockList.filter((t=>key(t._1.value))).map(_._2).toList.flatten
       }
     }
   }
@@ -59,14 +59,14 @@ case class QueryTableX[T](compactTable:Seq[Seq[RangeX[T]]]) {
         rowList:List[Int]):List[Int] = rowKeys match {
     case Nil => rowList
     case head::tail => queryRowKeys(tail, col +1,
-      rowList.filter(row=>head(arrayTable(row)(col).getValue)))
+      rowList.filter(row=>head(arrayTable(row)(col).value)))
   }
 
   def queryColKeys(colKeys:List[T=>Boolean], row:Int,
         colList:List[Int]):List[Int] = colKeys match {
     case Nil => colList
     case head::tail => queryColKeys(tail, row +1,
-      colList.filter(col=>head(arrayTable(row)(col).getValue)))
+      colList.filter(col=>head(arrayTable(row)(col).value)))
   }
 }
 

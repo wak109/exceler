@@ -25,8 +25,8 @@ class QueryTableXTest extends FunSuite with TestResource {
   val file = new File(getURI(testWorkbook1))
   val workbook = WorkbookFactory.create(file)
   val sheet = workbook.getSheet("stack")
-  val compactTable = XlsTable[Elem](sheet,1,1,18,12)
-  val qTable = new QueryTableX[Elem](XlsTable[Elem](sheet,1,1,18,12))
+  val compactTable = XlsTable[XlsRect](sheet,1,1,18,12)
+  val qTable = new QueryTableX[XlsRect](XlsTable[XlsRect](sheet,1,1,18,12))
 
   val compactTable2 = XlsTable[XlsRect](sheet,1,1,18,12)
   val qTable2 = new QueryTableX[XlsRect](XlsTable[XlsRect](sheet,1,1,18,12))
@@ -63,18 +63,18 @@ class QueryTableXTest extends FunSuite with TestResource {
   }
 
   test("query(Elem)") {
-    assert(qTable.queryByString("row1", "col2").map(_.text)
+    assert(qTable.queryByString("row1", "col2").map(_.xml.text)
       == List("val12", "val12-1", "val12-2"))
-    assert(qTable.queryByString("row1", "col2", "separator1").map(_.text)
+    assert(qTable.queryByString("row1", "col2", "separator1").map(_.xml.text)
       == List("val12-1"))
-    assert(qTable.queryByString("row1", "col2", "separator2").map(_.text)
+    assert(qTable.queryByString("row1", "col2", "separator2").map(_.xml.text)
       == List("val12-2"))
   }
 
   test("query(XlsRect)") {
-    assert(qTable2.queryByString("row1", "col2").map(_.text)
+    assert(qTable2.queryByString("row1", "col2").map(_.xml.text)
       == List("val12", "val12-1", "val12-2"))
-    assert(qTable2.queryByString("row1", "col2", "separator1").map(_.text)
+    assert(qTable2.queryByString("row1", "col2", "separator1").map(_.xml.text)
       == List("val12-1"))
 
     val xlsRect = qTable2.queryByString("row1", "col2", "separator2")

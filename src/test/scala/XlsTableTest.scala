@@ -90,29 +90,29 @@ class XlsTableTest extends FunSuite with TestResource {
     val xlsTable = XlsTable[XlsRect](sheet,2,1,18,8)
 
     assert(xlsTable(0).length == 1)
-    assert(xlsTable(0)(0).getValue.text == "test3")
+    assert(xlsTable(0)(0).value.text == "test3")
 
     assert(xlsTable(1).length == 4)
-    assert(xlsTable(1)(2).getValue.text == "col2")
-    assert(xlsTable(1)(3).getValue.text == "k")
+    assert(xlsTable(1)(2).value.text == "col2")
+    assert(xlsTable(1)(3).value.text == "k")
 
     assert(xlsTable(2).length == 4)
-    assert(xlsTable(2)(2).getValue.text == "left")
-    assert(xlsTable(2)(3).getValue.text == "right")
+    assert(xlsTable(2)(2).value.text == "left")
+    assert(xlsTable(2)(3).value.text == "right")
 
     assert(xlsTable(3).length == 8)
-    assert(xlsTable(3)(0).getValue.text == "row1")
-    assert(xlsTable(3)(1).getValue.text == "upper")
-    assert(xlsTable(3)(4).getValue.text == "ul")
-    assert(xlsTable(3)(5).getValue.text == "ur")
+    assert(xlsTable(3)(0).value.text == "row1")
+    assert(xlsTable(3)(1).value.text == "upper")
+    assert(xlsTable(3)(4).value.text == "ul")
+    assert(xlsTable(3)(5).value.text == "ur")
 
     assert(xlsTable(4).length == 6)
-    assert(xlsTable(4)(0).getValue.text == "lower")
-    assert(xlsTable(4)(2).getValue.text == "what is it?")
-    assert(xlsTable(4)(3).getValue.text == "lr")
+    assert(xlsTable(4)(0).value.text == "lower")
+    assert(xlsTable(4)(2).value.text == "what is it?")
+    assert(xlsTable(4)(3).value.text == "lr")
 
     assert(xlsTable(8).length == 7)
-    assert(xlsTable(8)(6).getValue.text == "bottomRight")
+    assert(xlsTable(8)(6).value.text == "bottomRight")
   }
 
   test("XlsTable toArray") {
@@ -122,9 +122,9 @@ class XlsTableTest extends FunSuite with TestResource {
 
     val xlsTable = TableX.toArray(XlsTable[XlsRect](sheet,2,1,18,8))
 
-    assert(xlsTable(0)(0).getValue.text == "test3")
-    assert(xlsTable(3)(1).getValue.text == "upper")
-    assert(xlsTable(8)(7).getValue.text == "bottomRight")
+    assert(xlsTable(0)(0).value.xml.text == "test3")
+    assert(xlsTable(3)(1).value.xml.text == "upper")
+    assert(xlsTable(8)(7).value.xml.text == "bottomRight")
   }
 
   test("XlsTable toCompact") {
@@ -136,29 +136,29 @@ class XlsTableTest extends FunSuite with TestResource {
       TableX.toArray(XlsTable[XlsRect](sheet,2,1,18,8)))
 
     assert(xlsTable(0).length == 1)
-    assert(xlsTable(0)(0).getValue.text == "test3")
+    assert(xlsTable(0)(0).value.text == "test3")
 
     assert(xlsTable(1).length == 4)
-    assert(xlsTable(1)(2).getValue.text == "col2")
-    assert(xlsTable(1)(3).getValue.text == "k")
+    assert(xlsTable(1)(2).value.text == "col2")
+    assert(xlsTable(1)(3).value.text == "k")
 
     assert(xlsTable(2).length == 4)
-    assert(xlsTable(2)(2).getValue.text == "left")
-    assert(xlsTable(2)(3).getValue.text == "right")
+    assert(xlsTable(2)(2).value.text == "left")
+    assert(xlsTable(2)(3).value.text == "right")
 
     assert(xlsTable(3).length == 8)
-    assert(xlsTable(3)(0).getValue.text == "row1")
-    assert(xlsTable(3)(1).getValue.text == "upper")
-    assert(xlsTable(3)(4).getValue.text == "ul")
-    assert(xlsTable(3)(5).getValue.text == "ur")
+    assert(xlsTable(3)(0).value.text == "row1")
+    assert(xlsTable(3)(1).value.text == "upper")
+    assert(xlsTable(3)(4).value.text == "ul")
+    assert(xlsTable(3)(5).value.text == "ur")
 
     assert(xlsTable(4).length == 6)
-    assert(xlsTable(4)(0).getValue.text == "lower")
-    assert(xlsTable(4)(2).getValue.text == "what is it?")
-    assert(xlsTable(4)(3).getValue.text == "lr")
+    assert(xlsTable(4)(0).value.text == "lower")
+    assert(xlsTable(4)(2).value.text == "what is it?")
+    assert(xlsTable(4)(3).value.text == "lr")
 
     assert(xlsTable(8).length == 7)
-    assert(xlsTable(8)(6).getValue.text == "bottomRight")
+    assert(xlsTable(8)(6).value.text == "bottomRight")
   }
 
   test("getRectList") {

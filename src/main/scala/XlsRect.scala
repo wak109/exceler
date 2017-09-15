@@ -17,8 +17,7 @@ case class XlsRect(
   override val width:Int
 ) extends RangeX[XlsRect] {
 
-  def getValue() = this
-  
+  override val value = this
 
   // TODO
   lazy val xml:Elem = <p>{(for {
@@ -41,6 +40,6 @@ case class XlsCell[T](
   override val width:Int
   )(implicit conv:(XlsRect=>T)) extends RangeX[T] {
 
-  def getValue():T = xlsRect
+  override val value:T = xlsRect
 }
 

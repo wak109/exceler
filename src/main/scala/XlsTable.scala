@@ -126,7 +126,7 @@ object XlsTable {
     getTableName(rect) match {
       case Some(name) => (Some(name), table)
       case None => table(0).length match {
-        case 1 => (Some(table(0)(0).getValue), table.tail)
+        case 1 => (Some(table(0)(0).value), table.tail)
         case _ => (None, table)
       }
     }

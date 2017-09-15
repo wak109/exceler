@@ -9,9 +9,8 @@ class TableXTest extends FunSuite with TestResource {
   class CellTest(
     override val row:Int,
     override val col:Int,
-    val value:String
+    override val value:String
   ) extends CellX[String] {
-    override def getValue() = this.value
   }
 
   class RectTest(
@@ -32,8 +31,8 @@ class TableXTest extends FunSuite with TestResource {
       new CellTest(300, 5000, "Cell35")
     ))
 
-    assert(table(0)(0).getValue == "Cell00")
-    assert(table(2)(0).getValue == "Cell34")
+    assert(table(0)(0).value == "Cell00")
+    assert(table(2)(0).value == "Cell34")
   }
 
   test("RangeX") {
@@ -49,7 +48,7 @@ class TableXTest extends FunSuite with TestResource {
 
     assert(table.length == 1)
     assert(table(0).length == 1)
-    assert(table(0)(0).getValue == "Rect")
+    assert(table(0)(0).value == "Rect")
   }
 
   test("TableX.toArray") {
@@ -60,6 +59,6 @@ class TableXTest extends FunSuite with TestResource {
 
     assert(table.length == 3)
     assert(table(0).length == 4)
-    assert(table(2)(3).getValue == "Rect")
+    assert(table(2)(3).value == "Rect")
   }
 }

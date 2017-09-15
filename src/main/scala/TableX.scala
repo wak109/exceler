@@ -7,7 +7,7 @@ import scala.language.implicitConversions
 trait CellX[+T] {
   val row:Int
   val col:Int
-  def getValue():T
+  val value:T
 }
 
 
@@ -16,17 +16,17 @@ case class ProxyCellX[+T] (
   override val col:Int,
   val delegate:CellX[T]
 ) extends CellX[T] {
-  override def getValue() = delegate.getValue
+  override val value = delegate.value
 }
 
 
 case class UnitedCellX[+T](
-  val value:Either[ProxyCellX[T],RangeX[T]])
+  val united:Either[ProxyCellX[T],RangeX[T]])
     extends CellX[T] {
 
-  override val row = value.fold(_.row, _.row)
-  override val col = value.fold(_.col, _.col)
-  override def getValue():T = value.fold(_.getValue, _.getValue)
+  override val row = united.fold(_.row, _.row)
+  override val col = united.fold(_.col, _.col)
+  override val value = united.fold(_.value, _.value)
 }
 
 
@@ -45,7 +45,7 @@ trait RangeX[+T] extends CellX[T] {
   val bottom:Int = row + height - 1
   val right:Int = col + width - 1
 
-  val cellList = UnitedCellX(this) +: (for {
+  lazy val cellList = UnitedCellX(this) +: (for {
     rnum <- (0 until height)
     cnum <- (0 until width)
     holder = ProxyCellX(row+rnum,col+cnum,this)
@@ -62,7 +62,7 @@ object TableX {
     this.apply(for {
       row <- table
       cell <- row
-      rect <- cell.value.fold(_ => None, Some(_))
+      rect <- cell.united.fold(_ => None, Some(_))
     } yield rect)
 
   def toArray[T](table:Seq[Seq[RangeX[T]]]):Seq[Seq[UnitedCellX[T]]] = 
