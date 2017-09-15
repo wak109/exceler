@@ -7,56 +7,79 @@ import scala.xml.Elem
 
 import exceler.common.CommonLib.ImplicitConversions._
 
-class QueryTableX[T](compactTable:Seq[Seq[RangeX[T]]])(
-    implicit conv:(T=>String)) {  
+case class QueryTableX[T](compactTable:Seq[Seq[RangeX[T]]]) {  
+
+  import QueryTableX._
 
   val arrayTable:Seq[Seq[UnitedCellX[T]]] = TableX.toArray(compactTable)
 
-  val blockMap:Map[String,List[Int]] = (Range(0,compactTable.length)
-    .toList.filter(r=>isSeparator(compactTable(r))):+compactTable.length)
-    .pairwise.map(t=>((getCellString(t._1,0),
-      Range(t._1+1,t._2).toList))).toMap
-
-  /**
-   * Using implicit conversion
-   */
-  def getCellString(row:Int,col:Int):String = arrayTable(row)(col).getValue
+  val blockList:List[(UnitedCellX[T],List[Int])] =
+    (Range(0,compactTable.length).toList.filter(
+      r=>isSeparator(compactTable(r))):+compactTable.length)
+      .pairwise.map(t=>((arrayTable(t._1)(0),
+      Range(t._1+1,t._2).toList))).toList
 
   def isSeparator(row:Seq[RangeX[T]]):Boolean = row.length == 1
 
   def query(
-    blockKey:Option[String=>Boolean] = None,
-    rowKeys:List[String=>Boolean] = Nil,
-    colKeys:List[String=>Boolean] = Nil
+    rowKeys:List[T=>Boolean] = Nil,
+    colKeys:List[T=>Boolean] = Nil,
+    blockKey:Option[T=>Boolean] = None
   ):List[T] = {
     val block = queryBlockKey(blockKey)
     val rowList = queryRowKeys(rowKeys, 0, block)
-    val colList = queryColKeys(colKeys, 0, Range(0,arrayTable(0).length).toList)
+    val colList = queryColKeys(colKeys, 0,
+          Range(0,arrayTable(0).length).toList)
     for {
       row <- rowList
       col <- colList
     } yield arrayTable(row)(col).getValue
   }
 
-  def queryBlockKey(blockKey:Option[String=>Boolean]):List[Int] = {
+  def queryByString(
+    rowKeys:String = "",
+    colKeys:String = "",
+    blockKey:String = ""
+  )(implicit getString:(T=>String)):List[T] = query(
+      genKeyList[T](rowKeys),
+      genKeyList[T](colKeys),
+      genKey[T](blockKey))
+
+  def queryBlockKey(blockKey:Option[T=>Boolean]):List[Int] = {
     blockKey match {
       case None => Range(0, arrayTable.length).toList
-      case Some(key) => blockMap.keys.filter(key)
-                          .map(blockMap(_)).toList.flatten
+      case Some(key) => {
+        
+        blockList.filter((t=>key(t._1.getValue))).map(_._2).toList.flatten
+      }
     }
   }
 
-  def queryRowKeys(rowKeys:List[String=>Boolean], col:Int,
+  def queryRowKeys(rowKeys:List[T=>Boolean], col:Int,
         rowList:List[Int]):List[Int] = rowKeys match {
     case Nil => rowList
     case head::tail => queryRowKeys(tail, col +1,
-      rowList.filter(row=>head(getCellString(row, col))))
+      rowList.filter(row=>head(arrayTable(row)(col).getValue)))
   }
 
-  def queryColKeys(colKeys:List[String=>Boolean], row:Int,
+  def queryColKeys(colKeys:List[T=>Boolean], row:Int,
         colList:List[Int]):List[Int] = colKeys match {
     case Nil => colList
     case head::tail => queryColKeys(tail, row +1,
-      colList.filter(col=>head(getCellString(row, col))))
+      colList.filter(col=>head(arrayTable(row)(col).getValue)))
+  }
+}
+
+object QueryTableX {
+
+  def genKeyList[T](key:String)(
+        implicit getString:(T=>String)):List[T=>Boolean] =
+          key.split(",").toList.map(genKey[T](_))
+            .map(_.getOrElse((t:T)=>true))
+
+  def genKey[T](key:String)(
+        implicit getString:(T=>String)):Option[T=>Boolean] = key match {
+    case "" => None
+    case _ => Some((t:T)=>getString(t) == key)
   }
 }

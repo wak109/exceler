@@ -18,6 +18,7 @@ case class XlsRect(
 ) extends RangeX[XlsRect] {
 
   def getValue() = this
+  
 
   // TODO
   lazy val xml:Elem = <p>{(for {

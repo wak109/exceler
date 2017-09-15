@@ -3,6 +3,7 @@ package exceler
 
 import scala.util.control.Exception._
 import scala.util.{Try, Success, Failure}
+import scala.xml.Elem
 
 import java.io._
 
@@ -13,11 +14,9 @@ import org.apache.commons.cli.{Option => CmdOption}
 import org.apache.commons.cli.{Options => CmdOptions}
 import org.apache.commons.cli.ParseException
 
-import exceler.table._
 import exceler.excel._
+import exceler.tablex._
 import exceler.server._
-
-import TableQueryImpl._
 
 sealed trait Config {
   val excelDir:String
@@ -91,6 +90,7 @@ object Main {
       )
     }
 
+  implicit def xmlToString(elem:Elem) = elem.text
   /**
    *
    */
@@ -101,16 +101,6 @@ object Main {
         case (Nil,_,port,dir) => {
           this.config = new ConfigImpl(dir)
           JettyLauncher.run(port)
-        }
-        case (args,_,_,_) => args(0) match {
-          case "query" => {
-            queryExcelTable(
-                args(1), args(2), args(3), args(4), args(5)) match {
-              case Success(result) => println(result)
-              case Failure(e) => println(e.getMessage); printUsage()
-            }
-          }
-          case _ => printUsage()
         }
       }
       case Failure(e) => println(e.getMessage); printUsage()

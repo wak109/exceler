@@ -40,6 +40,11 @@ trait RangeX[+T] extends CellX[T] {
   val height:Int
   val width:Int
 
+  val top:Int = row
+  val left:Int = col
+  val bottom:Int = row + height - 1
+  val right:Int = col + width - 1
+
   val cellList = UnitedCellX(this) +: (for {
     rnum <- (0 until height)
     cnum <- (0 until width)

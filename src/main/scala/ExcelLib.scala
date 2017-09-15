@@ -14,7 +14,6 @@ import java.io._
 import java.nio.file._
 
 import exceler.common._
-import exceler.table._
 import CommonLib._
 
 package excellib {

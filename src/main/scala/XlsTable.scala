@@ -13,12 +13,11 @@ import exceler.excel._
 
 import CommonLib.ImplicitConversions._
 import excellib.ImplicitConversions._
-import excellib.Rectangle.ImplicitConversions._
 
 object XlsTable {
 
-  def apply[T](sheet:Sheet, top:Int, left:Int, height:Int, width:Int)(
-      implicit convert:XlsRect=>T):Seq[Seq[XlsCell[T]]] = {
+  def apply[T](sheet:Sheet, top:Int, left:Int, height:Int, width:Int)
+  (implicit conv:T=>String,conv2:XlsRect=>T):Seq[Seq[XlsCell[T]]] = {
   
     val topLeftList = getTopLeftList(sheet,top,left,height,width)
     val xlsRowLineList = getXlsRowLineList(topLeftList)
@@ -111,12 +110,45 @@ object XlsTable {
     }
   }
 
-  def apply[T](sheet:Sheet)(implicit convert:XlsRect=>T):List[Seq[Seq[XlsCell[T]]]] = {
-    sheet.getUsedRange match {
-      case Some((top, left, bottom, right)) => getRectList(
-        sheet, top, left, bottom - top + 1, right - left +1).map(
-          t=>apply[T](sheet, t._1, t._2, t._3, t._4))
-      case None => Nil
+  def getTableName(rect:XlsRect):Option[String] = {
+    if (rect.row > 0) {
+      for {
+        cell <- rect.sheet.getCellOption(rect.row - 1, rect.col)
+        value <- cell.getValueString
+      } yield value
+    } else None
+  }
+
+  def getTableNamePair[T](table:Seq[Seq[XlsCell[T]]])(
+      implicit conv:T=>String):(Option[String],Seq[Seq[XlsCell[T]]]) = {
+    val rect = table(0)(0).xlsRect
+
+    getTableName(rect) match {
+      case Some(name) => (Some(name), table)
+      case None => table(0).length match {
+        case 1 => (Some(table(0)(0).getValue), table.tail)
+        case _ => (None, table)
+      }
     }
+  }
+
+  def apply[T](sheet:Sheet)
+  (implicit conv:T=>String, conv2:XlsRect=>T):Map[String,Seq[Seq[XlsCell[T]]]] = {
+    (sheet.getUsedRange match {
+      case Some((top, left, bottom, right)) => {
+        val tableNamePairList:
+          List[(Option[String],Seq[Seq[XlsCell[T]]])] = getRectList(
+            sheet, top, left, bottom - top + 1, right - left +1)
+              .map(t=>apply[T](sheet, t._1, t._2, t._3, t._4))
+              .map(getTableNamePair[T](_))
+        tableNamePairList.zipWithIndex.map(t=> {
+          t._1._1 match {
+            case Some(name) => (name, t._1._2)
+            case None => ("Table" + t._2, t._1._2)
+          }
+        })
+      }
+      case None => Nil
+    }).toMap
   }
 }
