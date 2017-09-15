@@ -4,7 +4,7 @@ package exceler.test
 import scala.util.{Try, Success, Failure}
 import org.scalatest.FunSuite
 
-import exceler._
+import exceler.app.ServerMain
 
 class ServerMainSuite extends FunSuite {
   

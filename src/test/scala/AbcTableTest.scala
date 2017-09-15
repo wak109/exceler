@@ -2,7 +2,7 @@
 package exceler.test
 
 import org.scalatest.FunSuite
-import exceler.tablex._
+import exceler.abc._
 
 class AbcTableTest extends FunSuite with TestResource {
 

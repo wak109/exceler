@@ -1,5 +1,5 @@
 /* vim: set ts=2 et sw=2 sts=2 fileencoding=utf-8: */
-package exceler.tablex
+package exceler.xls
 
 import scala.language.implicitConversions
 import scala.xml.Elem
@@ -7,6 +7,7 @@ import scala.xml.Elem
 import org.apache.poi.ss.usermodel._
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
 
+import exceler.abc.{AbcRange,AbcTable}
 import exceler.excel.excellib.ImplicitConversions._
 
 case class XlsRect( 

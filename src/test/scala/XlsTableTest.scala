@@ -16,11 +16,13 @@ import java.io.File
 import java.nio.file.{Paths, Files}
 
 import exceler.excel.excellib.ImplicitConversions._
-import exceler.tablex._
-import exceler.tablex.XlsTable._
+import exceler.abc._
+import exceler.xls._
 
 @RunWith(classOf[JUnitRunner])
 class XlsTableTest extends FunSuite with TestResource {
+
+  import XlsTable._
 
   test("XlsTable.getTopLeftList") {
     val file = new File(getURI(testWorkbook1))

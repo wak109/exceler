@@ -13,11 +13,13 @@ import java.nio.file.{Paths, Files}
 
 import org.scalatest.FunSuite
 
-import exceler.tablex._
+import exceler.abc._
+import exceler.xls._
 import exceler.common.CommonLib.ImplicitConversions._
 
 class AbcTableQueryTest extends FunSuite with TestResource {
 
+  import AbcTable._
   import AbcTableQuery._
 
   implicit def elemToString(elem:Elem):String = elem.text

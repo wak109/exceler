@@ -1,5 +1,5 @@
 /* vim: set ts=2 et sw=2 sts=2 fileencoding=utf-8: */
-package exceler
+package exceler.app
 
 import scala.util.control.Exception._
 import scala.util.{Try, Success, Failure}
@@ -15,8 +15,6 @@ import java.io._
 import java.nio.file._
 
 import exceler.excel._
-import exceler.tablex._
-
 import excellib.ImplicitConversions._
 
 
