@@ -16,8 +16,8 @@ import excellib.ImplicitConversions._
 
 object XlsTable {
 
-  def apply[T](sheet:Sheet, top:Int, left:Int, height:Int, width:Int)
-  (implicit conv:T=>String,conv2:XlsRect=>T):Seq[Seq[XlsCell[T]]] = {
+  def apply(sheet:Sheet, top:Int, left:Int, height:Int, width:Int)
+  (implicit conv:XlsRect=>String):Seq[Seq[XlsCell]] = {
   
     val topLeftList = getTopLeftList(sheet,top,left,height,width)
     val xlsRowLineList = getXlsRowLineList(topLeftList)
@@ -30,9 +30,9 @@ object XlsTable {
         t.row, t.col, t.height, t.width,
         xlsRowLineList, xlsColumnLineList))
     val xlsCellList = xlsRectList.zip(xmlRectList).map(
-        t => new XlsCell[T](t._1, t._2._1, t._2._2, t._2._3, t._2._4))
+        t => new XlsCell(t._1, t._2._1, t._2._2, t._2._3, t._2._4))
 
-    TableX(xlsCellList)
+    AbcTable(xlsCellList)
   }
 
   def getTopLeftList(
@@ -119,9 +119,9 @@ object XlsTable {
     } else None
   }
 
-  def getTableNamePair[T](table:Seq[Seq[XlsCell[T]]])(
-      implicit conv:T=>String):(Option[String],Seq[Seq[XlsCell[T]]]) = {
-    val rect = table(0)(0).xlsRect
+  def getTableNamePair(table:Seq[Seq[XlsCell]])(
+      implicit conv:XlsRect=>String):(Option[String],Seq[Seq[XlsCell]]) = {
+    val rect = table(0)(0).value
 
     getTableName(rect) match {
       case Some(name) => (Some(name), table)
@@ -132,15 +132,15 @@ object XlsTable {
     }
   }
 
-  def apply[T](sheet:Sheet)
-  (implicit conv:T=>String, conv2:XlsRect=>T):Map[String,Seq[Seq[XlsCell[T]]]] = {
+  def apply(sheet:Sheet)
+  (implicit conv:XlsRect=>String):Map[String,Seq[Seq[XlsCell]]] = {
     (sheet.getUsedRange match {
       case Some((top, left, bottom, right)) => {
         val tableNamePairList:
-          List[(Option[String],Seq[Seq[XlsCell[T]]])] = getRectList(
+          List[(Option[String],Seq[Seq[XlsCell]])] = getRectList(
             sheet, top, left, bottom - top + 1, right - left +1)
-              .map(t=>apply[T](sheet, t._1, t._2, t._3, t._4))
-              .map(getTableNamePair[T](_))
+              .map(t=>apply(sheet, t._1, t._2, t._3, t._4))
+              .map(getTableNamePair(_))
         tableNamePairList.zipWithIndex.map(t=> {
           t._1._1 match {
             case Some(name) => (name, t._1._2)

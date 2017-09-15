@@ -7,19 +7,19 @@ import scala.xml.Elem
 
 import exceler.common.CommonLib.ImplicitConversions._
 
-case class QueryTableX[T](compactTable:Seq[Seq[RangeX[T]]]) {  
+case class AbcTableQuery[T](compactTable:Seq[Seq[AbcRange[T]]]) {  
 
-  import QueryTableX._
+  import AbcTableQuery._
 
-  val arrayTable:Seq[Seq[UnitedCellX[T]]] = TableX.toArray(compactTable)
+  val arrayTable:Seq[Seq[GenCell[T]]] = AbcTable.toArray(compactTable)
 
-  val blockList:List[(UnitedCellX[T],List[Int])] =
+  val blockList:List[(GenCell[T],List[Int])] =
     (Range(0,compactTable.length).toList.filter(
       r=>isSeparator(compactTable(r))):+compactTable.length)
       .pairwise.map(t=>((arrayTable(t._1)(0),
       Range(t._1+1,t._2).toList))).toList
 
-  def isSeparator(row:Seq[RangeX[T]]):Boolean = row.length == 1
+  def isSeparator(row:Seq[AbcRange[T]]):Boolean = row.length == 1
 
   def query(
     rowKeys:List[T=>Boolean] = Nil,
@@ -70,7 +70,7 @@ case class QueryTableX[T](compactTable:Seq[Seq[RangeX[T]]]) {
   }
 }
 
-object QueryTableX {
+object AbcTableQuery {
 
   def genKeyList[T](key:String)(
         implicit getString:(T=>String)):List[T=>Boolean] =

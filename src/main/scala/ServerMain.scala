@@ -16,14 +16,13 @@ import org.apache.commons.cli.ParseException
 
 import exceler.excel._
 import exceler.tablex._
-import exceler.server._
 
 sealed trait Config {
   val excelDir:String
 }
 
 object Config {
-  def apply():Config = Main.getConfig
+  def apply():Config = ServerMain.getConfig
 }
 
 
@@ -32,7 +31,7 @@ object DEFAULT {
   val PORT = 8080
 }
 
-object Main {
+object ServerMain {
 
   private var config:Config = null
 
@@ -90,7 +89,6 @@ object Main {
       )
     }
 
-  implicit def xmlToString(elem:Elem) = elem.text
   /**
    *
    */
@@ -100,8 +98,9 @@ object Main {
         case (_,true,_,_) => printUsage() 
         case (Nil,_,port,dir) => {
           this.config = new ConfigImpl(dir)
-          JettyLauncher.run(port)
+          ServerLauncher.run(port)
         }
+        case _ => printUsage()
       }
       case Failure(e) => println(e.getMessage); printUsage()
     }

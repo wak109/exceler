@@ -22,20 +22,20 @@ import CommonLib._
 
 object Exceler {
 
-  def query[T](
+  def query(
     filename:String,
     sheetname:String,
     tablename:String,
     rowKeys:String,
     colKeys:String,
     blockKey:String)
-  (implicit conv:(T=>String), conv2:(XlsRect=>T)) = {
+  (implicit conv:(XlsRect=>String)) = {
 
     for {
       book <- ExcelerBook.getBook(filename)
       sheet <- book.getSheetOption(sheetname)
-      table <- XlsTable[T](sheet).get(tablename)
-    } yield QueryTableX[T](table).queryByString(rowKeys, colKeys, blockKey)
+      table <- XlsTable(sheet).get(tablename)
+    } yield AbcTableQuery[XlsRect](table).queryByString(rowKeys, colKeys, blockKey)
   }
 }
 

@@ -19,4 +19,4 @@ libraryDependencies ++= Seq(
 
 enablePlugins(JettyPlugin)
 
-mainClass in (Compile, packageBin) := Some("exceler.Main")
+mainClass in (Compile, packageBin) := Some("exceler.ServerMain")

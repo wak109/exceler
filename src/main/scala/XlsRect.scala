@@ -15,7 +15,7 @@ case class XlsRect(
   override val col:Int,
   override val height:Int,
   override val width:Int
-) extends RangeX[XlsRect] {
+) extends AbcRange[XlsRect] {
 
   override val value = this
 
@@ -32,14 +32,10 @@ object XlsRect {
   implicit def convToString(rect:XlsRect):String = rect.xml.text
 }
 
-case class XlsCell[T](
-  val xlsRect:XlsRect,
+case class XlsCell(
+  override val value:XlsRect,
   override val row:Int,
   override val col:Int,
   override val height:Int,
   override val width:Int
-  )(implicit conv:(XlsRect=>T)) extends RangeX[T] {
-
-  override val value:T = xlsRect
-}
-
+  ) extends AbcRange[XlsRect]

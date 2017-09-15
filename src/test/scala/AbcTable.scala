@@ -4,13 +4,13 @@ package exceler.test
 import org.scalatest.FunSuite
 import exceler.tablex._
 
-class TableXTest extends FunSuite with TestResource {
+class AbcTableTest extends FunSuite with TestResource {
 
   class CellTest(
     override val row:Int,
     override val col:Int,
     override val value:String
-  ) extends CellX[String] {
+  ) extends AbcCell[String] {
   }
 
   class RectTest(
@@ -19,10 +19,10 @@ class TableXTest extends FunSuite with TestResource {
     override val height:Int,
     override val width:Int,
     override val value:String
-  ) extends CellTest(row,col,value) with RangeX[String]
+  ) extends CellTest(row,col,value) with AbcRange[String]
 
-  test("TableX.apply") {
-    val table = TableX(Seq(
+  test("AbcTable.apply") {
+    val table = AbcTable(Seq(
       new CellTest(0, 0, "Cell00"),
       new CellTest(0, 1, "Cell01"),
       new CellTest(1, 0, "Cell10"),
@@ -35,27 +35,27 @@ class TableXTest extends FunSuite with TestResource {
     assert(table(2)(0).value == "Cell34")
   }
 
-  test("RangeX") {
+  test("AbcRange") {
     val rect = new RectTest(0,0,3,4,"Rect")
 
     assert(rect.cellList.length == 12)
   }
 
-  test("TableX.toCompact") {
+  test("AbcTable.toCompact") {
     val rect = new RectTest(0,0,3,4,"Rect")
 
-    val table = TableX.toCompact(TableX(rect.cellList))
+    val table = AbcTable.toCompact(AbcTable(rect.cellList))
 
     assert(table.length == 1)
     assert(table(0).length == 1)
     assert(table(0)(0).value == "Rect")
   }
 
-  test("TableX.toArray") {
+  test("AbcTable.toArray") {
     val rect = new RectTest(0,0,3,4,"Rect")
 
-    val table = TableX.toArray(
-      TableX.toCompact(TableX(rect.cellList)))
+    val table = AbcTable.toArray(
+      AbcTable.toCompact(AbcTable(rect.cellList)))
 
     assert(table.length == 3)
     assert(table(0).length == 4)

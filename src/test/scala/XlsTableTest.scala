@@ -87,7 +87,7 @@ class XlsTableTest extends FunSuite with TestResource {
     val workbook = WorkbookFactory.create(file)
     val sheet = workbook.getSheet("table2")
 
-    val xlsTable = XlsTable[XlsRect](sheet,2,1,18,8)
+    val xlsTable = XlsTable(sheet,2,1,18,8)
 
     assert(xlsTable(0).length == 1)
     assert(xlsTable(0)(0).value.text == "test3")
@@ -120,7 +120,7 @@ class XlsTableTest extends FunSuite with TestResource {
     val workbook = WorkbookFactory.create(file)
     val sheet = workbook.getSheet("table2")
 
-    val xlsTable = TableX.toArray(XlsTable[XlsRect](sheet,2,1,18,8))
+    val xlsTable = AbcTable.toArray(XlsTable(sheet,2,1,18,8))
 
     assert(xlsTable(0)(0).value.xml.text == "test3")
     assert(xlsTable(3)(1).value.xml.text == "upper")
@@ -132,8 +132,8 @@ class XlsTableTest extends FunSuite with TestResource {
     val workbook = WorkbookFactory.create(file)
     val sheet = workbook.getSheet("table2")
 
-    val xlsTable = TableX.toCompact(
-      TableX.toArray(XlsTable[XlsRect](sheet,2,1,18,8)))
+    val xlsTable = AbcTable.toCompact(
+      AbcTable.toArray(XlsTable(sheet,2,1,18,8)))
 
     assert(xlsTable(0).length == 1)
     assert(xlsTable(0)(0).value.text == "test3")
@@ -177,8 +177,8 @@ class XlsTableTest extends FunSuite with TestResource {
     val file = new File(getURI(testWorkbook1))
     val workbook = WorkbookFactory.create(file)
     val sheet = workbook.getSheet("table")
-    val tableMap = XlsTable[XlsRect](sheet)
-          .mapValues(new QueryTableX[XlsRect](_))
+    val tableMap = XlsTable(sheet)
+          .mapValues(new AbcTableQuery[XlsRect](_))
 
     assert(tableMap.get("test").get.queryByString(
       "row1,upper", "col2,right")

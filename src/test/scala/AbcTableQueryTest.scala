@@ -16,20 +16,20 @@ import org.scalatest.FunSuite
 import exceler.tablex._
 import exceler.common.CommonLib.ImplicitConversions._
 
-class QueryTableXTest extends FunSuite with TestResource {
+class AbcTableQueryTest extends FunSuite with TestResource {
 
-  import QueryTableX._
+  import AbcTableQuery._
 
   implicit def elemToString(elem:Elem):String = elem.text
 
   val file = new File(getURI(testWorkbook1))
   val workbook = WorkbookFactory.create(file)
   val sheet = workbook.getSheet("stack")
-  val compactTable = XlsTable[XlsRect](sheet,1,1,18,12)
-  val qTable = new QueryTableX[XlsRect](XlsTable[XlsRect](sheet,1,1,18,12))
+  val compactTable = XlsTable(sheet,1,1,18,12)
+  val qTable = new AbcTableQuery[XlsRect](XlsTable(sheet,1,1,18,12))
 
-  val compactTable2 = XlsTable[XlsRect](sheet,1,1,18,12)
-  val qTable2 = new QueryTableX[XlsRect](XlsTable[XlsRect](sheet,1,1,18,12))
+  val compactTable2 = XlsTable(sheet,1,1,18,12)
+  val qTable2 = new AbcTableQuery[XlsRect](XlsTable(sheet,1,1,18,12))
 
 
   /*

@@ -4,25 +4,25 @@ package exceler.tablex
 import scala.collection._
 import scala.language.implicitConversions
 
-trait CellX[+T] {
+trait AbcCell[+T] {
   val row:Int
   val col:Int
   val value:T
 }
 
 
-case class ProxyCellX[+T] (
+case class PlaceHolder[+T] (
   override val row:Int,
   override val col:Int,
-  val delegate:CellX[T]
-) extends CellX[T] {
+  val delegate:AbcCell[T]
+) extends AbcCell[T] {
   override val value = delegate.value
 }
 
 
-case class UnitedCellX[+T](
-  val united:Either[ProxyCellX[T],RangeX[T]])
-    extends CellX[T] {
+case class GenCell[+T](
+  val united:Either[PlaceHolder[T],AbcRange[T]])
+    extends AbcCell[T] {
 
   override val row = united.fold(_.row, _.row)
   override val col = united.fold(_.col, _.col)
@@ -30,13 +30,13 @@ case class UnitedCellX[+T](
 }
 
 
-object UnitedCellX {
-  def apply[T](rect:RangeX[T]) = new UnitedCellX(Right(rect))
-  def apply[T](holder:ProxyCellX[T]) = new UnitedCellX(Left(holder))
+object GenCell {
+  def apply[T](rect:AbcRange[T]) = new GenCell(Right(rect))
+  def apply[T](holder:PlaceHolder[T]) = new GenCell(Left(holder))
 }
 
 
-trait RangeX[+T] extends CellX[T] {
+trait AbcRange[+T] extends AbcCell[T] {
   val height:Int
   val width:Int
 
@@ -45,27 +45,27 @@ trait RangeX[+T] extends CellX[T] {
   val bottom:Int = row + height - 1
   val right:Int = col + width - 1
 
-  lazy val cellList = UnitedCellX(this) +: (for {
+  lazy val cellList = GenCell(this) +: (for {
     rnum <- (0 until height)
     cnum <- (0 until width)
-    holder = ProxyCellX(row+rnum,col+cnum,this)
+    holder = PlaceHolder(row+rnum,col+cnum,this)
         if (rnum != 0) || (cnum != 0)
-  } yield UnitedCellX(holder))
+  } yield GenCell(holder))
 }
 
 
-object TableX {
-  def apply[T<:CellX[_]](cellList:Seq[T]) = cellList.groupBy(_.row)
+object AbcTable {
+  def apply[T<:AbcCell[_]](cellList:Seq[T]) = cellList.groupBy(_.row)
     .toList.sortBy(_._1).map(_._2).map(_.sortBy(_.col))
 
-  def toCompact[T](table:Seq[Seq[UnitedCellX[T]]]):Seq[Seq[RangeX[T]]] =
+  def toCompact[T](table:Seq[Seq[GenCell[T]]]):Seq[Seq[AbcRange[T]]] =
     this.apply(for {
       row <- table
       cell <- row
       rect <- cell.united.fold(_ => None, Some(_))
     } yield rect)
 
-  def toArray[T](table:Seq[Seq[RangeX[T]]]):Seq[Seq[UnitedCellX[T]]] = 
+  def toArray[T](table:Seq[Seq[AbcRange[T]]]):Seq[Seq[GenCell[T]]] = 
     this.apply((for {
       row <- table
       cell <- row

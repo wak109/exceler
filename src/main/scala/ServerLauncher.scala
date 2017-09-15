@@ -1,5 +1,5 @@
 /* vim: set ts=2 et sw=2 sts=2 fileencoding=utf-8: */
-package exceler.server
+package exceler
 
 import org.eclipse.jetty.server.{Server, ServerConnector}
 import org.eclipse.jetty.servlet.{DefaultServlet, ServletContextHandler}
@@ -10,7 +10,7 @@ import org.scalatra.LifeCycle
 import javax.servlet.ServletContext
 
 
-object JettyLauncher {
+object ServerLauncher {
   def run(port:Int) {
 
     val server = new Server()
