@@ -22,6 +22,8 @@ object ServerLauncher {
     server.setConnectors(Array(connector))
 
     val context = new WebAppContext()
+    context.setInitParameter(ScalatraListener.LifeCycleKey,
+      "exceler.app.ScalatraBootstrap")
     context.setContextPath("/")
     context.setResourceBase("src/main/webapp")
     context.addEventListener(new ScalatraListener)

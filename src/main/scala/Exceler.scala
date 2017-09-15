@@ -21,6 +21,10 @@ import exceler.xls.{XlsRect,XlsTable}
 import CommonLib._
 
 
+case class ExcelerBook(val workbook:Workbook) {
+
+}
+
 object Exceler {
 
   def query(
@@ -33,23 +37,20 @@ object Exceler {
   (implicit conv:(XlsRect=>String)) = {
 
     for {
-      book <- ExcelerBook.getBook(filename)
+      book <- getBook(filename)
       sheet <- book.getSheetOption(sheetname)
       table <- XlsTable(sheet).get(tablename)
     } yield AbcTableQuery[XlsRect](table).queryByString(rowKeys, colKeys, blockKey)
   }
-}
-
-
-object ExcelerBook {
 
   lazy private val bookMap = 
     getListOfFiles(Config().excelDir)
       .filter(_.canRead)
       .filter(_.getName.endsWith(".xlsx"))
-      .map((f:File)=>(f.getName, WorkbookFactory.create(f, null ,true)))
-      .toMap
+      .map((f:File)=>(f.getName, ExcelerBook(
+          WorkbookFactory.create(f, null ,true)))).toMap
 
-  def getBook(bookName:String) = bookMap.get(bookName)
+  def getBookList() = bookMap.keys.toList
+  def getBook(bookName:String) = bookMap.get(bookName).map(_.workbook)
 }
 

@@ -40,11 +40,11 @@ class ExcelerServlet extends ScalatraServlet {
   }
 
   get("/") {
-    <html>
-      <body>
-        <h1>Hello, world!</h1>
-        <p>Scalatra</p>
-      </body>
-    </html>
+
+    val bookList = Exceler.getBookList
+    
+    <books>
+    { for (book <- bookList) yield <book name={book} /> }
+    </books>
   }
 }
