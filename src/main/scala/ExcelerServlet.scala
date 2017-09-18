@@ -14,8 +14,13 @@ import org.scalatra._
 import java.io._
 import java.nio.file._
 
+import exceler.common._
 import exceler.excel._
 import excellib.ImplicitConversions._
+import exceler.abc.{AbcTableQuery}
+import exceler.xls.{XlsRect,XlsTable}
+
+import CommonLib._
 
 
 class ExcelerServlet extends ScalatraServlet {
@@ -48,3 +53,40 @@ class ExcelerServlet extends ScalatraServlet {
     </books>
   }
 }
+
+
+
+
+case class ExcelerBook(val workbook:Workbook) {
+
+}
+
+object Exceler {
+
+  def query(
+    filename:String,
+    sheetname:String,
+    tablename:String,
+    rowKeys:String,
+    colKeys:String,
+    blockKey:String)
+  (implicit conv:(XlsRect=>String)) = {
+
+    for {
+      book <- getBook(filename)
+      sheet <- book.getSheetOption(sheetname)
+      table <- XlsTable(sheet).get(tablename)
+    } yield AbcTableQuery[XlsRect](table).queryByString(rowKeys, colKeys, blockKey)
+  }
+
+  lazy private val bookMap = 
+    getListOfFiles(Config().excelDir)
+      .filter(_.canRead)
+      .filter(_.getName.endsWith(".xlsx"))
+      .map((f:File)=>(f.getName, ExcelerBook(
+          WorkbookFactory.create(f, null ,true)))).toMap
+
+  def getBookList() = bookMap.keys.toList
+  def getBook(bookName:String) = bookMap.get(bookName).map(_.workbook)
+}
+
