@@ -25,9 +25,11 @@ import CommonLib._
 
 class ExcelerServlet extends ScalatraServlet {
 
+  lazy private val exceler = new Exceler(this.getInitParameter("excelDir"))
+
   get("/:book/:sheet/:table") {
 
-    val result = Exceler.query(
+    val result = this.exceler.query(
       params("book"),
       params("sheet"),
       params("table"),
@@ -46,7 +48,7 @@ class ExcelerServlet extends ScalatraServlet {
 
   get("/") {
 
-    val bookList = Exceler.getBookList
+    val bookList = this.exceler.getBookList
     
     <books>
     { for (book <- bookList) yield <book name={book} /> }
@@ -58,6 +60,36 @@ class ExcelerServlet extends ScalatraServlet {
 
 
 case class ExcelerBook(val workbook:Workbook) {
+
+}
+
+class Exceler(excelDir:String) {
+
+  private val bookMap = 
+    getListOfFiles(this.excelDir)
+      .filter(_.canRead)
+      .filter(_.getName.endsWith(".xlsx"))
+      .map((f:File)=>(f.getName, ExcelerBook(
+          WorkbookFactory.create(f, null ,true)))).toMap
+
+  def getBookList() = bookMap.keys.toList
+  def getBook(bookName:String) = bookMap.get(bookName).map(_.workbook)
+
+  def query(
+    filename:String,
+    sheetname:String,
+    tablename:String,
+    rowKeys:String,
+    colKeys:String,
+    blockKey:String)
+  (implicit conv:(XlsRect=>String)) = {
+
+    for {
+      book <- getBook(filename)
+      sheet <- book.getSheetOption(sheetname)
+      table <- XlsTable(sheet).get(tablename)
+    } yield AbcTableQuery[XlsRect](table).queryByString(rowKeys, colKeys, blockKey)
+  }
 
 }
 

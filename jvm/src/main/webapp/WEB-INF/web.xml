@@ -6,6 +6,10 @@ xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns
 	<servlet>
 		<servlet-name>exceler</servlet-name>
 		<servlet-class>exceler.app.ExcelerServlet</servlet-class>
+        <init-param>
+            <param-name>excelDir</param-name>
+            <param-value>tmp</param-value>
+        </init-param>
 	</servlet>
 
 	<servlet-mapping>
