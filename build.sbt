@@ -17,8 +17,6 @@ lazy val exceler = crossProject.in(file("."))
     )),
     name := "exceler",
     libraryDependencies ++= Seq(
-      "org.scalactic" %% "scalactic" % "3.0.4",
-      "org.scalatest" %% "scalatest" % "3.0.4" % "test"
     )
   )
   .jvmSettings(
@@ -28,19 +26,23 @@ lazy val exceler = crossProject.in(file("."))
       "org.apache.poi" % "poi-ooxml" % "3.16",
       "org.apache.poi" % "poi-ooxml-schemas" % "3.16",
       "commons-cli" % "commons-cli" % "1.4",
-      "org.scalatra" %% "scalatra" % "2.5.1",
-      "org.scalatra" %% "scalatra-specs2" % "2.5.1"  % "test",
+      "org.scalatra" %%% "scalatra" % "2.5.1",
+      "org.scalatra" %%% "scalatra-specs2" % "2.5.1"  % "test",
       "ch.qos.logback" % "logback-classic" % "1.1.3" % "runtime",
       "org.eclipse.jetty" %  "jetty-webapp" % "9.4.7.RC0" % "compile;container",
       "javax.servlet" % "javax.servlet-api" % "3.1.0" % "provided",
-      "junit" % "junit" % "4.12" % "test"
+      "junit" % "junit" % "4.12" % "test",
+      "org.scalactic" %%% "scalactic" % "3.0.4",
+      "org.scalatest" %%% "scalatest" % "3.0.4" % "test"
     ),
-    mainClass in (Compile, packageBin) := Some("exceler.app.ServerMain")
+    mainClass in (Compile, packageBin) := Some("exceler.app.Main")
   )
   .jsSettings(
     scalaJSUseMainModuleInitializer := true,
     libraryDependencies ++= Seq(
-      "org.scala-js" %%% "scalajs-dom" % "0.9.2"
+      "org.scala-js" %%% "scalajs-dom" % "0.9.2",
+      "be.doeraene" %%% "scalajs-jquery" % "0.9.2",
+      "org.scalatest" %%% "scalatest" % "3.0.4" % "test"
     )
   )
   .enablePlugins(JettyPlugin)

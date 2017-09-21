@@ -4,20 +4,20 @@ package exceler.test
 import scala.util.{Try, Success, Failure}
 import org.scalatest.FunSuite
 
-import exceler.app.ServerMain
+import exceler.app.Main
 
-class ServerMainSuite extends FunSuite {
+class MainSuite extends FunSuite {
   
   test("Main.parseCommandLine") {
-    ServerMain.parseCommandLine(Array()) match {
+    Main.parseCommandLine(Array()) match {
       case Success((Nil, false, 8080, ".")) => assert(true)
       case _ => assert(false)
     }
-    ServerMain.parseCommandLine(Array("-p", "9999")) match {
+    Main.parseCommandLine(Array("-p", "9999")) match {
       case Success((Nil, false, 9999, ".")) => assert(true)
       case _ => assert(false)
     }
-    ServerMain.parseCommandLine(Array("-p", "abcd")) match {
+    Main.parseCommandLine(Array("-p", "abcd")) match {
       case Failure(_) => assert(true)
       case _ => assert(false)
     }

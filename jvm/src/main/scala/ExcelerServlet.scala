@@ -8,11 +8,13 @@ import scala.xml.Elem
 
 import org.apache.poi.ss.usermodel._
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
-
 import org.scalatra._
 
 import java.io._
 import java.nio.file._
+import java.util.Properties
+
+import javax.servlet.http.HttpServlet
 
 import exceler.common._
 import exceler.excel._
@@ -22,10 +24,28 @@ import exceler.xls.{XlsRect,XlsTable}
 
 import CommonLib._
 
+class ExcelerConfig(servlet:HttpServlet) {
+
+  private val properties = new Properties
+  private val configFile = servlet.getInitParameter("configFile")
+
+  if (Files.exists(Paths.get(configFile))) {
+    val inputStream = new FileInputStream(configFile)
+    properties.load(inputStream);
+    inputStream.close();
+  }
+  val keySet = properties.keySet
+
+  val excelDir = if (keySet.contains("excelDir"))
+      properties.getProperty("excelDir")
+    else
+      servlet.getInitParameter("excelDir")
+}
 
 class ExcelerServlet extends ScalatraServlet {
 
-  lazy private val exceler = new Exceler(this.getInitParameter("excelDir"))
+  lazy val excelerConfig = new ExcelerConfig(this)
+  lazy val exceler = new Exceler(excelerConfig.excelDir)
 
   get("/:book/:sheet/:table") {
 

@@ -21,7 +21,7 @@ sealed trait Config {
 }
 
 object Config {
-  def apply():Config = ServerMain.getConfig
+  def apply():Config = Main.getConfig
 }
 
 
@@ -30,7 +30,7 @@ object DEFAULT {
   val PORT = 8080
 }
 
-object ServerMain {
+object Main {
 
   private var config:Config = null
 
@@ -66,6 +66,7 @@ object ServerMain {
     options.addOption("h", false, "Show help")
     options.addOption("p", true, "Listen port")
     options.addOption("d", true, "Excel directory")
+    options.addOption("f", true, "Configuration file")
 
     return options
   }
