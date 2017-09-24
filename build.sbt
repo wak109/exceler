@@ -1,26 +1,19 @@
 /* vim: set ts=2 et sw=2 sts=2 fileencoding=utf-8: */
 
 lazy val root = project.in(file("."))
-  .aggregate(excelerJS, excelerJVM)
-  .settings(
-    publish := {},
-    publishLocal := {},
-    publishM2 := {}
+  .aggregate(jvm, js)
+
+lazy val commonSettings = Seq(
+    organization := "exceler",
+    scalaVersion := "2.12.3",
+    version      := "0.4.0",
+    scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature")
   )
 
-lazy val exceler = crossProject.in(file("."))
+lazy val jvm = project.in(file("jvm"))
   .settings(
-    inThisBuild(List(
-      organization := "exceler",
-      scalaVersion := "2.12.3",
-      version      := "0.4.0"
-    )),
+    commonSettings,
     name := "exceler",
-    libraryDependencies ++= Seq(
-    )
-  )
-  .jvmSettings(
-    scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature"),
     libraryDependencies ++= Seq(
       "org.apache.poi" % "poi" % "3.16",
       "org.apache.poi" % "poi-ooxml" % "3.16",
@@ -35,21 +28,28 @@ lazy val exceler = crossProject.in(file("."))
       "org.scalactic" %%% "scalactic" % "3.0.4",
       "org.scalatest" %%% "scalatest" % "3.0.4" % "test"
     ),
-    mainClass in (Compile, packageBin) := Some("exceler.app.Main")
+    resolvers += Classpaths.typesafeReleases,
+    mainClass in (Compile, packageBin) := Some("Main"),
+    unmanagedSourceDirectories in Compile += baseDirectory.value / "../shared"
   )
-  .jsSettings(
+  .enablePlugins(JettyPlugin)
+  .enablePlugins(ScalatraPlugin)
+
+lazy val js = project.in(file("js"))
+  .settings(
+    commonSettings,
+    name := "exceler",
     scalaJSUseMainModuleInitializer := true,
     libraryDependencies ++= Seq(
       "org.scala-js" %%% "scalajs-dom" % "0.9.2",
       "be.doeraene" %%% "scalajs-jquery" % "0.9.2",
       "org.scalatest" %%% "scalatest" % "3.0.4" % "test"
-    )
+    ),
+    unmanagedSourceDirectories in Compile += baseDirectory.value / "../shared",
+    copyJsTask := {
+      file("js/target/scala-2.12/exceler-fastopt.js") #> file("hehe") !
+    }
   )
-  .enablePlugins(JettyPlugin)
-
-lazy val excelerJS = exceler.js
   .enablePlugins(ScalaJSPlugin)
-lazy val excelerJVM = exceler.jvm
-  .settings(
-    (resources in Compile) += (fastOptJS in (excelerJS, Compile)).value.data
-  )
+
+val copyJsTask = taskKey[Unit]("Copy JS files")

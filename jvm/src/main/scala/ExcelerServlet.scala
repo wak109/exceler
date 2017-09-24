@@ -1,6 +1,4 @@
 /* vim: set ts=2 et sw=2 sts=2 fileencoding=utf-8: */
-package exceler.app
-
 import scala.util.control.Exception._
 import scala.util.{Try, Success, Failure}
 import scala.collection.JavaConverters._
@@ -27,9 +25,9 @@ import CommonLib._
 class ExcelerConfig(servlet:HttpServlet) {
 
   private val properties = new Properties
-  private val configFile = servlet.getInitParameter("configFile")
+  private val configFile = new File("exceler.conf")
 
-  if (Files.exists(Paths.get(configFile))) {
+  if (configFile.exists) {
     val inputStream = new FileInputStream(configFile)
     properties.load(inputStream);
     inputStream.close();
