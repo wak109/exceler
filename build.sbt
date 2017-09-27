@@ -35,6 +35,14 @@ lazy val jvm = project.in(file("jvm"))
     ),
     unmanagedResourceDirectories in Compile ++= Seq(
       baseDirectory.value / "src/main/webapp"
+    ),
+    resourceGenerators in Compile += Def.task {
+      val trg = baseDirectory.value / "src/main/webapp/js/exceler.js"
+      IO.copyFile((fastOptJS in Compile in js).value.data, trg)
+      Seq(trg)
+    }.taskValue,
+    cleanFiles ++= Seq(
+      baseDirectory.value / "src/main/webapp/js/exceler.js"
     )
   )
   .enablePlugins(JettyPlugin)
@@ -50,11 +58,8 @@ lazy val js = project.in(file("js"))
       "be.doeraene" %%% "scalajs-jquery" % "0.9.2",
       "org.scalatest" %%% "scalatest" % "3.0.4" % "test"
     ),
-    unmanagedSourceDirectories in Compile += baseDirectory.value / "../shared",
-    copyJsTask := {
-      file("js/target/scala-2.12/exceler-fastopt.js") #> file("hehe") !
-    }
+    unmanagedSourceDirectories in Compile ++= Seq(
+      baseDirectory.value / "../shared"
+    )
   )
   .enablePlugins(ScalaJSPlugin)
-
-val copyJsTask = taskKey[Unit]("Copy JS files")

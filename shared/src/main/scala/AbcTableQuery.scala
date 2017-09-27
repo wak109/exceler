@@ -3,7 +3,6 @@ package exceler.abc
 
 import scala.collection._
 import scala.language.implicitConversions
-import scala.xml.Elem
 
 import exceler.common.CommonLib.ImplicitConversions._
 
