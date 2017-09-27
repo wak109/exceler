@@ -41,6 +41,7 @@ lazy val jvm = project.in(file("jvm"))
       IO.copyFile((fastOptJS in Compile in js).value.data, trg)
       Seq(trg)
     }.taskValue,
+    resources in Compile += (fastOptJS in Compile in js).value.data,
     cleanFiles ++= Seq(
       baseDirectory.value / "src/main/webapp/js/exceler.js"
     )
