@@ -30,7 +30,12 @@ lazy val jvm = project.in(file("jvm"))
     ),
     resolvers += Classpaths.typesafeReleases,
     mainClass in (Compile, packageBin) := Some("Main"),
-    unmanagedSourceDirectories in Compile += baseDirectory.value / "../shared"
+    unmanagedSourceDirectories in Compile ++= Seq(
+      baseDirectory.value / "../shared"
+    ),
+    unmanagedResourceDirectories in Compile ++= Seq(
+      baseDirectory.value / "src/main/webapp"
+    )
   )
   .enablePlugins(JettyPlugin)
   .enablePlugins(ScalatraPlugin)

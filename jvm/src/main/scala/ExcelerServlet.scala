@@ -74,9 +74,6 @@ class ExcelerServlet extends ScalatraServlet {
   }
 }
 
-
-
-
 case class ExcelerBook(val workbook:Workbook) {
 
 }
