@@ -17,9 +17,9 @@ object ExcelerJS extends JSApp {
     targetNode.appendChild(parNode)
   }
   def main(): Unit = {
-    appendPar(document.body, "Hello, world!!!!!")
+    appendPar(document.body, "Changed")
     Ajax.get("http://127.0.0.1:8080/api").foreach {
-      xhr => println(xhr.responseText)
+      xhr => appendPar(document.body, xhr.responseText)
     }
   }
 }

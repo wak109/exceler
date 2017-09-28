@@ -37,13 +37,13 @@ lazy val jvm = project.in(file("jvm"))
       baseDirectory.value / "src/main/webapp"
     ),
     resourceGenerators in Compile += Def.task {
-      val trg = baseDirectory.value / "src/main/webapp/js/exceler.js"
+      val trg = baseDirectory.value / "src/main/webapp/js/exceler-fastopt.js"
       IO.copyFile((fastOptJS in Compile in js).value.data, trg)
       Seq(trg)
     }.taskValue,
     resources in Compile += (fastOptJS in Compile in js).value.data,
     cleanFiles ++= Seq(
-      baseDirectory.value / "src/main/webapp/js/exceler.js"
+      baseDirectory.value / "src/main/webapp/js/exceler-fastopt.js"
     )
   )
   .enablePlugins(JettyPlugin)

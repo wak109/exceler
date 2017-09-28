@@ -7,6 +7,7 @@ import org.scalatra.servlet.ScalatraListener
 import org.scalatra.LifeCycle
 
 import java.net.URI
+import java.nio.file.{Paths,Files}
 import javax.servlet.ServletContext
 
 object ServerLauncher {
@@ -22,8 +23,8 @@ object ServerLauncher {
 
     val context = new WebAppContext()
     context.setContextPath("/")
-    val path = findWebResourceBase(this.getClass.getClassLoader)
-    context.setResourceBase(path)
+    context.setResourceBase(
+      findWebResourceBase(this.getClass.getClassLoader))
     context.addEventListener(new ScalatraListener)
     context.addServlet(classOf[DefaultServlet], "/")
 
@@ -34,13 +35,9 @@ object ServerLauncher {
   }
 
   def findWebResourceBase(classLoader:ClassLoader) = {
-
-    val webResourceRef = "WEB-INF/web.xml";
-    val webXml = classLoader.getResource(webResourceRef)
-    if (webXml != null)
-      webXml.toURI().normalize().toString.replaceAll(webResourceRef + "$", "")
-    else {
-      "src/main/webapp"
-    }
+    val webXml = "WEB-INF/web.xml"
+    Option(classLoader.getResource(webXml))
+      .map(_.toURI().normalize().toString.replaceAll(webXml + "$", ""))
+      .getOrElse("src/main/webapp")
   }
 }
