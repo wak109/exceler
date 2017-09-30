@@ -1,16 +1,16 @@
 /* vim: set ts=2 et sw=2 sts=2 fileencoding=utf-8: */
 
-lazy val root = project.in(file("."))
+lazy val root:Project = project.in(file("."))
   .aggregate(jvm, js)
 
 lazy val commonSettings = Seq(
     organization := "exceler",
     scalaVersion := "2.12.3",
-    version      := "0.4.0",
+    version      := "0.5.0",
     scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature")
   )
 
-lazy val jvm = project.in(file("jvm"))
+lazy val jvm:Project = project.in(file("jvm"))
   .settings(
     commonSettings,
     name := "exceler",
@@ -49,7 +49,7 @@ lazy val jvm = project.in(file("jvm"))
   .enablePlugins(JettyPlugin)
   .enablePlugins(ScalatraPlugin)
 
-lazy val js = project.in(file("js"))
+lazy val js:Project = project.in(file("js"))
   .settings(
     commonSettings,
     name := "exceler",

@@ -22,28 +22,10 @@ import exceler.xls.{XlsRect,XlsTable}
 
 import CommonLib._
 
-class ExcelerConfig(servlet:HttpServlet) {
-
-  private val properties = new Properties
-  private val configFile = new File("exceler.conf")
-
-  if (configFile.exists) {
-    val inputStream = new FileInputStream(configFile)
-    properties.load(inputStream);
-    inputStream.close();
-  }
-  val keySet = properties.keySet
-
-  val excelDir = if (keySet.contains("excelDir"))
-      properties.getProperty("excelDir")
-    else
-      servlet.getInitParameter("excelDir")
-}
-
 class ExcelerServlet extends ScalatraServlet {
 
-  lazy val excelerConfig = new ExcelerConfig(this)
-  lazy val exceler = new Exceler(excelerConfig.excelDir)
+  lazy val excelerConfig = ExcelerConfig
+  lazy val exceler = new Exceler(excelerConfig.dir)
 
   get("/:book/:sheet/:table") {
 
@@ -127,7 +109,7 @@ object Exceler {
   }
 
   lazy private val bookMap = 
-    getListOfFiles(Config().excelDir)
+    getListOfFiles(ExcelerConfig.dir)
       .filter(_.canRead)
       .filter(_.getName.endsWith(".xlsx"))
       .map((f:File)=>(f.getName, ExcelerBook(
