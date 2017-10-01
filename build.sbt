@@ -37,9 +37,9 @@ lazy val jvm:Project = project.in(file("jvm"))
       baseDirectory.value / "src/main/webapp"
     ),
     resourceGenerators in Compile += Def.task {
-      val trg = baseDirectory.value / "src/main/webapp/js/exceler-fastopt.js"
-      IO.copyFile((fastOptJS in Compile in js).value.data, trg)
-      Seq(trg)
+      val opt = baseDirectory.value / "src/main/webapp/js/exceler-fastopt.js"
+      IO.copyFile((fastOptJS in Compile in js).value.data, opt)
+      Seq(opt)
     }.taskValue,
     resources in Compile += (fastOptJS in Compile in js).value.data,
     cleanFiles ++= Seq(
@@ -54,10 +54,12 @@ lazy val js:Project = project.in(file("js"))
     commonSettings,
     name := "exceler",
     scalaJSUseMainModuleInitializer := true,
+    //mainClass := Some(ExcelerJS),
     libraryDependencies ++= Seq(
       "org.scala-js" %%% "scalajs-dom" % "0.9.2",
       "be.doeraene" %%% "scalajs-jquery" % "0.9.2",
-      "org.scalatest" %%% "scalatest" % "3.0.4" % "test"
+      "org.scalatest" %%% "scalatest" % "3.0.4" % "test",
+      "be.doeraene" %%% "scalajs-jquery" % "0.9.2"
     ),
     unmanagedSourceDirectories in Compile ++= Seq(
       baseDirectory.value / "../shared"
