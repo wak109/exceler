@@ -37,9 +37,12 @@ lazy val jvm:Project = project.in(file("jvm"))
       baseDirectory.value / "src/main/webapp"
     ),
     resourceGenerators in Compile += Def.task {
-      val opt = baseDirectory.value / "src/main/webapp/js/exceler-fastopt.js"
+      val opt = baseDirectory.value /
+        "src/main/webapp/js/exceler-fastopt.js"
+      val map = baseDirectory.value /
+        "src/main/webapp/js/exceler-fastopt.js.map"
       IO.copyFile((fastOptJS in Compile in js).value.data, opt)
-      Seq(opt)
+      Seq(opt,map)
     }.taskValue,
     resources in Compile += (fastOptJS in Compile in js).value.data,
     cleanFiles ++= Seq(

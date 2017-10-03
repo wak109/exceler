@@ -3,7 +3,6 @@ import scala.annotation.meta.field
 import scala.scalajs.js
 import scala.scalajs.js.annotation._
 import scala.scalajs.js.Dynamic.{global,literal}
-import scala.scalajs.js.JSApp
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.runNow
 
 import org.scalajs.jquery._
@@ -22,8 +21,6 @@ object ExcelerJS {
   }
 
   def main(args: Array[String]): Unit = {
-    jQuery("body").append("<p>Hello, jQuery</p>")
-
     val json = js.Dynamic.literal(
       url = "http://127.0.0.1:8080/api",
       `type` = "GET"
@@ -32,8 +29,8 @@ object ExcelerJS {
     promise.done((data:String, textStatus:String, xhr:JQueryXHR) => {
       val xmlDoc = jQuery.parseXML(xhr.responseText)
       val nameList = jQuery(xmlDoc).find("book").each(
-        (elem:dom.Element)=> jQuery("body").append(
-          "<p>" + elem.getAttribute("name") + "</p>"))
+        (elem:dom.Element)=> jQuery("#main").append(
+          "<li><p>" + elem.getAttribute("name") + "</p></li>"))
     })
   }
 }
