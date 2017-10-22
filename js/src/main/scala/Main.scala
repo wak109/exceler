@@ -11,6 +11,17 @@ import org.scalajs.dom
 import dom.document
 import dom.ext.Ajax
 
+import scalajsreact.template
+
+import scalajsreact.template.css.AppCSS
+import scalajsreact.template.routes.AppRouter
+
+import scalajsreact.template.css.AppCSS
+import scalajsreact.template.routes.AppRouter
+
+import org.scalajs.dom
+
+
 object ExcelerJS {
 
   def appendPar(targetNode: dom.Node, text: String): Unit = {
@@ -31,6 +42,8 @@ object ExcelerJS {
       val nameList = jQuery(xmlDoc).find("book").each(
         (elem:dom.Element)=> jQuery("#main").append(
           "<li><p>" + elem.getAttribute("name") + "</p></li>"))
+      AppCSS.load
+      AppRouter.router().renderIntoDOM(dom.document.body)
     })
   }
 }

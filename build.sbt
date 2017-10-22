@@ -1,5 +1,10 @@
 /* vim: set ts=2 et sw=2 sts=2 fileencoding=utf-8: */
 
+
+val scalaJSReactVersion = "1.1.0"
+val scalaCssVersion = "0.5.3"
+val reactJSVersion = "15.6.1"
+
 lazy val root:Project = project.in(file("."))
   .aggregate(jvm, js)
 
@@ -35,7 +40,7 @@ lazy val jvm:Project = project.in(file("jvm"))
     ),
     unmanagedResourceDirectories in Compile ++= Seq(
       baseDirectory.value / "src/main/webapp"
-    ),
+    )/*,
     resourceGenerators in Compile += Def.task {
       val opt = baseDirectory.value /
         "src/main/webapp/js/exceler-fastopt.js"
@@ -48,6 +53,7 @@ lazy val jvm:Project = project.in(file("jvm"))
     cleanFiles ++= Seq(
       baseDirectory.value / "src/main/webapp/js/exceler-fastopt.js"
     )
+*/
   )
   .enablePlugins(JettyPlugin)
   .enablePlugins(ScalatraPlugin)
@@ -62,10 +68,24 @@ lazy val js:Project = project.in(file("js"))
       "org.scala-js" %%% "scalajs-dom" % "0.9.2",
       "be.doeraene" %%% "scalajs-jquery" % "0.9.2",
       "org.scalatest" %%% "scalatest" % "3.0.4" % "test",
-      "be.doeraene" %%% "scalajs-jquery" % "0.9.2"
+      "be.doeraene" %%% "scalajs-jquery" % "0.9.2",
+      "com.github.japgolly.scalajs-react" %%% "core" % scalaJSReactVersion,
+      "com.github.japgolly.scalajs-react" %%% "extra" % scalaJSReactVersion,
+      "com.github.japgolly.scalacss" %%% "core" % scalaCssVersion,
+      "com.github.japgolly.scalacss" %%% "ext-react" % scalaCssVersion
     ),
     unmanagedSourceDirectories in Compile ++= Seq(
       baseDirectory.value / "../shared"
-    )
+    ),
+    jsDependencies ++= Seq(
+      "org.webjars.npm" % "react" % reactJSVersion / "react-with-addons.js" commonJSName "React" minified "react-with-addons.min.js",
+      "org.webjars.npm" % "react-dom" % reactJSVersion / "react-dom.js" commonJSName "ReactDOM" minified "react-dom.min.js" dependsOn "react-with-addons.js"
+    ),
+    skip in packageJSDependencies := false,
+    crossTarget in (Compile, fullOptJS) := file("jvm/src/main/webapp/js"),
+    crossTarget in (Compile, fastOptJS) := file("jvm/src/main/webapp/js"),
+    crossTarget in (Compile, packageJSDependencies) := file("jvm/src/main/webapp/js"),
+    crossTarget in (Compile, packageMinifiedJSDependencies) := file("jvm/src/main/webapp/js"),
+    artifactPath in (Compile, fastOptJS) := ((crossTarget in (Compile, fastOptJS)).value / ((moduleName in fastOptJS).value + "-opt.js"))
   )
   .enablePlugins(ScalaJSPlugin)
