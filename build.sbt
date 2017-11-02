@@ -20,9 +20,9 @@ lazy val jvm:Project = project.in(file("jvm"))
     commonSettings,
     name := "exceler",
     libraryDependencies ++= Seq(
-      "org.apache.poi" % "poi" % "3.16",
-      "org.apache.poi" % "poi-ooxml" % "3.16",
-      "org.apache.poi" % "poi-ooxml-schemas" % "3.16",
+      "org.apache.poi" % "poi" % "3.17",
+      "org.apache.poi" % "poi-ooxml" % "3.17",
+      "org.apache.poi" % "poi-ooxml-schemas" % "3.17",
       "commons-cli" % "commons-cli" % "1.4",
       "org.scalatra" %%% "scalatra" % "2.5.1",
       "org.scalatra" %%% "scalatra-specs2" % "2.5.1"  % "test",
