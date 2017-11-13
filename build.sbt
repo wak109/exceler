@@ -1,7 +1,7 @@
 /* vim: set ts=2 et sw=2 sts=2 fileencoding=utf-8: */
 
 
-val scalaJSReactVersion = "1.1.0"
+val scalaJSReactVersion = "1.1.1"
 val scalaCssVersion = "0.5.3"
 val reactJSVersion = "15.6.1"
 
@@ -10,7 +10,7 @@ lazy val root:Project = project.in(file("."))
 
 lazy val commonSettings = Seq(
     organization := "exceler",
-    scalaVersion := "2.12.3",
+    scalaVersion := "2.12.4",
     version      := "0.5.0",
     scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature")
   )
@@ -57,6 +57,7 @@ lazy val jvm:Project = project.in(file("jvm"))
   )
   .enablePlugins(JettyPlugin)
   .enablePlugins(ScalatraPlugin)
+  .enablePlugins(SbtTwirl)
 
 lazy val js:Project = project.in(file("js"))
   .settings(
