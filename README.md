@@ -4,8 +4,9 @@
 ## Build
 
 1.  Download [SBT](http://www.scala-sbt.org/), and install it.
-2.  Run `sbt` at the top directory.
-3.  Run `assembly` in sbt
+2.  Exec `npm install jsdom`
+3.  Exec `sbt` at the top directory.
+4.  Exec `jvm/assembly` in sbt
 
 ## Run
 

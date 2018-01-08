@@ -42,8 +42,6 @@ object ExcelerJS {
       val nameList = jQuery(xmlDoc).find("book").each(
         (elem:dom.Element)=> jQuery("#main").append(
           "<li><p>" + elem.getAttribute("name") + "</p></li>"))
-      AppCSS.load
-      AppRouter.router().renderIntoDOM(dom.document.body)
     })
   }
 }
