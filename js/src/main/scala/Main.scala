@@ -9,11 +9,21 @@ package my.react.basic
   * Scala.js React: https://github.com/japgolly/scalajs-react
   */
 
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
 import org.scalajs.dom
 import dom.document
+import dom.ext.Ajax
 import japgolly.scalajs.react._
 import japgolly.scalajs.react.vdom.html_<^._
 import japgolly.scalajs.react.extra.router._
+
+import scala.util.{Failure, Success}
+
+
+object ExcelerAPI {
+  def fetchWorkbooks:Future[String] = Ajax.get("api").map(_.responseText)
+}
 
 object MyItem {
 
@@ -74,15 +84,19 @@ object MyItemList {
       $.modState(_.copy(newItem = value))
     }
 
-    def addNewItem:Callback = {
-      $.modState((s:State) => s.copy(items = s.items :+ s.newItem))
-    }
+    def addNewItem:Callback =
+      $.modState((s: State) => s.copy(items = s.items :+ s.newItem))
+
+    def start:Callback = Callback.future(ExcelerAPI.fetchWorkbooks.map(
+      (resp:String) =>
+        $.modState((s:State)=>s.copy(items = s.items :+ resp))))
   }
 
   private val component =
     ScalaComponent.builder[Unit]("MyItemList")
       .initialState(State(Vector(), ""))
       .renderBackend[Backend]
+      .componentDidMount(_.backend.start)
       .build
 
   def apply():VdomElement = component()

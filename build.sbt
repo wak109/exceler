@@ -105,13 +105,6 @@ lazy val js:Project = project.in(file("js"))
         dependsOn "react-dom.js"
         commonJSName "ReactDOMServer"
     ),
-/*
-    npmDependencies in Compile ++= Seq(
-      "jquery" -> "2.1.4",
-      "react" -> "15.6.1",
-      "react-dom" -> "15.6.1"
-    ),
-*/
     assemblyMergeStrategy in assembly := {
       case "JS_DEPENDENCIES" => MergeStrategy.discard
       case x =>
