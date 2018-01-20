@@ -17,12 +17,16 @@ import dom.ext.Ajax
 import japgolly.scalajs.react._
 import japgolly.scalajs.react.vdom.html_<^._
 import japgolly.scalajs.react.extra.router._
+import org.scalajs.dom.raw.Document
 
 import scala.util.{Failure, Success}
 
 
 object ExcelerAPI {
-  def fetchWorkbooks:Future[String] = Ajax.get("api").map(_.responseText)
+  //def fetchWorkbooks:Future[String] = Ajax.get("api").map(_.responseXML.textContent)
+  //def fetchWorkbooks:Future[Document] = Ajax.get("api").map(_.responseXML)
+  def fetchWorkbooks:Future[String] =
+    Ajax.get("api").map(_.responseXML.documentElement.getElementsByTagName("book").item(0).attributes.getNamedItem("name").value)
 }
 
 object MyItem {
@@ -88,8 +92,10 @@ object MyItemList {
       $.modState((s: State) => s.copy(items = s.items :+ s.newItem))
 
     def start:Callback = Callback.future(ExcelerAPI.fetchWorkbooks.map(
-      (resp:String) =>
-        $.modState((s:State)=>s.copy(items = s.items :+ resp))))
+      //(xml:Document) => $.modState((s:State)=>s.copy(items = s.items :+ ("" + "")))
+      (resp:String) => $.modState((s:State)=>s.copy(items = s.items :+ ":" + resp))
+    ))
+
   }
 
   private val component =

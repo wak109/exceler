@@ -27,6 +27,10 @@ class ExcelerServlet extends ScalatraServlet {
   lazy val excelerConfig = ExcelerConfig
   lazy val exceler = new Exceler(excelerConfig.dir)
 
+  before() {
+    contentType = "text/xml"
+  }
+
   get("/:book/:sheet/:table") {
 
     val result = this.exceler.query(
