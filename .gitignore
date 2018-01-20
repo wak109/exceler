@@ -13,3 +13,4 @@ target
 tmp
 js/target
 jvm/target
+jvm/src/main/webapp/js/*
