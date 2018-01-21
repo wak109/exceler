@@ -23,10 +23,15 @@ import scala.util.{Failure, Success}
 
 
 object ExcelerAPI {
-  //def fetchWorkbooks:Future[String] = Ajax.get("api").map(_.responseXML.textContent)
-  //def fetchWorkbooks:Future[Document] = Ajax.get("api").map(_.responseXML)
-  def fetchWorkbooks:Future[String] =
-    Ajax.get("api").map(_.responseXML.documentElement.getElementsByTagName("book").item(0).attributes.getNamedItem("name").value)
+
+  def convXmlToWorkbooks(xmlDoc:Document):List[String] = {
+    val bookNodes = xmlDoc.getElementsByTagName("book")
+    (0 until bookNodes.length).map(bookNodes.item(_)
+      .attributes.getNamedItem("name").value)(collection.breakOut)
+  }
+
+  def fetchWorkbooks:Future[List[String]] =
+    Ajax.get("api").map(xhr => convXmlToWorkbooks(xhr.responseXML))
 }
 
 object MyItem {
@@ -92,8 +97,8 @@ object MyItemList {
       $.modState((s: State) => s.copy(items = s.items :+ s.newItem))
 
     def start:Callback = Callback.future(ExcelerAPI.fetchWorkbooks.map(
-      //(xml:Document) => $.modState((s:State)=>s.copy(items = s.items :+ ("" + "")))
-      (resp:String) => $.modState((s:State)=>s.copy(items = s.items :+ ":" + resp))
+      (workbooks:List[String]) => $.modState(
+        (s:State)=>s.copy(items = s.items ++ workbooks))
     ))
 
   }
