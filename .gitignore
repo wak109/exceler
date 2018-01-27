@@ -2,7 +2,6 @@
 *.prev
 project/project
 project/target
-project/build.properties
 node_modules
 package-lock.json
 target
