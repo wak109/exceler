@@ -34,28 +34,8 @@ object ExcelerAPI {
     Ajax.get("api").map(xhr => convXmlToWorkbooks(xhr.responseXML))
 }
 
-object MyItem {
 
-  private case class Props(item:String)
-
-  private class Backend($: BackendScope[Props,Unit]) {
-    def render(p: Props): VdomElement =
-      <.li(p.item)
-  }
-
-  private val component =
-    ScalaComponent.builder[Props]("MyItem")
-      .stateless
-      .renderBackend[Backend]
-      .build
-
-  def apply(item:String):VdomElement = component(Props(item))
-}
-
-/**
-  * Factory for MyItemList component
-  */
-object MyItemList {
+object StateComponent {
 
   /**
     * State for MyItemList
@@ -70,12 +50,6 @@ object MyItemList {
   )
 
   private class Backend($: BackendScope[Unit, State]) {
-    def render(s:State): VdomElement =
-      <.div(
-        MyInput(updateNewItem, addNewItem),
-        <.div(s.items.length, " items found:"),
-        <.ol(s.items.toTagMod(i => MyItem(i)))
-      )
 
     def updateNewItem(e:ReactEventFromInput):Callback = {
       // NOTE:
@@ -101,16 +75,79 @@ object MyItemList {
         (s:State)=>s.copy(items = s.items ++ workbooks))
     ))
 
+    def render(s:State): VdomElement =
+      <.div(
+        MyItemList(s.items, updateNewItem, addNewItem)
+      )
   }
 
   private val component =
-    ScalaComponent.builder[Unit]("MyItemList")
+    ScalaComponent.builder[Unit]("StateComponent")
       .initialState(State(Vector(), ""))
       .renderBackend[Backend]
       .componentDidMount(_.backend.start)
       .build
 
   def apply():VdomElement = component()
+}
+
+/**
+  * Factory for MyItemList component
+  */
+object MyItemList {
+
+  /**
+    * State for MyItemList
+    *
+    * @param items List of string of item
+    */
+  case class Props
+  (
+    items:Vector[String],
+    updateNewItem:ReactEventFromInput=>Callback,
+    addNewItem:Callback
+  )
+
+  private class Backend($: BackendScope[Props,Unit]) {
+
+    def render(p:Props): VdomElement =
+      <.div(
+        MyInput(p.updateNewItem, p.addNewItem),
+        <.div(p.items.length, " items found:"),
+        <.ol(p.items.toTagMod(i => MyItem(i)))
+      )
+  }
+
+  private val component =
+    ScalaComponent.builder[Props]("MyItemList")
+      .renderBackend[Backend]
+      .build
+
+  def apply
+  (
+    items:Vector[String],
+    updateNewItem:ReactEventFromInput=>Callback,
+    addNewItem:Callback
+  ):VdomElement = component(Props(items,updateNewItem,addNewItem))
+}
+
+
+object MyItem {
+
+  private case class Props(item:String)
+
+  private class Backend($: BackendScope[Props,Unit]) {
+    def render(p: Props): VdomElement =
+      <.li(p.item)
+  }
+
+  private val component =
+    ScalaComponent.builder[Props]("MyItem")
+      .stateless
+      .renderBackend[Backend]
+      .build
+
+  def apply(item:String):VdomElement = component(Props(item))
 }
 
 /**
@@ -199,7 +236,7 @@ object MyRouter {
     import dsl._
 
     (emptyRule
-      | staticRoute(root, Home) ~> render( MyItemList() )
+      | staticRoute(root, Home) ~> render( StateComponent() )
       | staticRoute("#about", About) ~> render( <.h1("Router test"))
       )
       .notFound(redirectToPage(Home)(Redirect.Replace))
